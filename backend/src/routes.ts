@@ -1,5 +1,5 @@
 import { Express, NextFunction, Request, Response } from "express";
-import { getBookHandler } from "./controllers/books.controller";
+import { getArticlesController } from "./controllers/article.controller";
 
 function routes(app: Express) {
 	function handleGetBookOne(request: Request, response: Response, next: NextFunction) {
@@ -11,7 +11,7 @@ function routes(app: Express) {
 		return response.send("You made a book get request2");
 	}
 
-	app.get("/books", getBookHandler);
+	app.get("/articles", getArticlesController);
 
 	app.route("/ab*cd")
 		.get([handleGetBookOne, handleGetBookTwo])

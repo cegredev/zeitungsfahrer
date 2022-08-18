@@ -14,13 +14,6 @@ function middleware(request: Request, response: Response, next: NextFunction) {
 	next();
 }
 
-connection.query("SELECT * FROM artikel", function (err, rows, fields) {
-	if (err) throw err;
-	console.log(rows);
-});
-
-connection.end();
-
 app.use(middleware);
 
 routes(app);
@@ -28,3 +21,5 @@ routes(app);
 app.listen(3000, () => {
 	console.log("Application listening at http://localhost:3000");
 });
+
+process.on("exit", connection.end);
