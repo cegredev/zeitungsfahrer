@@ -1,4 +1,5 @@
 import { Express, NextFunction, Request, Response } from "express";
+import { getBookHandler } from "./controllers/books.controller";
 
 function routes(app: Express) {
 	function handleGetBookOne(request: Request, response: Response, next: NextFunction) {

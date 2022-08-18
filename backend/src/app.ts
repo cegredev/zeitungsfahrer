@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import routes from "./routes";
 import helmet from "helmet";
+import { connection } from "./database";
 
 const app = express();
 app.use(helmet());
@@ -12,6 +13,13 @@ function middleware(request: Request, response: Response, next: NextFunction) {
 
 	next();
 }
+
+connection.query("SELECT * FROM artikel", function (err, rows, fields) {
+	if (err) throw err;
+	console.log(rows);
+});
+
+connection.end();
 
 app.use(middleware);
 
