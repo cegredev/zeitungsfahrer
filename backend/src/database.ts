@@ -5,6 +5,7 @@ export const connection = mysql.createConnection({
 	user: "dev",
 	database: "zeitungsfahrer",
 	password: "w0rk!",
+	multipleStatements: true,
 });
 
 connection.connect((err) => {
