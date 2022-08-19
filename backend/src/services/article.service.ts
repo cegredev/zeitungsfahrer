@@ -54,3 +54,34 @@ export function createArticle(name: string, mwst: number, prices: Price[], callb
 		}
 	);
 }
+
+export function updateArticle(article: Article, callback: (err?: Error) => void) {
+	connection.query(
+		`UPDATE articles SET name="${article.name}", mwst=${article.mwst} WHERE id=${article.id}`,
+		(err) => {
+			if (err) callback(err);
+		}
+	);
+
+	article.prices.forEach((price, weekday) => {
+		connection.query(
+			`UPDATE prices SET purchase=${price.purchase}, sell=${price.sell} WHERE article_id=${article.id} AND weekday=${weekday}`,
+			(err) => {
+				if (err) callback(err);
+			}
+		);
+	});
+
+	callback();
+}
+
+export function deleteArticle(id: number, callback: (err?: Error) => void) {
+	connection.query(`DELETE FROM prices WHERE article_id=${id}`, (err) => {
+		if (err) {
+			callback(err);
+			return;
+		}
+
+		connection.query(`DELETE FROM articles WHERE id=${id}`, callback);
+	});
+}

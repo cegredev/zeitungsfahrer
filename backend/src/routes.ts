@@ -1,5 +1,10 @@
 import { Express, NextFunction, Request, Response } from "express";
-import { getArticlesController, createArticleController } from "./controllers/article.controller";
+import {
+	getArticlesController,
+	postArticleController,
+	deleteArticleController,
+	putArticleController,
+} from "./controllers/article.controller";
 
 function routes(app: Express) {
 	function handleGetBookOne(request: Request, response: Response, next: NextFunction) {
@@ -11,8 +16,11 @@ function routes(app: Express) {
 		return response.send("You made a book get request2");
 	}
 
-	app.route("/articles").get(getArticlesController);
-	app.post("/articles", createArticleController);
+	app.route("/articles")
+		.get(getArticlesController)
+		.post(postArticleController)
+		.put(putArticleController)
+		.delete(deleteArticleController);
 
 	app.route("/ab*cd")
 		.get([handleGetBookOne, handleGetBookTwo])
