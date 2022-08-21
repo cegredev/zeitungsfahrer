@@ -1,6 +1,6 @@
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 
-export const connection = mysql.createConnection({
+const connection = await mysql.createConnection({
 	host: "localhost",
 	user: "dev",
 	database: "zeitungsfahrer",
@@ -8,8 +8,8 @@ export const connection = mysql.createConnection({
 	multipleStatements: true,
 });
 
-connection.connect((err) => {
-	if (err) throw err;
+await connection.connect();
 
-	console.log("MySql connection successful");
-});
+console.log("MySql connection successful");
+
+export default connection;

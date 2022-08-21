@@ -1,43 +1,48 @@
-import { NextFunction, Request, Response } from "express";
-import { Price } from "../models/article.model";
-import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service";
+import { Request, Response } from "express";
+import { Price } from "../models/article.model.js";
+import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
 
-export function getArticlesController(req: Request, res: Response) {
-	getArticles((articles) => {
-		res.json(articles);
-	});
+export async function getArticlesController(req: Request, res: Response) {
+	try {
+		const articles = await getArticles();
+		res.status(200).json(articles);
+	} catch (e) {
+		res.status(400).send(e);
+	}
 }
 
-export function postArticleController(
+export async function postArticleController(
 	req: Request<any, any, { name: string; mwst: number; prices: Price[] }>,
 	res: Response
 ) {
-	console.log(req.body);
-
 	const { name, mwst, prices } = req.body;
 
-	createArticle(name, mwst, prices, (err) => {
-		if (err) throw err;
-
-		res.status(200).send();
-	});
+	try {
+		await createArticle(name, mwst, prices);
+		res.sendStatus(200);
+	} catch (e: unknown) {
+		// TODO: Use logging framework
+		res.status(400).send(e);
+	}
 }
 
 export function putArticleController(
 	req: Request<any, any, { id: number; name: string; mwst: number; prices: Price[] }>,
 	res: Response
 ) {
-	updateArticle(req.body, (err) => {
-		if (err) throw err;
-
+	try {
+		updateArticle(req.body);
 		res.sendStatus(200);
-	});
+	} catch (e) {
+		res.status(400).send(e);
+	}
 }
 
 export function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {
-	deleteArticle(req.body.id, (err) => {
-		if (err) throw err;
-
+	try {
+		deleteArticle(req.body.id);
 		res.sendStatus(200);
-	});
+	} catch (e) {
+		res.status(400).send(e);
+	}
 }
