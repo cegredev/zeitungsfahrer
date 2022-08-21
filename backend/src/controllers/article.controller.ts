@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Price } from "../models/article.model.js";
+import { Price } from "shared/src/models/article.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
 
 export async function getArticlesController(req: Request, res: Response) {
