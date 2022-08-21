@@ -1,0 +1,15 @@
+{
+	"name": "shared",
+	"version": "1.0.0",
+	"description": "Code shared between the front and backend of the zeitungsfahrer application",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"exports": {
+		".": "./src/"
+	}
+}
