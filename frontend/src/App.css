@@ -5,7 +5,7 @@
 }
 
 .article-list {
-	max-width: 35rem;
+	max-width: 45rem;
 
 	display: flex;
 	flex-direction: column;
@@ -25,6 +25,9 @@
 
 .article .article-input {
 	max-width: 50px;
+	border: none;
+	border-bottom: solid 1px;
+	background-color: tran;
 }
 
 .create-article {

@@ -1,10 +1,23 @@
+import { atom, useAtom } from "jotai";
 import React from "react";
-import { Article as ArticleModel } from "shared/src/models/article";
+import { ArticleInfo } from "shared/src/models/article";
+import { updateArticleTodo } from "../store";
 
-function Article({ article }: { article: ArticleModel }) {
+function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
-	const [hasChanges, setHasChanges] = React.useState(false);
+	const [article, setArticle] = React.useState(articleInfo.data);
+	const [, updateArticle] = useAtom(updateArticleTodo);
+
+	const [prices, setPrices] = React.useState(articleInfo.prices);
+
+	console.log("Rendering article", article.id);
+
+	console.log("article info", article, article, article === article);
+
+	if (article == undefined) {
+		return <div>Article missing</div>;
+	}
 
 	return (
 		<div className="article">
@@ -18,53 +31,64 @@ function Article({ article }: { article: ArticleModel }) {
 			<div>Netto</div>
 			<div>Brutto</div>
 
-			{article.prices.map((price, index) => {
+			{prices.map((price, index) => {
 				const mwst = (100 + article.mwst) / 100.0;
 
 				return (
 					<React.Fragment key={"article-" + article.name + "-" + index}>
 						<div>{weekdays[index]}</div>
-						<input
-							type="number"
-							name="mwst"
-							id="mwst-input"
-							className="article-input"
-							defaultValue={article.mwst}
-							onChange={(evt) => {
-								setHasChanges(true);
-							}}
-						/>
-						<input
-							type="number"
-							name="sell"
-							id="sell-input"
-							className="article-input"
-							defaultValue={price.sell}
-							onChange={(evt) => {
-								setHasChanges(true);
-							}}
-						/>
+						<div style={{ display: "block" }}>
+							<input
+								type="number"
+								name="mwst"
+								id="mwst-input"
+								className="article-input"
+								value={article.mwst}
+								onChange={(evt) => {
+									setArticle({ ...article, mwst: parseInt(evt.target.value) });
+								}}
+							/>
+							%
+						</div>
+						<div style={{ display: "block" }}>
+							<input
+								type="number"
+								name="sell"
+								id="sell-input"
+								className="article-input"
+								defaultValue={price.sell}
+								onChange={(evt) => {
+									prices[index] = { ...prices[index], sell: parseInt(evt.target.value) };
+									setPrices([...prices]);
+								}}
+							/>
+							€
+						</div>
 						<div style={{ gridColumn: "span 2" }}>0,{price.sell * mwst}€</div>
-						<input
-							type="number"
-							name="sell"
-							id="purchase-input"
-							className="article-input"
-							defaultValue={price.purchase}
-							onChange={(evt) => {
-								setHasChanges(true);
-							}}
-						/>
+						<div style={{ display: "block" }}>
+							<input
+								type="number"
+								name="sell"
+								id="purchase-input"
+								className="article-input"
+								defaultValue={price.purchase}
+								onChange={(evt) => {
+									prices[index] = { ...prices[index], purchase: parseInt(evt.target.value) };
+									setPrices([...prices]);
+								}}
+							/>
+							€
+						</div>
 						<div>0,{price.purchase * mwst}€</div>
 					</React.Fragment>
 				);
 			})}
 
-			{hasChanges && (
+			{(articleInfo.data !== article || articleInfo.prices !== prices) && (
 				<button
 					style={{ gridColumnStart: "7" }}
 					onClick={(evt) => {
-						setHasChanges(false);
+						updateArticle({ data: article, prices });
 					}}
 				>
 					Speichern

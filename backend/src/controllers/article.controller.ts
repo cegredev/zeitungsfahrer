@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Price } from "shared/src/models/article.js";
+import { ArticleInfo, Price } from "shared/src/models/article.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
 
 export async function getArticlesController(req: Request, res: Response) {
@@ -26,10 +26,7 @@ export async function postArticleController(
 	}
 }
 
-export function putArticleController(
-	req: Request<any, any, { id: number; name: string; mwst: number; prices: Price[] }>,
-	res: Response
-) {
+export function putArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
 	try {
 		updateArticle(req.body);
 		res.sendStatus(200);

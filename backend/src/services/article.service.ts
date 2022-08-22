@@ -1,4 +1,4 @@
-import { Article, Price } from "shared/src/models/article.js";
+import { ArticleInfo, Price } from "shared/src/models/article.js";
 import connection from "../database.js";
 
 export async function getArticles() {
@@ -7,14 +7,14 @@ export async function getArticles() {
 	);
 
 	let prices: Price[] = [];
-	const articles: Article[] = [];
+	const articles: ArticleInfo[] = [];
 
 	// @ts-ignore
 	for (const { id, name, mwst, purchase, sell } of result[0]) {
 		prices.push({ purchase, sell });
 
 		if (prices.length >= 7) {
-			articles.push({ id, name, mwst, prices });
+			articles.push({ data: { id, name, mwst }, prices });
 			prices = [];
 		}
 	}
@@ -38,11 +38,13 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 	await connection.query(queryString);
 }
 
-export async function updateArticle(article: Article) {
-	let queryString = `UPDATE articles SET name="${article.name}", mwst=${article.mwst} WHERE id=${article.id};`;
+export async function updateArticle(article: ArticleInfo) {
+	const { id, name, mwst } = article.data;
+
+	let queryString = `UPDATE articles SET name="${name}", mwst=${mwst} WHERE id=${id};`;
 
 	article.prices.forEach(async (price, weekday) => {
-		queryString += `UPDATE prices SET purchase=${price.purchase}, sell=${price.sell} WHERE article_id=${article.id} AND weekday=${weekday};`;
+		queryString += `UPDATE prices SET purchase=${price.purchase}, sell=${price.sell} WHERE article_id=${id} AND weekday=${weekday};`;
 	});
 
 	await connection.query(queryString);

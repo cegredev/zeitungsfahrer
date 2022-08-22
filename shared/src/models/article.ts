@@ -1,8 +1,12 @@
+export interface ArticleInfo {
+	data: Article;
+	prices: Price[];
+}
+
 export interface Article {
 	id?: number;
 	name: string;
 	mwst: number;
-	prices: Price[];
 }
 
 export interface Price {
