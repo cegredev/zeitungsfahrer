@@ -11,33 +11,31 @@ export async function getArticlesController(req: Request, res: Response) {
 	}
 }
 
-export async function postArticleController(
-	req: Request<any, any, { name: string; mwst: number; prices: Price[] }>,
-	res: Response
-) {
-	const { name, mwst, prices } = req.body;
+export async function postArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
+	const { name, mwst } = req.body.data;
 
 	try {
-		await createArticle(name, mwst, prices);
-		res.sendStatus(200);
+		const id = await createArticle(name, mwst, req.body.prices);
+		res.status(200).send({ id });
 	} catch (e: unknown) {
+		console.error(e);
 		// TODO: Use logging framework
 		res.status(400).send(e);
 	}
 }
 
-export function putArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
+export async function putArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
 	try {
-		updateArticle(req.body);
+		await updateArticle(req.body);
 		res.sendStatus(200);
 	} catch (e) {
 		res.status(400).send(e);
 	}
 }
 
-export function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {
+export async function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {
 	try {
-		deleteArticle(req.body.id);
+		await deleteArticle(req.body.id);
 		res.sendStatus(200);
 	} catch (e) {
 		res.status(400).send(e);

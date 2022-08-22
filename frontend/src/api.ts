@@ -14,6 +14,14 @@ export async function GET(route: string): Promise<Response> {
 	return await makeRequest("GET", route);
 }
 
-export async function PUT(route: string, body: string) {
-	await makeRequest("PUT", route, body);
+export async function POST(route: string, body: any): Promise<Response> {
+	return await makeRequest("POST", route, JSON.stringify(body));
+}
+
+export async function PUT(route: string, body: any): Promise<Response> {
+	return await makeRequest("PUT", route, JSON.stringify(body));
+}
+
+export async function DELETE(route: string, body: any): Promise<Response> {
+	return await makeRequest("DELETE", route, JSON.stringify(body));
 }

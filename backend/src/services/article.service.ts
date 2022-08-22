@@ -22,7 +22,7 @@ export async function getArticles() {
 	return articles;
 }
 
-export async function createArticle(name: string, mwst: number, prices: Price[]) {
+export async function createArticle(name: string, mwst: number, prices: Price[]): Promise<number> {
 	const result = await connection.execute(`INSERT INTO articles (name, mwst) VALUES (?, ?)`, [name, mwst]);
 
 	// @ts-ignore
@@ -36,6 +36,8 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 	queryString = queryString.substring(0, queryString.length - 1); // Remove trailing comma
 
 	await connection.query(queryString);
+
+	return id;
 }
 
 export async function updateArticle(article: ArticleInfo) {

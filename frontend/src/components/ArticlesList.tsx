@@ -1,12 +1,13 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { articlesListAtom, setArticlesAtom } from "../store";
+import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "../store";
 import Article from "./Article";
 import { GET } from "../api";
 
 function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);
 	const [, setArticles] = useAtom(setArticlesAtom);
+	const [, createArticle] = useAtom(draftArticleAtom);
 
 	React.useEffect(() => {
 		async function fetchArticles() {
@@ -17,16 +18,19 @@ function ArticlesList() {
 		fetchArticles();
 	}, [setArticles]);
 
-	console.log("Rendering articles list");
-
 	return (
 		<div className="article-list">
 			{articles.map((article) => {
 				return <Article key={"article-" + article.data.id} articleInfo={article} />;
 			})}
-			<button className="create-article" onClick={console.log}>
-				Artikel hinzufügen
-			</button>
+
+			{!articles.some((article) => article.data.id == null) && (
+				<div>
+					<button className="create-article" onClick={createArticle}>
+						Artikel hinzufügen
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
