@@ -1,10 +1,10 @@
 import mysql from "mysql2/promise";
+import fs from "fs/promises";
+
+const connectionData = await fs.readFile("env.json", "utf8");
 
 const connection = await mysql.createConnection({
-	host: "localhost",
-	user: "dev",
-	database: "zeitungsfahrer",
-	password: "w0rk!",
+	...JSON.parse(connectionData),
 	multipleStatements: true,
 });
 

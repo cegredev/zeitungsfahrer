@@ -1,19 +1,15 @@
-import { atom, useAtom } from "jotai";
+import { useAtom } from "jotai";
 import React from "react";
 import { ArticleInfo } from "shared/src/models/article";
-import { updateArticleTodo } from "../store";
+import { updateArticleAtom } from "../store";
+import { PUT } from "../api";
 
 function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 	const [article, setArticle] = React.useState(articleInfo.data);
-	const [, updateArticle] = useAtom(updateArticleTodo);
-
+	const [, updateArticle] = useAtom(updateArticleAtom);
 	const [prices, setPrices] = React.useState(articleInfo.prices);
-
-	console.log("Rendering article", article.id);
-
-	console.log("article info", article, article, article === article);
 
 	if (article == undefined) {
 		return <div>Article missing</div>;
@@ -87,8 +83,12 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 			{(articleInfo.data !== article || articleInfo.prices !== prices) && (
 				<button
 					style={{ gridColumnStart: "7" }}
-					onClick={(evt) => {
-						updateArticle({ data: article, prices });
+					onClick={async (evt) => {
+						const info = { data: article, prices };
+
+						updateArticle(info);
+
+						await PUT("articles", JSON.stringify(info));
 					}}
 				>
 					Speichern

@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { ArticleInfo } from "shared/src/models/article";
 
-export const articlesListAtom = atom<ArticleInfo[]>([
+const x = [
 	{
 		data: { id: 1, name: "Test", mwst: 7 },
 		prices: [
@@ -101,8 +101,13 @@ export const articlesListAtom = atom<ArticleInfo[]>([
 			},
 		],
 	},
-]);
-export const updateArticleTodo = atom(undefined, (get, set, updated: ArticleInfo) => {
+];
+
+export const articlesListAtom = atom<ArticleInfo[]>([]);
+export const setArticlesAtom = atom(undefined, (get, set, articles: ArticleInfo[]) => {
+	set(articlesListAtom, articles);
+});
+export const updateArticleAtom = atom(undefined, (get, set, updated: ArticleInfo) => {
 	const articles = [...get(articlesListAtom)];
 	const articleId = articles.findIndex((article) => article.data.id === updated.data.id);
 
