@@ -1,5 +1,5 @@
 export interface Article {
-	id: number;
+	id?: number;
 	name: string;
 	mwst: number;
 	prices: Price[];
