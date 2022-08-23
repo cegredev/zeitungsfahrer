@@ -10,15 +10,15 @@ function createEmptyArticle() {
 		prices: Array(7)
 			.fill(null)
 			.map(() => ({
-				sell: 3000,
-				purchase: 2000,
+				sell: 0.3,
+				purchase: 0.2,
 			})),
 	};
 }
 
 export const articlesListAtom = atom<ArticleInfo[]>([]);
 
-export const setArticlesAtom = atom(undefined, (get, set, articles: ArticleInfo[]) => {
+export const setArticlesAtom = atom(undefined, (_get, set, articles: ArticleInfo[]) => {
 	set(articlesListAtom, articles);
 });
 
@@ -26,6 +26,13 @@ export const removeArticleAtom = atom(undefined, (get, set, id: number) => {
 	set(
 		articlesListAtom,
 		get(articlesListAtom).filter((article) => article.data.id !== id)
+	);
+});
+
+export const cancelDraftAtom = atom(undefined, (get, set) => {
+	set(
+		articlesListAtom,
+		get(articlesListAtom).filter((article) => article.data.id != null)
 	);
 });
 

@@ -1,5 +1,4 @@
 import "./App.css";
-import Article from "./components/Article";
 import ArticlesList from "./components/ArticlesList";
 import { Provider as JotaiProvider } from "jotai";
 
@@ -10,6 +9,7 @@ function App() {
 				<div className="articles-page">
 					<ArticlesList />
 				</div>
+				<div className="footer"></div>
 			</JotaiProvider>
 		</div>
 	);

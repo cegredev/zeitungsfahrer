@@ -3,6 +3,7 @@ import React from "react";
 import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "../store";
 import Article from "./Article";
 import { GET } from "../api";
+import { ArticleInfo } from "shared/src/models/article";
 
 function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);
@@ -11,8 +12,18 @@ function ArticlesList() {
 
 	React.useEffect(() => {
 		async function fetchArticles() {
-			const articles = await GET("articles");
-			setArticles(await articles.json());
+			const response = await GET("articles");
+			const articles: ArticleInfo[] = await response.json();
+
+			setArticles(
+				articles.map((article) => ({
+					...article,
+					prices: article.prices.map((price) => ({
+						purchase: parseFloat("" + price.purchase),
+						sell: parseFloat("" + price.sell),
+					})),
+				}))
+			);
 		}
 
 		fetchArticles();

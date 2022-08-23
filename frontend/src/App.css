@@ -24,7 +24,7 @@
 }
 
 .article .article-input {
-	max-width: 50px;
+	max-width: 4rem;
 	border: none;
 	border-bottom: solid 1px;
 	background-color: tran;
@@ -35,4 +35,8 @@
 	/* text-align: center; */
 	padding: 10px;
 	/* border-radius: 5px; */
+}
+
+.footer {
+	min-height: 200px;
 }
