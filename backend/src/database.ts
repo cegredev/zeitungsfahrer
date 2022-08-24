@@ -1,5 +1,6 @@
 import mysql from "mysql2/promise";
 import fs from "fs/promises";
+import logger from "./logger.js";
 
 const connectionData = await fs.readFile("env.json", "utf8");
 
@@ -8,8 +9,16 @@ const connection = await mysql.createConnection({
 	multipleStatements: true,
 });
 
-await connection.connect();
+export interface RouteReport {
+	code: number;
+	body?: string;
+}
 
-console.log("MySql connection successful");
+try {
+	await connection.connect();
+	logger.info("MySql connection successful");
+} catch (e) {
+	logger.error("MySql connection failed", e);
+}
 
 export default connection;

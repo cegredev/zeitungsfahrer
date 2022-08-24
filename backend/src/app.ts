@@ -1,19 +1,30 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
 import connection from "./database.js";
 import cors from "cors";
+import logger from "./logger.js";
 
 const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: ["http://localhost:3000"] }));
-// app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+	logger.info(req.method + " " + req.originalUrl);
+	next();
+});
+
+const PORT = 3001;
 
 routes(app);
 
-app.listen(3001, () => {
-	console.log("Application listening at http://localhost:3001");
+const server = app.listen(PORT, () => {
+	logger.info(`Application listening at port ${PORT}`);
 });
 
-process.on("exit", connection.end);
+process.on("exit", () => {
+	logger.info("Shutting down!");
+
+	connection.end();
+	server.close();
+});

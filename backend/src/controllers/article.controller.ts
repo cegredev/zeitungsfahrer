@@ -1,43 +1,34 @@
 import { Request, Response } from "express";
-import { ArticleInfo, Price } from "shared/src/models/article.js";
+import { ArticleInfo } from "shared/src/models/article.js";
+import { RouteReport } from "../database.js";
+import logger from "../logger.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
 
-export async function getArticlesController(req: Request, res: Response) {
+async function handler(func: () => Promise<RouteReport>, res: Response) {
 	try {
-		const articles = await getArticles();
-		res.status(200).json(articles);
+		const { code, body } = await func();
+		res.status(code).send(body);
 	} catch (e) {
-		res.status(400).send(e);
+		console.error(e);
+		logger.error(e);
+		res.sendStatus(500);
 	}
+}
+
+export async function getArticlesController(req: Request, res: Response) {
+	await handler(getArticles, res);
 }
 
 export async function postArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
 	const { name, mwst } = req.body.data;
 
-	try {
-		const id = await createArticle(name, mwst, req.body.prices);
-		res.status(200).send({ id });
-	} catch (e: unknown) {
-		console.error(e);
-		// TODO: Use logging framework
-		res.status(400).send(e);
-	}
+	await handler(async () => await createArticle(name, mwst, req.body.prices), res);
 }
 
 export async function putArticleController(req: Request<any, any, ArticleInfo>, res: Response) {
-	try {
-		await updateArticle(req.body);
-		res.sendStatus(200);
-	} catch (e) {
-		res.status(400).send(e);
-	}
+	await handler(async () => await updateArticle(req.body), res);
 }
 
 export async function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {
-	try {
-		await deleteArticle(req.body.id);
-		res.sendStatus(200);
-	} catch (e) {
-		res.status(400).send(e);
-	}
+	await handler(async () => await deleteArticle(req.body.id), res);
 }

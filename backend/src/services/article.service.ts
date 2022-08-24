@@ -1,7 +1,7 @@
 import { ArticleInfo, Price } from "shared/src/models/article.js";
-import connection from "../database.js";
+import connection, { RouteReport } from "../database.js";
 
-export async function getArticles() {
+export async function getArticles(): Promise<RouteReport> {
 	const result = await connection.execute(
 		"SELECT articles.id, articles.name, articles.mwst, prices.purchase, prices.sell FROM articles INNER JOIN prices ON articles.id=prices.article_id"
 	);
@@ -19,14 +19,24 @@ export async function getArticles() {
 		}
 	}
 
-	return articles;
+	return {
+		code: 200,
+		body: JSON.stringify(articles),
+	};
 }
 
-export async function createArticle(name: string, mwst: number, prices: Price[]): Promise<number> {
+export async function createArticle(name: string, mwst: number, prices: Price[]): Promise<RouteReport> {
+	if (mwst < 0 || prices.length !== 7) {
+		return {
+			code: 400,
+			body: "Invalid input",
+		};
+	}
+
 	const result = await connection.execute(`INSERT INTO articles (name, mwst) VALUES (?, ?)`, [name, mwst]);
 
 	// @ts-ignore
-	const id = result[0].insertId;
+	const id: number = result[0].insertId;
 
 	let queryString = "INSERT INTO prices (weekday, article_id, purchase, sell) VALUES ";
 
@@ -37,11 +47,21 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 
 	await connection.query(queryString);
 
-	return id;
+	return {
+		code: 200,
+		body: JSON.stringify({ id }),
+	};
 }
 
-export async function updateArticle(article: ArticleInfo) {
+export async function updateArticle(article: ArticleInfo): Promise<RouteReport> {
 	const { id, name, mwst } = article.data;
+
+	if (mwst < 0 || article.prices.length !== 7) {
+		return {
+			code: 400,
+			body: "Invalid input",
+		};
+	}
 
 	let queryString = `UPDATE articles SET name="${name}", mwst=${mwst} WHERE id=${id};`;
 
@@ -50,13 +70,21 @@ export async function updateArticle(article: ArticleInfo) {
 	});
 
 	await connection.query(queryString);
+
+	return {
+		code: 200,
+	};
 }
 
-export async function deleteArticle(id: number) {
+export async function deleteArticle(id: number): Promise<RouteReport> {
 	await connection.query(
 		`
 			DELETE FROM prices WHERE article_id=${id};
 			DELETE FROM articles WHERE id=${id};
 		`
 	);
+
+	return {
+		code: 200,
+	};
 }
