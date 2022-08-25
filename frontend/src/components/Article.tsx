@@ -25,24 +25,32 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 	return (
 		<div className="article">
-			<div style={{ gridColumn: "span 5" }}>
-				{isDraft && <span style={{ color: "red", fontWeight: "bold" }}>(Entwurf) </span>}
+			<div style={{ gridColumn: "span 2" }}>
+				<ArticleInput
+					type="text"
+					style={{ minWidth: "90%" }}
+					defaultValue={article.name}
+					onChange={(evt) => {
+						setArticle({ ...article, name: evt.target.value });
+					}}
+				/>
+			</div>
+
+			<div style={{ gridColumn: "span 3" }}>
+				<strong>Einkaufspreis</strong>
+				{isDraft && <span style={{ color: "red", fontWeight: "bold" }}> (Entwurf)</span>}
+			</div>
+			<div style={{ gridColumn: "span 3" }}>
 				<strong>Verkaufspreis</strong>
 			</div>
+
 			<div style={{ gridColumn: "span 2" }}>
-				<strong>Einkaufspreis</strong>
+				<strong>Marktpreis</strong>
 			</div>
 
-			<ArticleInput
-				type="text"
-				style={{ maxWidth: "100px" }}
-				defaultValue={article.name}
-				onChange={(evt) => {
-					setArticle({ ...article, name: evt.target.value });
-				}}
-			/>
-
-			<div>MwSt</div>
+			<div style={{ gridColumnStart: "2" }}>MwSt</div>
+			<div>Netto</div>
+			<div style={{ gridColumn: "span 2", textAlign: "left" }}>Brutto</div>
 			<div>Netto</div>
 			<div style={{ gridColumn: "span 2", textAlign: "left" }}>Brutto</div>
 			<div>Netto</div>
@@ -72,20 +80,6 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						<div style={{ display: "block" }}>
 							<ArticleInput
 								type="number"
-								defaultValue={price.sell}
-								step={0.0001}
-								onChange={(evt) => {
-									prices[index] = { ...prices[index], sell: parseFloat(evt.target.value) };
-									setPrices([...prices]);
-								}}
-							/>
-						</div>
-						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
-
-						{/*  Purchase price */}
-						<div style={{ display: "block" }}>
-							<ArticleInput
-								type="number"
 								defaultValue={price.purchase}
 								step={0.0001}
 								onChange={(evt) => {
@@ -95,7 +89,37 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 							/>
 							€
 						</div>
-						<div>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
+						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
+
+						{/*  Purchase price */}
+						<div style={{ display: "block" }}>
+							<ArticleInput
+								type="number"
+								defaultValue={price.sell}
+								step={0.0001}
+								onChange={(evt) => {
+									prices[index] = { ...prices[index], sell: parseFloat(evt.target.value) };
+									setPrices([...prices]);
+								}}
+							/>
+							€
+						</div>
+						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
+
+						{/*  Purchase price */}
+						<div style={{ display: "block" }}>
+							<ArticleInput
+								type="number"
+								defaultValue={price.sellTrader}
+								step={0.0001}
+								onChange={(evt) => {
+									prices[index] = { ...prices[index], sellTrader: parseFloat(evt.target.value) };
+									setPrices([...prices]);
+								}}
+							/>
+							€
+						</div>
+						<div>{twoDecimalsFormat.format(price.sellTrader * mwst)}</div>
 					</React.Fragment>
 				);
 			})}
@@ -116,7 +140,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 			</button>
 
 			<button
-				style={{ gridColumnStart: "7", color: "green" }}
+				style={{ gridColumnStart: "10", color: "green" }}
 				onClick={async () => {
 					let info = { ...article, prices };
 

@@ -16,6 +16,7 @@ function ArticleInput(props: Props) {
 			defaultValue={props.defaultValue}
 			step={props.step}
 			onChange={props.onChange}
+			style={props.style}
 		/>
 	);
 }

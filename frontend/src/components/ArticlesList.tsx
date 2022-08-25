@@ -15,14 +15,13 @@ function ArticlesList() {
 			const response = await GET("articles");
 			const articles: ArticleInfo[] = await response.json();
 
-			console.log(articles);
-
 			setArticles(
 				articles.map((article) => ({
 					...article,
 					prices: article.prices.map((price) => ({
 						purchase: parseFloat(String(price.purchase)),
 						sell: parseFloat(String(price.sell)),
+						sellTrader: parseFloat(String(price.sellTrader)),
 						mwst: price.mwst,
 					})),
 				}))

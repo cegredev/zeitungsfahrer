@@ -7,11 +7,12 @@ export interface Article {
 export interface Price {
 	purchase: number;
 	sell: number;
+	sellTrader: number;
 	mwst: number;
 }
 
-export function validatePrice({ purchase, sell, mwst }: Price): boolean {
-	return Math.min(purchase, sell, mwst) >= 0;
+export function validatePrice({ purchase, sell, sellTrader, mwst }: Price): boolean {
+	return Math.min(purchase, sell, sellTrader, mwst) >= 0;
 }
 
 export function validatePrices(prices: Price[]): boolean {

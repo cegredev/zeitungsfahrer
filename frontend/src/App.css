@@ -5,7 +5,7 @@
 }
 
 .article-list {
-	max-width: 45rem;
+	max-width: 60rem;
 
 	display: flex;
 	flex-direction: column;
@@ -14,7 +14,7 @@
 
 .article {
 	display: grid;
-	grid-template-columns: repeat(7, 1fr);
+	grid-template-columns: repeat(10, 1fr);
 	gap: 0.5rem;
 	margin: 10px 0px;
 

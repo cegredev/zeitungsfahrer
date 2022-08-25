@@ -4,23 +4,21 @@ import pool, { RouteReport } from "../database.js";
 export async function getArticles(): Promise<RouteReport> {
 	const conn = await pool.getConnection();
 	const result = await conn.execute(
-		"SELECT articles.id, articles.name, prices.purchase, prices.sell, prices.mwst FROM articles INNER JOIN prices ON articles.id=prices.article_id"
+		"SELECT articles.id, articles.name, prices.purchase, prices.sell, prices.sell_trader, prices.mwst FROM articles INNER JOIN prices ON articles.id=prices.article_id"
 	);
 
 	let prices: Price[] = [];
 	const articles: Article[] = [];
 
 	// @ts-ignore
-	for (const { id, name, mwst, purchase, sell } of result[0]) {
-		prices.push({ purchase, sell, mwst });
+	for (const { id, name, mwst, purchase, sell, sell_trader } of result[0]) {
+		prices.push({ purchase, sell, sellTrader: sell_trader, mwst });
 
 		if (prices.length >= 7) {
 			articles.push({ id, name, prices });
 			prices = [];
 		}
 	}
-
-	console.log(articles);
 
 	return {
 		code: 200,
@@ -43,9 +41,12 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 	const id: number = result[0].insertId;
 
 	const queryString =
-		"INSERT INTO prices (weekday, article_id, purchase, sell, mwst) VALUES " +
+		"INSERT INTO prices (weekday, article_id, purchase, sell, sell_trader, mwst) VALUES " +
 		prices
-			.map((price, weekday) => `(${weekday}, ${id}, ${price.purchase}, ${price.sell}, ${price.mwst})`)
+			.map(
+				(price, weekday) =>
+					`(${weekday}, ${id}, ${price.purchase}, ${price.sell}, ${price.sellTrader}, ${price.mwst})`
+			)
 			.join(",");
 
 	await conn.query(queryString);
@@ -71,13 +72,10 @@ export async function updateArticle(article: Article): Promise<RouteReport> {
 	await conn.execute(`UPDATE articles SET name=? WHERE id=?`, [name, id]);
 
 	article.prices.forEach(async (price, weekday) => {
-		await conn.execute(`UPDATE prices SET purchase=?, sell=?, mwst=? WHERE article_id=? AND weekday=?`, [
-			price.purchase,
-			price.sell,
-			price.mwst,
-			id,
-			weekday,
-		]);
+		await conn.execute(
+			`UPDATE prices SET purchase=?, sell=?, sell_trader=?, mwst=? WHERE article_id=? AND weekday=?`,
+			[price.purchase, price.sell, price.sellTrader, price.mwst, id, weekday]
+		);
 	});
 
 	return {
