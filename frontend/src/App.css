@@ -21,16 +21,18 @@
 	background-color: lightgray;
 	padding: 10px;
 	border-radius: 5px;
+
+	/* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
 }
 
 .article .article-input {
 	max-width: 4rem;
 	border: none;
 	border-bottom: solid 1px;
-	background-color: tran;
 }
 
 .create-article {
+	margin-top: 10px;
 	padding: 10px;
 }
 

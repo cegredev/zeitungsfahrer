@@ -7,7 +7,6 @@ const pool = mysql.createPool({
 	password: env.DB_PASSWORD,
 	port: parseInt(env.DB_PORT!),
 	host: env.DB_HOSTNAME,
-	multipleStatements: true, // FIXME: SQL injection vulnerability
 });
 
 export interface RouteReport {

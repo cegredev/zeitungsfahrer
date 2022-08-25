@@ -3,7 +3,7 @@ import React from "react";
 import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "../store";
 import Article from "./Article";
 import { GET } from "../api";
-import { ArticleInfo } from "shared/src/models/article";
+import { ArticleInfo } from "backend/src/models/article.model";
 
 function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);

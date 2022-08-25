@@ -1,21 +1,21 @@
-import { ArticleInfo, Price } from "../models/article.model.js";
+import { Article, Price, validatePrices } from "../models/article.model.js";
 import pool, { RouteReport } from "../database.js";
 
 export async function getArticles(): Promise<RouteReport> {
 	const conn = await pool.getConnection();
 	const result = await conn.execute(
-		"SELECT articles.id, articles.name, articles.mwst, prices.purchase, prices.sell FROM articles INNER JOIN prices ON articles.id=prices.article_id"
+		"SELECT articles.id, articles.name, prices.purchase, prices.sell, prices.mwst FROM articles INNER JOIN prices ON articles.id=prices.article_id"
 	);
 
 	let prices: Price[] = [];
-	const articles: ArticleInfo[] = [];
+	const articles: Article[] = [];
 
 	// @ts-ignore
 	for (const { id, name, mwst, purchase, sell } of result[0]) {
-		prices.push({ purchase, sell });
+		prices.push({ purchase, sell, mwst });
 
 		if (prices.length >= 7) {
-			articles.push({ data: { id, name, mwst }, prices });
+			articles.push({ id, name, prices });
 			prices = [];
 		}
 	}
@@ -26,23 +26,25 @@ export async function getArticles(): Promise<RouteReport> {
 	};
 }
 
-export async function createArticle(name: string, mwst: number, prices: Price[]): Promise<RouteReport> {
-	if (mwst < 0 || prices.length !== 7) {
+export async function createArticle(name: string, prices: Price[]): Promise<RouteReport> {
+	if (!validatePrices(prices)) {
 		return {
 			code: 400,
-			body: "Invalid input",
+			body: "The given prices contained errors",
 		};
 	}
 
 	const conn = await pool.getConnection();
-	const result = await conn.execute(`INSERT INTO articles (name, mwst) VALUES (?, ?)`, [name, mwst]);
+	const result = await conn.execute(`INSERT INTO articles (name) VALUES (?)`, [name]);
 
 	// @ts-ignore
 	const id: number = result[0].insertId;
 
 	const queryString =
-		"INSERT INTO prices (weekday, article_id, purchase, sell) VALUES " +
-		prices.map((price, weekday) => `(${weekday}, ${id}, ${price.purchase}, ${price.sell})`).join(",");
+		"INSERT INTO prices (weekday, article_id, purchase, sell, mwst) VALUES " +
+		prices
+			.map((price, weekday) => `(${weekday}, ${id}, ${price.purchase}, ${price.sell}, ${price.mwst})`)
+			.join(",");
 
 	await conn.query(queryString);
 
@@ -52,24 +54,29 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 	};
 }
 
-export async function updateArticle(article: ArticleInfo): Promise<RouteReport> {
-	const { id, name, mwst } = article.data;
+export async function updateArticle(article: Article): Promise<RouteReport> {
+	const { id, name } = article;
 
-	if (mwst < 0 || article.prices.length !== 7) {
+	if (!validatePrices(article.prices)) {
 		return {
 			code: 400,
-			body: "Invalid input",
+			body: "The given prices contained errors",
 		};
 	}
 
-	let queryString = `UPDATE articles SET name="${name}", mwst=${mwst} WHERE id=${id};`;
+	const conn = await pool.getConnection();
+
+	await conn.execute(`UPDATE articles SET name=? WHERE id=?`, [name, id]);
 
 	article.prices.forEach(async (price, weekday) => {
-		queryString += `UPDATE prices SET purchase=${price.purchase}, sell=${price.sell} WHERE article_id=${id} AND weekday=${weekday};`;
+		await conn.execute(`UPDATE prices SET purchase=?, sell=?, mwst=? WHERE article_id=? AND weekday=?`, [
+			price.purchase,
+			price.sell,
+			price.mwst,
+			id,
+			weekday,
+		]);
 	});
-
-	const conn = await pool.getConnection();
-	await conn.query(queryString);
 
 	return {
 		code: 200,
@@ -78,12 +85,9 @@ export async function updateArticle(article: ArticleInfo): Promise<RouteReport> 
 
 export async function deleteArticle(id: number): Promise<RouteReport> {
 	const conn = await pool.getConnection();
-	await conn.query(
-		`
-			DELETE FROM prices WHERE article_id=${id};
-			DELETE FROM articles WHERE id=${id};
-		`
-	);
+
+	await conn.execute("DELETE FROM prices WHERE article_id=?", [id]);
+	await conn.execute("DELETE FROM articles WHERE id=?", [id]);
 
 	return {
 		code: 200,
