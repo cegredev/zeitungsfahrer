@@ -6,6 +6,7 @@
 		"mysql2": "^2.3.3",
 		"nodemon": "^2.0.19",
 		"shared": "file:../shared",
+		"ts-node": "^10.9.1",
 		"winston": "^3.8.1"
 	},
 	"scripts": {
@@ -14,8 +15,7 @@
 	"type": "module",
 	"devDependencies": {
 		"@types/cors": "^2.8.12",
-		"@types/express": "^4.17.13",
-		"ts-node": "^10.9.1"
+		"@types/express": "^4.17.13"
 	},
 	"engines": {
 		"node": "16.x"
