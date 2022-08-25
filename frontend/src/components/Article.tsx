@@ -120,6 +120,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 					if (isDraft) {
 						const res = await POST("articles", info);
+						
 						if (res.ok) {
 							const body = await res.json();
 							const id = body.id;
