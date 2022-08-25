@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3001/";
+const API_URL = "https://zeitungsfahrer.herokuapp.com/";
 
 async function makeRequest(method: string, route: string, body?: string, headers?: any): Promise<Response> {
 	return await fetch(API_URL + route, {

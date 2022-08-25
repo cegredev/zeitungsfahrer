@@ -1,10 +1,14 @@
 import { ArticleInfo, Price } from "../models/article.model.js";
-import connection, { RouteReport } from "../database.js";
+import pool, { RouteReport } from "../database.js";
 
 export async function getArticles(): Promise<RouteReport> {
-	const result = await connection.execute(
+	console.log("in service");
+	const conn = await pool.getConnection();
+	console.log("got");
+	const result = await conn.execute(
 		"SELECT articles.id, articles.name, articles.mwst, prices.purchase, prices.sell FROM articles INNER JOIN prices ON articles.id=prices.article_id"
 	);
+	console.log("ran");
 
 	let prices: Price[] = [];
 	const articles: ArticleInfo[] = [];
@@ -33,7 +37,8 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 		};
 	}
 
-	const result = await connection.execute(`INSERT INTO articles (name, mwst) VALUES (?, ?)`, [name, mwst]);
+	const conn = await pool.getConnection();
+	const result = await conn.execute(`INSERT INTO articles (name, mwst) VALUES (?, ?)`, [name, mwst]);
 
 	// @ts-ignore
 	const id: number = result[0].insertId;
@@ -42,7 +47,7 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 		"INSERT INTO prices (weekday, article_id, purchase, sell) VALUES " +
 		prices.map((price, weekday) => `(${weekday}, ${id}, ${price.purchase}, ${price.sell})`).join(",");
 
-	await connection.query(queryString);
+	await conn.query(queryString);
 
 	return {
 		code: 200,
@@ -66,7 +71,8 @@ export async function updateArticle(article: ArticleInfo): Promise<RouteReport> 
 		queryString += `UPDATE prices SET purchase=${price.purchase}, sell=${price.sell} WHERE article_id=${id} AND weekday=${weekday};`;
 	});
 
-	await connection.query(queryString);
+	const conn = await pool.getConnection();
+	await conn.query(queryString);
 
 	return {
 		code: 200,
@@ -74,7 +80,8 @@ export async function updateArticle(article: ArticleInfo): Promise<RouteReport> 
 }
 
 export async function deleteArticle(id: number): Promise<RouteReport> {
-	await connection.query(
+	const conn = await pool.getConnection();
+	await conn.query(
 		`
 			DELETE FROM prices WHERE article_id=${id};
 			DELETE FROM articles WHERE id=${id};

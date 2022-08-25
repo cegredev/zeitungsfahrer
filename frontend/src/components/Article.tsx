@@ -56,9 +56,10 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 						{/* Mwst */}
 						<div style={{ display: "block" }}>
-							<ArticleInput
+							<input
 								type="number"
-								defaultValue={article.mwst}
+								className="article-input"
+								value={article.mwst}
 								onChange={(evt) => {
 									setArticle({ ...article, mwst: parseInt(evt.target.value) });
 								}}
@@ -120,7 +121,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 					if (isDraft) {
 						const res = await POST("articles", info);
-						
+
 						if (res.ok) {
 							const body = await res.json();
 							const id = body.id;

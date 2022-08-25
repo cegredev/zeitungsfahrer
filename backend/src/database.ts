@@ -1,9 +1,7 @@
 import mysql from "mysql2/promise";
 import config from "./config.js";
-import logger from "./logger.js";
 
-const connection = await mysql.createConnection({
-	// ...JSON.parse(connectionData),
+const pool = mysql.createPool({
 	user: config.DB_USER,
 	database: config.DATABASE,
 	password: config.DB_PASSWORD,
@@ -17,11 +15,4 @@ export interface RouteReport {
 	body?: string;
 }
 
-try {
-	await connection.connect();
-	logger.info("MySql connection successful");
-} catch (e) {
-	logger.error("MySql connection failed", e);
-}
-
-export default connection;
+export default pool;

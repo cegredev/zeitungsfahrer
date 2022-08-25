@@ -27,6 +27,5 @@ const server = app.listen(PORT, () => {
 process.on("exit", () => {
 	logger.info("Shutting down!");
 
-	connection.end();
 	server.close();
 });
