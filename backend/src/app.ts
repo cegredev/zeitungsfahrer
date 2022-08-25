@@ -10,7 +10,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: ["http://localhost:3000"] }));
 app.use((req, res, next) => {
-	logger.info(req.method + " " + req.originalUrl);
+	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
 	next();
 });
 

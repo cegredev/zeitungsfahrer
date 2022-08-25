@@ -38,12 +38,9 @@ export async function createArticle(name: string, mwst: number, prices: Price[])
 	// @ts-ignore
 	const id: number = result[0].insertId;
 
-	let queryString = "INSERT INTO prices (weekday, article_id, purchase, sell) VALUES ";
-
-	prices.forEach(async (price, weekday) => {
-		queryString += `(${weekday}, ${id}, ${price.purchase}, ${price.sell}),`;
-	});
-	queryString = queryString.substring(0, queryString.length - 1); // Remove trailing comma
+	const queryString =
+		"INSERT INTO prices (weekday, article_id, purchase, sell) VALUES " +
+		prices.map((price, weekday) => `(${weekday}, ${id}, ${price.purchase}, ${price.sell})`).join(",");
 
 	await connection.query(queryString);
 

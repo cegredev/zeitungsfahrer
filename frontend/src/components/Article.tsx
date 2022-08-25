@@ -3,6 +3,7 @@ import React from "react";
 import { ArticleInfo } from "shared/src/models/article";
 import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
 import { DELETE, POST, PUT } from "../api";
+import ArticleInput from "./ArticleInput";
 
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
@@ -31,15 +32,15 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 				<strong>Einkaufspreis</strong>
 			</div>
 
-			<input
+			<ArticleInput
 				type="text"
-				className="article-input"
 				style={{ maxWidth: "100px" }}
 				defaultValue={article.name}
 				onChange={(evt) => {
 					setArticle({ ...article, name: evt.target.value });
 				}}
 			/>
+
 			<div>MwSt</div>
 			<div>Netto</div>
 			<div style={{ gridColumn: "span 2", textAlign: "left" }}>Brutto</div>
@@ -52,21 +53,23 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 				return (
 					<React.Fragment key={"article-" + article.name + "-" + index}>
 						<div>{weekdays[index]}</div>
+
+						{/* Mwst */}
 						<div style={{ display: "block" }}>
-							<input
+							<ArticleInput
 								type="number"
-								className="article-input"
-								value={article.mwst}
+								defaultValue={article.mwst}
 								onChange={(evt) => {
 									setArticle({ ...article, mwst: parseInt(evt.target.value) });
 								}}
 							/>
 							%
 						</div>
+
+						{/* Sell price */}
 						<div style={{ display: "block" }}>
-							<input
+							<ArticleInput
 								type="number"
-								className="article-input"
 								defaultValue={price.sell}
 								step={0.0001}
 								onChange={(evt) => {
@@ -74,13 +77,13 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 									setPrices([...prices]);
 								}}
 							/>
-							€
 						</div>
 						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
+
+						{/*  Purchase price */}
 						<div style={{ display: "block" }}>
-							<input
+							<ArticleInput
 								type="number"
-								className="article-input"
 								defaultValue={price.purchase}
 								step={0.0001}
 								onChange={(evt) => {
@@ -110,35 +113,33 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 				{isDraft ? "Abbrechen" : "Löschen"}
 			</button>
 
-			{(isDraft || articleInfo.data !== article || articleInfo.prices !== prices) && (
-				<button
-					style={{ gridColumnStart: "7", color: "green" }}
-					onClick={async (evt) => {
-						let info = { data: article, prices };
+			<button
+				style={{ gridColumnStart: "7", color: "green" }}
+				onClick={async () => {
+					let info = { data: article, prices };
 
-						if (isDraft) {
-							const res = await POST("articles", info);
-							if (res.ok) {
-								const body = await res.json();
-								const id = body.id;
+					if (isDraft) {
+						const res = await POST("articles", info);
+						if (res.ok) {
+							const body = await res.json();
+							const id = body.id;
 
-								info = { data: { ...info.data, id }, prices: info.prices };
+							info = { data: { ...info.data, id }, prices: info.prices };
 
-								setArticle({ ...article, id });
-								finishArticle(info);
-							} else {
-								console.error(res);
-							}
+							setArticle({ ...article, id });
+							finishArticle(info);
 						} else {
-							await PUT("articles", info);
+							console.error(res);
 						}
+					} else {
+						await PUT("articles", info);
+					}
 
-						updateArticle(info);
-					}}
-				>
-					{isDraft ? "Hinzufügen" : "Speichern"}
-				</button>
-			)}
+					updateArticle(info);
+				}}
+			>
+				{isDraft ? "Hinzufügen" : "Speichern"}
+			</button>
 		</div>
 	);
 }

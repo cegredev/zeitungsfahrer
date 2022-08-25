@@ -19,8 +19,8 @@ function ArticlesList() {
 				articles.map((article) => ({
 					...article,
 					prices: article.prices.map((price) => ({
-						purchase: parseFloat("" + price.purchase),
-						sell: parseFloat("" + price.sell),
+						purchase: parseFloat(String(price.purchase)),
+						sell: parseFloat(String(price.sell)),
 					})),
 				}))
 			);
@@ -32,7 +32,7 @@ function ArticlesList() {
 	return (
 		<div className="article-list">
 			{articles.map((article) => {
-				return <Article key={"article-" + article.data.id} articleInfo={article} />;
+				return <Article key={"article-" + (article.data.id || "draft")} articleInfo={article} />;
 			})}
 
 			{!articles.some((article) => article.data.id == null) && (
