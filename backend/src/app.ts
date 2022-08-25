@@ -1,7 +1,7 @@
 import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
-import connection from "./database.js";
+// import connection from "./database.js";
 import cors from "cors";
 import logger from "./logger.js";
 
@@ -25,6 +25,6 @@ const server = app.listen(PORT, () => {
 process.on("exit", () => {
 	logger.info("Shutting down!");
 
-	connection.end();
+	// connection.end();
 	server.close();
 });
