@@ -14,6 +14,8 @@ app.use((req, res, next) => {
 	next();
 });
 
+logger.info("PVENVPORT:", process.env.port);
+
 const PORT = process.env.port || 3001;
 
 routes(app);
