@@ -1,11 +1,14 @@
 import mysql from "mysql2/promise";
-import fs from "fs/promises";
+import config from "./config.js";
 import logger from "./logger.js";
 
-const connectionData = await fs.readFile("env.json", "utf8");
-
 const connection = await mysql.createConnection({
-	...JSON.parse(connectionData),
+	// ...JSON.parse(connectionData),
+	user: config.DB_USER,
+	database: config.DATABASE,
+	password: config.DB_PASSWORD,
+	port: parseInt(config.DB_PORT!),
+	host: config.DB_HOSTNAME,
 	multipleStatements: true,
 });
 
