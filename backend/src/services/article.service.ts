@@ -1,4 +1,4 @@
-import { ArticleInfo, Price } from "shared/src/models/article.js";
+import { ArticleInfo, Price } from "../models/article.model.js";
 import connection, { RouteReport } from "../database.js";
 
 export async function getArticles(): Promise<RouteReport> {

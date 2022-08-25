@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ArticleInfo } from "shared/src/models/article.js";
+import { ArticleInfo } from "../models//article.model.js";
 import { RouteReport } from "../database.js";
 import logger from "../logger.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
