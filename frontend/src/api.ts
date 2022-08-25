@@ -1,4 +1,5 @@
-const API_URL = "https://zeitungsfahrer.herokuapp.com/";
+const API_URL =
+	process.env.NODE_ENV === "production" ? "https://zeitungsfahrer.herokuapp.com/" : "http://localhost:3001/";
 
 async function makeRequest(method: string, route: string, body?: string, headers?: any): Promise<Response> {
 	return await fetch(API_URL + route, {

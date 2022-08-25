@@ -20,6 +20,8 @@ export async function getArticles(): Promise<RouteReport> {
 		}
 	}
 
+	console.log(articles);
+
 	return {
 		code: 200,
 		body: JSON.stringify(articles),

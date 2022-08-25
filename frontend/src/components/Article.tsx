@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { ArticleInfo } from "backend/src/models/article.model";
+import { Article as ArticleInfo } from "backend/src/models/article.model";
 import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
 import { DELETE, POST, PUT } from "../api";
 import ArticleInput from "./ArticleInput";
@@ -13,9 +13,10 @@ const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 });
 
 function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
-	const [article, setArticle] = React.useState(articleInfo.data);
-	const [, updateArticle] = useAtom(updateArticleAtom);
+	const [article, setArticle] = React.useState({ id: articleInfo.id, name: articleInfo.name });
 	const [prices, setPrices] = React.useState(articleInfo.prices);
+
+	const [, updateArticle] = useAtom(updateArticleAtom);
 	const [, removeArticle] = useAtom(removeArticleAtom);
 	const [, finishArticle] = useAtom(finishArticleAtom);
 	const [, cancelDraft] = useAtom(cancelDraftAtom);
@@ -48,7 +49,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 			<div>Brutto</div>
 
 			{prices.map((price, index) => {
-				const mwst = (100 + article.mwst) / 100.0;
+				const mwst = (100 + price.mwst) / 100.0;
 
 				return (
 					<React.Fragment key={"article-" + article.name + "-" + index}>
@@ -56,12 +57,12 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 						{/* Mwst */}
 						<div style={{ display: "block" }}>
-							<input
+							<ArticleInput
 								type="number"
-								className="article-input"
-								value={article.mwst}
+								defaultValue={price.mwst}
 								onChange={(evt) => {
-									setArticle({ ...article, mwst: parseInt(evt.target.value) });
+									prices[index] = { ...prices[index], mwst: parseInt(evt.target.value) };
+									setPrices([...prices]);
 								}}
 							/>
 							%
@@ -117,18 +118,17 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 			<button
 				style={{ gridColumnStart: "7", color: "green" }}
 				onClick={async () => {
-					let info = { data: article, prices };
+					let info = { ...article, prices };
 
 					if (isDraft) {
 						const res = await POST("articles", info);
 
 						if (res.ok) {
 							const body = await res.json();
-							const id = body.id;
 
-							info = { data: { ...info.data, id }, prices: info.prices };
+							info.id = body.id;
 
-							setArticle({ ...article, id });
+							setArticle({ ...article, id: info.id });
 							finishArticle(info);
 						} else {
 							console.error(res);

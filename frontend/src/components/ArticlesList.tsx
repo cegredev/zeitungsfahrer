@@ -3,7 +3,7 @@ import React from "react";
 import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "../store";
 import Article from "./Article";
 import { GET } from "../api";
-import { ArticleInfo } from "backend/src/models/article.model";
+import { Article as ArticleInfo } from "backend/src/models/article.model";
 
 function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);
@@ -15,12 +15,15 @@ function ArticlesList() {
 			const response = await GET("articles");
 			const articles: ArticleInfo[] = await response.json();
 
+			console.log(articles);
+
 			setArticles(
 				articles.map((article) => ({
 					...article,
 					prices: article.prices.map((price) => ({
 						purchase: parseFloat(String(price.purchase)),
 						sell: parseFloat(String(price.sell)),
+						mwst: price.mwst,
 					})),
 				}))
 			);
@@ -32,10 +35,10 @@ function ArticlesList() {
 	return (
 		<div className="article-list">
 			{articles.map((article) => {
-				return <Article key={"article-" + (article.data.id || "draft")} articleInfo={article} />;
+				return <Article key={"article-" + (article.id || "draft")} articleInfo={article} />;
 			})}
 
-			{!articles.some((article) => article.data.id == null) && (
+			{!articles.some((article) => article.id == null) && (
 				<div>
 					<button className="create-article" onClick={createArticle}>
 						Artikel hinzufügen
