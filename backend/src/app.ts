@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 logger.info("PVENVPORT:", process.env.port);
 
-const PORT = process.env.port || 3001;
+const PORT = process.env.PORT || 3001;
 
 routes(app);
 
