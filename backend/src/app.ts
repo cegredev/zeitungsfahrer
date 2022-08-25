@@ -14,7 +14,7 @@ app.use((req, res, next) => {
 	next();
 });
 
-const PORT = 3001;
+const PORT = process.env.port || 3001;
 
 routes(app);
 
