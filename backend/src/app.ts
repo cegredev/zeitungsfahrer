@@ -8,7 +8,7 @@ import logger from "./logger.js";
 const app = express();
 app.use(helmet());
 app.use(express.json());
-app.use(cors({ origin: ["http://localhost:3000"] }));
+app.use(cors({ origin: ["http://localhost:3000", "https://zeitungsfahrer-test.cedricgreiten.com"] }));
 app.use((req, res, next) => {
 	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
 	next();
