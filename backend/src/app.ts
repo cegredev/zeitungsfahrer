@@ -1,20 +1,18 @@
 import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
-import connection from "./database.js";
 import cors from "cors";
 import logger from "./logger.js";
+import pool from "./database.js";
 
 const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(cors({ origin: ["http://localhost:3000", "https://zeitungsfahrer-test.cedricgreiten.com"] }));
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
 	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
 	next();
 });
-
-logger.info("PVENVPORT:", process.env.port);
 
 const PORT = process.env.PORT || 3001;
 
@@ -27,5 +25,6 @@ const server = app.listen(PORT, () => {
 process.on("exit", () => {
 	logger.info("Shutting down!");
 
+	pool.end();
 	server.close();
 });

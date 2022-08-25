@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { ArticleInfo } from "shared/src/models/article";
+import { ArticleInfo } from "backend/src/models/article.model";
 import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
 import { DELETE, POST, PUT } from "../api";
 import ArticleInput from "./ArticleInput";

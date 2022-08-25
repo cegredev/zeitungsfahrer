@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { ArticleInfo } from "shared/src/models/article";
+import { ArticleInfo } from "backend/src/models/article.model";
 
 function createEmptyArticle() {
 	return {

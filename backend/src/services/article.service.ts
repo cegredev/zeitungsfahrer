@@ -2,13 +2,10 @@ import { ArticleInfo, Price } from "../models/article.model.js";
 import pool, { RouteReport } from "../database.js";
 
 export async function getArticles(): Promise<RouteReport> {
-	console.log("in service");
 	const conn = await pool.getConnection();
-	console.log("got");
 	const result = await conn.execute(
 		"SELECT articles.id, articles.name, articles.mwst, prices.purchase, prices.sell FROM articles INNER JOIN prices ON articles.id=prices.article_id"
 	);
-	console.log("ran");
 
 	let prices: Price[] = [];
 	const articles: ArticleInfo[] = [];

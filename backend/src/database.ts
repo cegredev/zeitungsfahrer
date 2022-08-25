@@ -1,13 +1,13 @@
 import mysql from "mysql2/promise";
-import config from "./config.js";
+import env from "./env.js";
 
 const pool = mysql.createPool({
-	user: config.DB_USER,
-	database: config.DATABASE,
-	password: config.DB_PASSWORD,
-	port: parseInt(config.DB_PORT!),
-	host: config.DB_HOSTNAME,
-	multipleStatements: true,
+	user: env.DB_USER,
+	database: env.DATABASE,
+	password: env.DB_PASSWORD,
+	port: parseInt(env.DB_PORT!),
+	host: env.DB_HOSTNAME,
+	multipleStatements: true, // FIXME: SQL injection vulnerability
 });
 
 export interface RouteReport {

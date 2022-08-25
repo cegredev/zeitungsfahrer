@@ -5,6 +5,7 @@ import {
 	deleteArticleController,
 	putArticleController,
 } from "./controllers/article.controller.js";
+
 import logger from "./logger.js";
 
 function routes(app: Express) {
