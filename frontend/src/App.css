@@ -39,3 +39,47 @@
 .footer {
 	min-height: 200px;
 }
+
+.modal {
+	padding: 2rem;
+	background-color: gray;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.modal > .header {
+	width: 100%;
+	border-bottom: 1px solid gray;
+	font-size: 18px;
+	text-align: center;
+	padding: 5px;
+}
+
+.modal > .content {
+	width: 100%;
+	padding: 10px 5px;
+}
+
+.modal > .actions {
+	width: 100%;
+	padding: 10px 5px;
+	text-align: center;
+	display: block;
+}
+
+.modal > .actions > button {
+	margin: 0 1rem;
+}
+
+.modal > .close {
+	cursor: pointer;
+	position: absolute;
+	display: block;
+	padding: 2px 5px;
+	line-height: 20px;
+	right: -10px;
+	top: -10px;
+	font-size: 24px;
+	background: #ffffff;
+	border-radius: 18px;
+	border: 1px solid #cfcece;
+}
