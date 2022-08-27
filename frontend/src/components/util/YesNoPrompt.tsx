@@ -4,8 +4,8 @@ interface Props {
 	trigger: JSX.Element;
 	header: string;
 	content: string;
-	onYes: () => void;
-	onNo?: () => void;
+	onYes: () => Promise<void> | void;
+	onNo?: () => Promise<void> | void;
 }
 
 function YesNoPrompt({ trigger, header, content, onYes, onNo }: Props) {
@@ -20,16 +20,16 @@ function YesNoPrompt({ trigger, header, content, onYes, onNo }: Props) {
 					<div className="content">{content}</div>
 					<div className="actions">
 						<button
-							onClick={() => {
-								if (onNo) onNo();
+							onClick={async () => {
+								if (onNo) await onNo();
 								close();
 							}}
 						>
 							Nein
 						</button>
 						<button
-							onClick={() => {
-								onYes();
+							onClick={async () => {
+								await onYes();
 								close();
 							}}
 						>

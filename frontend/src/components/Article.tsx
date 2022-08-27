@@ -4,7 +4,6 @@ import { Article as ArticleInfo } from "backend/src/models/article.model";
 import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
 import { DELETE, POST, PUT } from "../api";
 import ArticleInput from "./ArticleInput";
-import Popup from "reactjs-popup";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -13,6 +12,17 @@ const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	currency: "EUR",
 	maximumFractionDigits: 2,
 });
+
+const gridSpan2: React.CSSProperties = {
+	gridColumn: "span 2",
+};
+const gridSpan2Left: React.CSSProperties = {
+	...gridSpan2,
+	textAlign: "left",
+};
+const gridSpan3: React.CSSProperties = {
+	gridColumn: "span 3",
+};
 
 function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const [article, setArticle] = React.useState({ id: articleInfo.id, name: articleInfo.name });
@@ -29,9 +39,10 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 	return (
 		<div className="article">
-			<div style={{ gridColumn: "span 2" }}>
-				<ArticleInput
+			<div style={gridSpan2}>
+				<input
 					type="text"
+					className="article-input"
 					style={{ minWidth: "90%" }}
 					defaultValue={article.name}
 					onChange={(evt) => {
@@ -39,21 +50,22 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 					}}
 				/>
 			</div>
-			<div style={{ gridColumn: "span 3" }}>
+			<div style={{ gridColumn: "4 / 7" }}>
 				<strong>Einkaufspreis</strong>
 				{isDraft && <span style={{ color: "red", fontWeight: "bold" }}> (Entwurf)</span>}
 			</div>
-			<div style={{ gridColumn: "span 3" }}>
+			<div style={gridSpan3}>
 				<strong>Verkaufspreis</strong>
 			</div>
-			<div style={{ gridColumn: "span 2" }}>
+			<div style={gridSpan2}>
 				<strong>Marktpreis</strong>
 			</div>
-			<div style={{ gridColumnStart: "2" }}>MwSt</div>
+
+			<div style={{ gridColumn: "2 / 4" }}>MwSt</div>
 			<div>Netto</div>
-			<div style={{ gridColumn: "span 2", textAlign: "left" }}>Brutto</div>
+			<div style={gridSpan2Left}>Brutto</div>
 			<div>Netto</div>
-			<div style={{ gridColumn: "span 2", textAlign: "left" }}>Brutto</div>
+			<div style={gridSpan2Left}>Brutto</div>
 			<div>Netto</div>
 			<div>Brutto</div>
 			{prices.map((price, index) => {
@@ -64,9 +76,12 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						<div>{weekdays[index]}</div>
 
 						{/* Mwst */}
-						<div style={{ display: "block" }}>
-							<ArticleInput
+						<div className="display-block" style={gridSpan2}>
+							<input
 								type="number"
+								min={0}
+								max={100}
+								className="article-input"
 								defaultValue={price.mwst}
 								onChange={(evt) => {
 									prices[index] = { ...prices[index], mwst: parseInt(evt.target.value) };
@@ -77,9 +92,11 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						</div>
 
 						{/* Sell price */}
-						<div style={{ display: "block" }}>
-							<ArticleInput
+						<div className="display-block">
+							<input
 								type="number"
+								className="article-input"
+								min={0}
 								defaultValue={price.purchase}
 								step={0.0001}
 								onChange={(evt) => {
@@ -89,12 +106,13 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 							/>
 							€
 						</div>
-						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
+						<div style={gridSpan2}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
 
 						{/*  Purchase price */}
-						<div style={{ display: "block" }}>
-							<ArticleInput
+						<div className="display-block">
+							<input
 								type="number"
+								className="article-input"
 								defaultValue={price.sell}
 								step={0.0001}
 								onChange={(evt) => {
@@ -104,12 +122,13 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 							/>
 							€
 						</div>
-						<div style={{ gridColumn: "span 2" }}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
+						<div style={gridSpan2}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
 
 						{/*  Purchase price */}
-						<div style={{ display: "block" }}>
-							<ArticleInput
+						<div className="display-block">
+							<input
 								type="number"
+								className="article-input"
 								defaultValue={price.sellTrader}
 								step={0.0001}
 								onChange={(evt) => {
@@ -139,7 +158,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 			/>
 
 			<YesNoPrompt
-				trigger={<button style={{ color: "green", gridColumnStart: 10 }}>{saveText}</button>}
+				trigger={<button style={{ color: "green", gridColumnStart: 11 }}>{saveText}</button>}
 				header={saveText}
 				content={`Wollen Sie das gewählte Element wirklich ${saveText.toLowerCase()}?`}
 				onYes={async () => {
