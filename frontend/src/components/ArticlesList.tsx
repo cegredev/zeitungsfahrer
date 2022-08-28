@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "../store";
+import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "./stores/article.store";
 import Article from "./Article";
 import { GET } from "../api";
 import { Article as ArticleInfo } from "backend/src/models/article.model";
@@ -9,6 +9,8 @@ function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);
 	const [, setArticles] = useAtom(setArticlesAtom);
 	const [, createArticle] = useAtom(draftArticleAtom);
+
+	const [loading, setLoading] = React.useState(true);
 
 	React.useEffect(() => {
 		async function fetchArticles() {
@@ -26,6 +28,8 @@ function ArticlesList() {
 					})),
 				}))
 			);
+
+			setLoading(false);
 		}
 
 		fetchArticles();
@@ -33,12 +37,14 @@ function ArticlesList() {
 
 	return (
 		<div className="article-list">
-			{articles.map((article) => {
-				return <Article key={"article-" + (article.id || "draft")} articleInfo={article} />;
-			})}
+			{loading
+				? "Laden..."
+				: articles.map((article) => {
+						return <Article key={"article-" + (article.id || "draft")} articleInfo={article} />;
+				  })}
 			{!articles.some((article) => article.id == null) && (
 				<div>
-					<button className="create-article" onClick={createArticle}>
+					<button className="create-item" onClick={createArticle}>
 						Artikel hinzufügen
 					</button>
 				</div>

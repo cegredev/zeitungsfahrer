@@ -1,7 +1,12 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { Article as ArticleInfo } from "backend/src/models/article.model";
-import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
+import {
+	finishArticleAtom,
+	removeArticleAtom,
+	updateArticleAtom,
+	cancelArticleDraftAtom,
+} from "./stores/article.store";
 import { DELETE, POST, PUT } from "../api";
 import YesNoPrompt from "./util/YesNoPrompt";
 
@@ -30,7 +35,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const [, updateArticle] = useAtom(updateArticleAtom);
 	const [, removeArticle] = useAtom(removeArticleAtom);
 	const [, finishArticle] = useAtom(finishArticleAtom);
-	const [, cancelDraft] = useAtom(cancelDraftAtom);
+	const [, cancelDraft] = useAtom(cancelArticleDraftAtom);
 
 	const isDraft = article.id == null;
 	const cancelText = isDraft ? "Verwerfen" : "Löschen";

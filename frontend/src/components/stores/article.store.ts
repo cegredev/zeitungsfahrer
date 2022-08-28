@@ -28,7 +28,7 @@ export const removeArticleAtom = atom(undefined, (get, set, id: number) => {
 	);
 });
 
-export const cancelDraftAtom = atom(undefined, (get, set) => {
+export const cancelArticleDraftAtom = atom(undefined, (get, set) => {
 	set(
 		articlesListAtom,
 		get(articlesListAtom).filter((article) => article.id != null)
