@@ -11,8 +11,8 @@ export async function getVendorWeek(vendorId: number, end: Date): Promise<RouteR
 	start.setDate(start.getDate() - 7);
 
 	const response = await pool.execute(
-		"SELECT date, remissions, sales, article_id FROM selling_days WHERE date > ? AND date <= ?",
-		[start, end]
+		"SELECT date, remissions, sales, article_id FROM selling_days WHERE vendor_id=? AND date > ? AND date <= ?",
+		[vendorId, start, end]
 	);
 
 	const map = new Map<number, ArticleSales[]>();

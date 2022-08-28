@@ -72,6 +72,19 @@ a:visited {
 	/* box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
 }
 
+.timeframe-selection {
+	text-align: center;
+}
+
+.timeframe-selection td {
+	min-width: 4rem;
+}
+
+div.react-datepicker-wrapper input {
+	width: 100px;
+	text-align: center;
+}
+
 .article .article-input {
 	max-width: 4rem;
 	border: none;

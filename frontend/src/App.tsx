@@ -9,6 +9,11 @@ import Footer from "./components/Footer";
 import Vendors from "./pages/Vendors";
 import Articles from "./pages/Articles";
 
+import dayjs from "dayjs";
+import weekofyear from "dayjs/plugin/weekOfYear";
+// @ts-ignore
+dayjs.extend(window.dayjs_plugin_weekOfYear);
+
 function App() {
 	return (
 		<Router>

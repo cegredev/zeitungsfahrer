@@ -15,8 +15,10 @@
 		"@types/react": "^18.0.17",
 		"@types/react-dom": "^18.0.6",
 		"backend": "file:../backend",
+		"dayjs": "^1.11.5",
 		"jotai": "^1.8.0",
 		"react": "^18.2.0",
+		"react-datepicker": "^4.8.0",
 		"react-dom": "^18.2.0",
 		"react-router-dom": "^6.3.0",
 		"reactjs-popup": "^2.0.5",
@@ -48,6 +50,7 @@
 		]
 	},
 	"devDependencies": {
+		"@types/react-datepicker": "^4.4.2",
 		"react-scripts": "^5.0.1"
 	}
 }

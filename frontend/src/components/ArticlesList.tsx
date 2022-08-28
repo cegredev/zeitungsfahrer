@@ -14,7 +14,7 @@ function ArticlesList() {
 
 	React.useEffect(() => {
 		async function fetchArticles() {
-			const response = await GET("articles");
+			const response = await GET("/articles");
 			const articles: ArticleInfo[] = await response.json();
 
 			setArticles(

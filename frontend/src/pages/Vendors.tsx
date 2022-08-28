@@ -14,7 +14,7 @@ function Vendors() {
 
 	React.useEffect(() => {
 		async function fetchVendors() {
-			const response = await GET("vendors");
+			const response = await GET("/vendors");
 			const vendors: Vendor[] = await response.json();
 
 			setVendors(vendors);
@@ -36,7 +36,7 @@ function Vendors() {
 								name: "Neuer Händler",
 							};
 
-							const response = await (await POST("vendors", vendor)).json();
+							const response = await (await POST("/vendors", vendor)).json();
 							addVendor({ ...vendor, id: response.id });
 						}}
 					>
