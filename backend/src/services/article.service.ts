@@ -2,8 +2,7 @@ import { Article, Price, validatePrices } from "../models/article.model.js";
 import pool, { RouteReport } from "../database.js";
 
 export async function getArticles(): Promise<RouteReport> {
-	const conn = await pool.getConnection();
-	const result = await conn.execute(
+	const result = await pool.execute(
 		"SELECT articles.id, articles.name, prices.purchase, prices.sell, prices.market_sell, prices.mwst FROM articles LEFT OUTER JOIN prices ON articles.id=prices.article_id"
 	);
 
@@ -39,8 +38,7 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 		};
 	}
 
-	const conn = await pool.getConnection();
-	const result = await conn.execute(`INSERT INTO articles (name) VALUES (?)`, [name]);
+	const result = await pool.execute(`INSERT INTO articles (name) VALUES (?)`, [name]);
 
 	// @ts-ignore
 	const id: number = result[0].insertId;
@@ -54,7 +52,7 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 			)
 			.join(",");
 
-	await conn.query(queryString);
+	await pool.query(queryString);
 
 	return {
 		code: 200,
@@ -72,12 +70,10 @@ export async function updateArticle(article: Article): Promise<RouteReport> {
 		};
 	}
 
-	const conn = await pool.getConnection();
-
-	await conn.execute("UPDATE articles SET name=? WHERE id=?", [name, id]);
+	await pool.execute("UPDATE articles SET name=? WHERE id=?", [name, id]);
 
 	article.prices.forEach(async (price, weekday) => {
-		await conn.execute(
+		await pool.execute(
 			`UPDATE prices SET purchase=?, sell=?, market_sell=?, mwst=? WHERE article_id=? AND weekday=?`,
 			[price.purchase, price.sell, price.marketSell, price.mwst, id, weekday]
 		);
@@ -89,10 +85,8 @@ export async function updateArticle(article: Article): Promise<RouteReport> {
 }
 
 export async function deleteArticle(id: number): Promise<RouteReport> {
-	const conn = await pool.getConnection();
-
-	await conn.execute("DELETE FROM prices WHERE article_id=?", [id]);
-	await conn.execute("DELETE FROM articles WHERE id=?", [id]);
+	await pool.execute("DELETE FROM prices WHERE article_id=?", [id]);
+	await pool.execute("DELETE FROM articles WHERE id=?", [id]);
 
 	return {
 		code: 200,
