@@ -1,20 +1,7 @@
 import { Request, Response } from "express";
 import { Article } from "../models//article.model.js";
-import { RouteReport } from "../database.js";
-import logger from "../logger.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
-
-async function handler(func: () => Promise<RouteReport>, res: Response) {
-	try {
-		const { code, body } = await func();
-		res.status(code).send(body);
-		logger.info("Reponse: " + code);
-	} catch (e) {
-		console.error(e);
-		logger.error(e);
-		res.sendStatus(500);
-	}
-}
+import { handler } from "./controllers.js";
 
 export async function getArticlesController(req: Request, res: Response) {
 	await handler(getArticles, res);

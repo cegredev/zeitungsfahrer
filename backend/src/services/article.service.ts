@@ -74,7 +74,7 @@ export async function updateArticle(article: Article): Promise<RouteReport> {
 
 	const conn = await pool.getConnection();
 
-	await conn.execute(`UPDATE articles SET name=? WHERE id=?`, [name, id]);
+	await conn.execute("UPDATE articles SET name=? WHERE id=?", [name, id]);
 
 	article.prices.forEach(async (price, weekday) => {
 		await conn.execute(

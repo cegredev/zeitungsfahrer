@@ -5,6 +5,12 @@ import {
 	deleteArticleController,
 	putArticleController,
 } from "./controllers/article.controller.js";
+import {
+	deleteVendorController,
+	getVendorsController,
+	postVendorController,
+	putVendorController,
+} from "./controllers/vendors.controller.js";
 
 import logger from "./logger.js";
 
@@ -16,6 +22,12 @@ function routes(app: Express) {
 		.post(postArticleController)
 		.put(putArticleController)
 		.delete(deleteArticleController);
+
+	app.route("/vendors")
+		.get(getVendorsController)
+		.post(postVendorController)
+		.put(putVendorController)
+		.delete(deleteVendorController);
 }
 
 export default routes;
