@@ -3,7 +3,6 @@ import React from "react";
 import { Article as ArticleInfo } from "backend/src/models/article.model";
 import { finishArticleAtom, removeArticleAtom, updateArticleAtom, cancelDraftAtom } from "../store";
 import { DELETE, POST, PUT } from "../api";
-import ArticleInput from "./ArticleInput";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -129,16 +128,16 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 							<input
 								type="number"
 								className="article-input"
-								defaultValue={price.sellTrader}
+								defaultValue={price.marketSell}
 								step={0.0001}
 								onChange={(evt) => {
-									prices[index] = { ...prices[index], sellTrader: parseFloat(evt.target.value) };
+									prices[index] = { ...prices[index], marketSell: parseFloat(evt.target.value) };
 									setPrices([...prices]);
 								}}
 							/>
 							€
 						</div>
-						<div>{twoDecimalsFormat.format(price.sellTrader * mwst)}</div>
+						<div>{twoDecimalsFormat.format(price.marketSell * mwst)}</div>
 					</React.Fragment>
 				);
 			})}

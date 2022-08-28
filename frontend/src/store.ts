@@ -9,7 +9,7 @@ function createEmptyArticle() {
 			.map(() => ({
 				sell: 0.3,
 				purchase: 0.2,
-				sellTrader: 0.4,
+				marketSell: 0.4,
 				mwst: 7,
 			})),
 	};

@@ -21,7 +21,7 @@ function ArticlesList() {
 					prices: article.prices.map((price) => ({
 						purchase: parseFloat(String(price.purchase)),
 						sell: parseFloat(String(price.sell)),
-						sellTrader: parseFloat(String(price.sellTrader)),
+						marketSell: parseFloat(String(price.marketSell)),
 						mwst: price.mwst,
 					})),
 				}))
@@ -36,7 +36,6 @@ function ArticlesList() {
 			{articles.map((article) => {
 				return <Article key={"article-" + (article.id || "draft")} articleInfo={article} />;
 			})}
-
 			{!articles.some((article) => article.id == null) && (
 				<div>
 					<button className="create-article" onClick={createArticle}>

@@ -1,8 +1,26 @@
+.top-navbar {
+	font-size: 25px;
+	padding: 10px;
+	background-color: grey;
+}
+
+.top-navbar > * {
+	margin: 0 10px;
+}
+
+.top-navbar a {
+	text-decoration: none;
+}
+
+.top-navbar a:visited {
+	color: inherit;
+}
+
 .display-block {
 	display: block;
 }
 
-.articles-page {
+.page {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
