@@ -7,6 +7,7 @@ const pool = mysql.createPool({
 	password: env.DB_PASSWORD,
 	port: parseInt(env.DB_PORT!),
 	host: env.DB_HOSTNAME,
+	timezone: "+00:00",
 });
 
 export interface RouteReport {

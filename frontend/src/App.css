@@ -10,6 +10,7 @@
 
 .top-navbar a {
 	text-decoration: none;
+	color: black;
 }
 
 .top-navbar a:visited {
@@ -51,6 +52,29 @@ a:visited {
 	color: black;
 }
 
+.vendor-week-entry {
+	text-align: center;
+
+	background-color: lightgray;
+	padding: 10px;
+	border-radius: 5px;
+	margin: 10px 0px;
+}
+
+.vendor-week-entry h3 {
+	margin: 0;
+}
+
+.vendor-week-entry .solid-divider {
+	margin: 10px 0;
+}
+
+.vendor-week-entry .vendor-table {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 0.5rem;
+}
+
 .article-list {
 	max-width: 60rem;
 
@@ -85,7 +109,13 @@ div.react-datepicker-wrapper input {
 	text-align: center;
 }
 
-.article .article-input {
+.centering-div {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.article-input {
 	max-width: 4rem;
 	border: none;
 	border-bottom: solid 1px;

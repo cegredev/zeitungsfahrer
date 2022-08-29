@@ -1,12 +1,6 @@
 import { atom } from "jotai";
 import { Vendor } from "backend/src/models/vendors.model";
 
-function createEmptyVendor(): Vendor {
-	return {
-		name: "Neuer Händler",
-	};
-}
-
 export const vendorsListAtom = atom<Vendor[]>([]);
 
 export const setVendorsAtom = atom(undefined, (_get, set, vendors: Vendor[]) => {

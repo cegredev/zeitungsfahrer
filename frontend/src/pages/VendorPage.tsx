@@ -4,20 +4,48 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { GET } from "../api";
 import TimeframeSelection from "../components/TimeframeSelection";
+import VendorWeekEntry from "../components/VendorWeekEntry";
+import { useAtom } from "jotai";
+import { setVendorWeekAtom, vendorWeekAtom } from "../components/stores/vendor.store";
 
 function VendorPage() {
-	const id = parseInt(useParams().id!);
+	const vendorId = parseInt(useParams().id!);
 
-	async function fetchData(end: Date): Promise<void> {
-		const response = await GET(`/vendors/${id}?end=${dayjs(end).format("YYYY-MM-DD")}`);
-	}
+	const [vendorWeek] = useAtom(vendorWeekAtom);
+	const [, setVendorWeek] = useAtom(setVendorWeekAtom);
 
-	const [weekData, setWeekData] = React.useState(new Map());
+	const fetchData = React.useCallback(
+		async (end: Date): Promise<void> => {
+			const response = await GET(`/vendors/${vendorId}?end=${dayjs(end).format("YYYY-MM-DD")}`);
+			const data = await response.json();
+
+			console.log(data);
+
+			setVendorWeek(data);
+		},
+		[vendorId, setVendorWeek]
+	);
+
+	React.useEffect(() => {
+		fetchData(new Date());
+	}, [fetchData]);
 
 	return (
 		<div className="page">
-			<TimeframeSelection onChange={fetchData} />
-			Vendor {id}
+			{vendorWeek == null ? (
+				"Laden..."
+			) : (
+				<React.Fragment>
+					<h1>{vendorWeek.name}</h1>
+					<TimeframeSelection onChange={fetchData} />
+					{vendorWeek.articleWeeks.map((articleWeek) => (
+						<VendorWeekEntry
+							key={"vendor-week-" + vendorId + "-" + articleWeek.id + "-" + articleWeek.start}
+							articleWeek={articleWeek}
+						/>
+					))}
+				</React.Fragment>
+			)}
 		</div>
 	);
 }
