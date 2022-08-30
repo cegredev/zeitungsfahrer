@@ -4,6 +4,9 @@ export interface SellingDay {
 	remissions: number;
 	sales: number;
 	mwst: number;
+	purchase: number;
+	sell: number;
+	marketSell: number;
 }
 
 export interface ArticleWeek {

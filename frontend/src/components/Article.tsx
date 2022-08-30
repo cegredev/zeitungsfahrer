@@ -11,6 +11,7 @@ import { DELETE, POST, PUT } from "../api";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
+import dayjs from "dayjs";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
@@ -170,7 +171,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 					let info = { ...article, prices };
 
 					if (isDraft) {
-						const res = await POST("/articles", info);
+						const res = await POST("/articles", { ...info, startDate: new Date() });
 
 						if (res.ok) {
 							const body = await res.json();
@@ -183,7 +184,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 							console.error(res);
 						}
 					} else {
-						await PUT("/articles", info);
+						await PUT("/articles", { startDate: dayjs(new Date()).format("YYYY-MM-DD"), article: info });
 					}
 
 					updateArticle(info);

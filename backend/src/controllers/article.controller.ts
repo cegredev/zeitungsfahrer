@@ -13,8 +13,15 @@ export async function postArticleController(req: Request<any, any, Article>, res
 	await handler(async () => await createArticle(name, prices), res);
 }
 
-export async function putArticleController(req: Request<any, any, Article>, res: Response) {
-	await handler(async () => await updateArticle(req.body), res);
+interface PutBody {
+	startDate: Date;
+	article: Article;
+}
+
+export async function putArticleController(req: Request<any, any, PutBody>, res: Response) {
+	const { startDate, article } = req.body;
+
+	await handler(async () => await updateArticle(startDate, article), res);
 }
 
 export async function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {

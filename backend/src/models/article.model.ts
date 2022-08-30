@@ -5,6 +5,7 @@ export interface Article {
 }
 
 export interface Price {
+	startDate: Date;
 	purchase: number;
 	sell: number;
 	marketSell: number;
