@@ -11,6 +11,7 @@ function createEmptyArticle() {
 				purchase: 0.2,
 				marketSell: 0.4,
 				mwst: 7,
+				startDate: new Date(),
 			})),
 	};
 }

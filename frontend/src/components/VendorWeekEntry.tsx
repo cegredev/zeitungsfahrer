@@ -50,9 +50,8 @@ function VendorWeekEntry({ articleWeek }: Props) {
 									onChange={(evt) => {
 										const newAllDays = [...allDays];
 										newAllDays[i] = {
+											...sellingDay,
 											remissions: parseInt(evt.target.value),
-											sales: sellingDay.sales,
-											mwst: 7,
 										};
 										setAllDays(newAllDays);
 									}}
@@ -68,15 +67,14 @@ function VendorWeekEntry({ articleWeek }: Props) {
 									onChange={(evt) => {
 										const newAllSales = [...allDays];
 										newAllSales[i] = {
-											remissions: sellingDay.remissions,
+											...sellingDay,
 											sales: parseInt(evt.target.value),
-											mwst: 7,
 										};
 										setAllDays(newAllSales);
 									}}
 								/>
 							</div>
-							<div></div>
+							<div>{sellingDay.mwst}</div>
 							<div></div>
 						</React.Fragment>
 					);

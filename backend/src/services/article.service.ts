@@ -2,9 +2,13 @@ import { Article, Price, validatePrices } from "../models/article.model.js";
 import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
 
-export async function getArticles(): Promise<RouteReport> {
+export async function getArticles(atDate: Date): Promise<RouteReport> {
 	const result = await pool.execute(
-		"SELECT articles.id, articles.name, prices.start_date, prices.purchase, prices.sell, prices.market_sell, prices.mwst FROM articles LEFT OUTER JOIN prices ON articles.id=prices.article_id"
+		`SELECT articles.id, articles.name, prices.start_date, prices.purchase, prices.sell, prices.market_sell, prices.mwst
+		FROM articles
+		LEFT OUTER JOIN prices
+		ON articles.id=prices.article_id AND ? >= prices.start_date AND (? < prices.end_date OR prices.end_date IS NULL)`,
+		[atDate, atDate]
 	);
 
 	const articles = new Map<number, Article>();

@@ -3,8 +3,8 @@ import { Article } from "../models//article.model.js";
 import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/article.service.js";
 import { handler } from "./controllers.js";
 
-export async function getArticlesController(req: Request, res: Response) {
-	await handler(getArticles, res);
+export async function getArticlesController(req: Request<any, any, any, { atDate: Date }>, res: Response) {
+	await handler(() => getArticles(req.query.atDate), res);
 }
 
 export async function postArticleController(req: Request<any, any, Article>, res: Response) {

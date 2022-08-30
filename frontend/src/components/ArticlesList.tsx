@@ -4,6 +4,7 @@ import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "./stores/ar
 import Article from "./Article";
 import { GET } from "../api";
 import { Article as ArticleInfo } from "backend/src/models/article.model";
+import dayjs from "dayjs";
 
 function ArticlesList() {
 	const [articles] = useAtom(articlesListAtom);
@@ -14,7 +15,7 @@ function ArticlesList() {
 
 	React.useEffect(() => {
 		async function fetchArticles() {
-			const response = await GET("/articles");
+			const response = await GET("/articles?atDate=" + dayjs(new Date()).format("YYYY-MM-DD"));
 			const articles: ArticleInfo[] = await response.json();
 
 			setArticles(
@@ -25,6 +26,7 @@ function ArticlesList() {
 						sell: parseFloat(String(price.sell)),
 						marketSell: parseFloat(String(price.marketSell)),
 						mwst: price.mwst,
+						startDate: price.startDate,
 					})),
 				}))
 			);
