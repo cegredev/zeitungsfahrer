@@ -52,6 +52,14 @@ a:visited {
 	color: black;
 }
 
+.large-input {
+	text-align: center;
+	border: none;
+	font-size: xx-large;
+	font-weight: bold;
+	margin: 20px 0;
+}
+
 .vendor-week-entry {
 	text-align: center;
 

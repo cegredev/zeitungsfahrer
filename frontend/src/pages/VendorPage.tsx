@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import React from "react";
 
 import { useParams } from "react-router-dom";
-import { GET } from "../api";
+import { GET, PUT } from "../api";
 import TimeframeSelection from "../components/TimeframeSelection";
 import VendorWeekEntry from "../components/VendorWeekEntry";
 import { useAtom } from "jotai";
@@ -34,7 +34,16 @@ function VendorPage() {
 				"Laden..."
 			) : (
 				<React.Fragment>
-					<h1>{vendorWeek.name}</h1>
+					<input
+						className="large-input"
+						value={vendorWeek.name}
+						onChange={(evt) => {
+							setVendorWeek({ ...vendorWeek, name: evt.target.value });
+						}}
+						onBlur={() => {
+							PUT("/vendors", { id: vendorId, name: vendorWeek.name });
+						}}
+					/>
 					<TimeframeSelection onChange={fetchData} />
 					{vendorWeek.articleWeeks.map((articleWeek) => (
 						<VendorWeekEntry
