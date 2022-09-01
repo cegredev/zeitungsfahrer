@@ -1,16 +1,16 @@
 import { ArticleWeek } from "backend/src/models/vendor.model";
 import dayjs from "dayjs";
 import React from "react";
+import { POST } from "../api";
 import { twoDecimalsFormat, weekdays } from "../consts";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {
+	vendorId: number;
 	articleWeek: ArticleWeek;
 }
 
-function VendorWeekEntry({ articleWeek }: Props) {
-	console.log("week:", articleWeek);
-
+function VendorWeekEntry({ vendorId, articleWeek }: Props) {
 	const [allDays, setAllDays] = React.useState(articleWeek.days);
 
 	const startDate = React.useMemo(() => new Date(articleWeek.start), [articleWeek.start]);
@@ -76,10 +76,10 @@ function VendorWeekEntry({ articleWeek }: Props) {
 									}}
 								/>
 							</div>
-							<div>{sellingDay.price.sell}</div>
+							<div>{twoDecimalsFormat.format(sellingDay.sales * sellingDay.price.sell)}</div>
 							<div>
 								{twoDecimalsFormat.format(
-									(sellingDay.price.sell * (100 + sellingDay.price.mwst)) / 100
+									(sellingDay.sales * sellingDay.price.sell * (100 + sellingDay.price.mwst)) / 100
 								)}
 							</div>
 						</React.Fragment>
@@ -91,8 +91,7 @@ function VendorWeekEntry({ articleWeek }: Props) {
 					header="Speichern"
 					content={`Wollen Sie das gewählte Element wirklich speichern?`}
 					onYes={() => {
-						// updateWeek({ ...week, sales: allSales });
-						// POST
+						POST(`/vendors/${vendorId}`, { articleId: articleWeek.id, days: allDays });
 					}}
 				/>
 			</div>

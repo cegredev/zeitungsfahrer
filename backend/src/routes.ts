@@ -5,7 +5,7 @@ import {
 	deleteArticleController,
 	putArticleController,
 } from "./controllers/article.controller.js";
-import { getVendorWeekController } from "./controllers/vendor.controller.js";
+import { getVendorWeekController, postSellingDaysController } from "./controllers/vendor.controller.js";
 import {
 	deleteVendorController,
 	getVendorsController,
@@ -30,7 +30,7 @@ function routes(app: Express) {
 		.put(putVendorController)
 		.delete(deleteVendorController);
 
-	app.route("/vendors/:id").get(getVendorWeekController);
+	app.route("/vendors/:id").get(getVendorWeekController).post(postSellingDaysController);
 }
 
 export default routes;

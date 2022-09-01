@@ -19,8 +19,6 @@ function VendorPage() {
 			const response = await GET(`/vendors/${vendorId}?end=${dayjs(end).format("YYYY-MM-DD")}`);
 			const data = await response.json();
 
-			console.log(data);
-
 			setVendorWeek(data);
 		},
 		[vendorId, setVendorWeek]
@@ -41,6 +39,7 @@ function VendorPage() {
 					{vendorWeek.articleWeeks.map((articleWeek) => (
 						<VendorWeekEntry
 							key={"vendor-week-" + vendorId + "-" + articleWeek.id + "-" + articleWeek.start}
+							vendorId={vendorId}
 							articleWeek={articleWeek}
 						/>
 					))}

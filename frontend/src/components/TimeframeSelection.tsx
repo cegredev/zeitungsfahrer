@@ -38,7 +38,7 @@ function TimeframeSelection({ onChange }: Props) {
 						<input
 							type="number"
 							style={{ maxWidth: "3rem" }}
-							min={1970}
+							min={1971}
 							value={date.getFullYear()}
 							onChange={(evt) => {
 								setDate(dayjs(date).set("year", parseInt(evt.target.value)).toDate());

@@ -4,8 +4,6 @@ import pool, { RouteReport } from "../database.js";
 export async function getVendors(): Promise<RouteReport> {
 	const result = await pool.execute("SELECT id, name FROM vendors");
 
-	console.log(result);
-
 	return {
 		code: 200,
 		body: JSON.stringify(result[0]),

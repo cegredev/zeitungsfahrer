@@ -118,7 +118,7 @@ ORDER BY articles.id`,
 						.toDate();
 
 				const price = possiblePrices.find(
-					(price) => price.startDate <= date && (price.endDate == null || price.endDate > date)
+					(p) => p.startDate <= date && (p.endDate == null || p.endDate > date)
 				);
 
 				if (day == null) {
@@ -148,5 +148,32 @@ ORDER BY articles.id`,
 	return {
 		code: 200,
 		body: JSON.stringify({ ...vendor, articleWeeks: [...weeks.values()] }),
+	};
+}
+
+export async function createOrUpdateSellingDays(
+	vendorId: number,
+	articleId: number,
+	days: SellingDay[]
+): Promise<RouteReport> {
+	for (const day of days) {
+		pool.execute(
+			`INSERT INTO selling_days (date, article_id, vendor_id, remissions, sales) VALUES (?, ?, ?, ?, ?)
+			ON DUPLICATE KEY
+			UPDATE remissions=?, sales=?`,
+			[
+				dayjs(day.date).format("YYYY-MM-DD"),
+				articleId,
+				vendorId,
+				day.remissions,
+				day.sales,
+				day.remissions,
+				day.sales,
+			]
+		);
+	}
+
+	return {
+		code: 200,
 	};
 }
