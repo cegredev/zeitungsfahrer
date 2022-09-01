@@ -1,12 +1,13 @@
 import { atom } from "jotai";
 import { Article } from "backend/src/models/article.model";
 
-function createEmptyArticle() {
+function createEmptyArticle(): Article {
 	return {
 		name: "Neuer Artikel",
 		prices: Array(7)
 			.fill(null)
-			.map(() => ({
+			.map((_, index) => ({
+				weekday: index,
 				sell: 0.3,
 				purchase: 0.2,
 				marketSell: 0.4,

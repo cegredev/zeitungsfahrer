@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 export async function getArticles(atDate: Date): Promise<RouteReport> {
 	const result = await pool.execute(
-		`SELECT articles.id, articles.name, prices.start_date, prices.purchase, prices.sell, prices.market_sell, prices.mwst
+		`SELECT articles.id, articles.name, prices.start_date, prices.weekday, prices.purchase, prices.sell, prices.market_sell, prices.mwst, prices.end_date
 		FROM articles
 		LEFT OUTER JOIN prices
 		ON articles.id=prices.article_id AND ? >= prices.start_date AND (? < prices.end_date OR prices.end_date IS NULL)`,
@@ -14,7 +14,7 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	const articles = new Map<number, Article>();
 
 	// @ts-ignore
-	for (const { id, name, start_date, mwst, purchase, sell, market_sell } of result[0]) {
+	for (const { id, name, start_date, weekday, mwst, purchase, sell, market_sell, end_date } of result[0]) {
 		let article = articles.get(id);
 		if (article == null) {
 			article = { id, name, prices: [] };
@@ -23,10 +23,13 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 
 		article.prices.push({
 			startDate: start_date,
+			weekday,
+			articleId: id,
 			mwst,
 			purchase,
 			sell,
 			marketSell: market_sell,
+			endDate: end_date,
 		});
 	}
 
@@ -64,7 +67,7 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 	const id: number = result[0].insertId;
 	const startDate = new Date();
 
-	await createPrices(startDate, id, prices);
+	await createPrices(new Date("1970-01-01"), id, prices);
 
 	return {
 		code: 201,

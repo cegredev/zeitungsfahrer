@@ -1,12 +1,12 @@
+import { Price } from "./article.model.js";
 import { Vendor } from "./vendors.model.js";
 
 export interface SellingDay {
+	articleId?: number;
+	date: Date;
 	remissions: number;
 	sales: number;
-	mwst: number;
-	purchase: number;
-	sell: number;
-	marketSell: number;
+	price: Price;
 }
 
 export interface ArticleWeek {

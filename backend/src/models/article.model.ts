@@ -6,10 +6,13 @@ export interface Article {
 
 export interface Price {
 	startDate: Date;
+	weekday: number;
+	articleId?: number;
 	purchase: number;
 	sell: number;
 	marketSell: number;
 	mwst: number;
+	endDate?: Date;
 }
 
 export function validatePrice({ purchase, sell, marketSell: sellTrader, mwst }: Price): boolean {

@@ -22,11 +22,10 @@ function ArticlesList() {
 				articles.map((article) => ({
 					...article,
 					prices: article.prices.map((price) => ({
+						...price,
 						purchase: parseFloat(String(price.purchase)),
 						sell: parseFloat(String(price.sell)),
 						marketSell: parseFloat(String(price.marketSell)),
-						mwst: price.mwst,
-						startDate: price.startDate,
 					})),
 				}))
 			);

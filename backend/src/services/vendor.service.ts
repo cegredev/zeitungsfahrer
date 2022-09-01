@@ -1,9 +1,63 @@
 import { Vendor } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { SellingDay, ArticleWeek } from "../models/vendor.model.js";
+import dayjs from "dayjs";
+import { response } from "express";
+import { Price } from "../models/article.model.js";
+import { inspect } from "util";
 
 function dateFormatter(date: Date): string {
 	return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
+export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
+	const startDate = dayjs(end).subtract(6, "days").toDate();
+
+	const response = await pool.execute(
+		`SELECT start_date as startDate, weekday, article_id as articleId, mwst, purchase, sell, market_sell as marketSell, end_date as endDate FROM prices
+		WHERE (start_date <= ? OR start_date IS NULL) AND (end_date > ? OR end_date IS NULL) ORDER BY start_date`,
+		[dayjs(end).format("YYYY-MM-DD"), dayjs(startDate).format("YYYY-MM-DD")]
+	);
+
+	const byArticleByWeekday = new Map<number, Price[][]>();
+
+	// @ts-ignore
+	for (const price: Price of response[0]) {
+		let byWeekday = byArticleByWeekday.get(price.articleId);
+		if (byWeekday == null) {
+			byWeekday = Array(7)
+				.fill(null)
+				.map(() => []);
+			byArticleByWeekday.set(price.articleId, byWeekday);
+		}
+
+		byWeekday[price.weekday].push(price);
+	}
+
+	const startWeekday = (6 + startDate.getUTCDay()) % 7;
+
+	for (const [key, week] of byArticleByWeekday.entries()) {
+		byArticleByWeekday.set(
+			key,
+			week.map((prices, index) =>
+				prices.length === 0
+					? [
+							{
+								startDate: end,
+								weekday: (startWeekday + index) % 7,
+								articleId: key,
+								mwst: 0,
+								purchase: 0,
+								sell: 0,
+								marketSell: 0,
+							},
+					  ]
+					: prices
+			)
+		);
+	}
+
+	return byArticleByWeekday;
 }
 
 export async function getVendorWeek(vendorId: number, end: Date): Promise<RouteReport> {
@@ -16,52 +70,83 @@ export async function getVendorWeek(vendorId: number, end: Date): Promise<RouteR
 
 	const response = await pool.execute(
 		`
-SELECT selling_days.date, selling_days.remissions, selling_days.sales, articles.id, articles.name, prices.mwst, prices.purchase, prices.sell, prices.market_sell
+SELECT selling_days.date, selling_days.remissions, selling_days.sales, articles.id as articleId, articles.name
 FROM selling_days
 INNER JOIN articles ON
 	selling_days.article_id=articles.id
-INNER JOIN prices ON
-	selling_days.date >= prices.start_date AND (selling_days.date <= prices.end_date OR prices.end_date IS NULL)
-	AND selling_days.article_id=prices.article_id
-	AND MOD(5 + DAYOFWEEK(selling_days.date), 7)=prices.weekday # Checks that both days refer to the same day of the week
 WHERE selling_days.vendor_id=? AND selling_days.date BETWEEN ? AND ?
 ORDER BY articles.id`,
 		[vendorId, start, end]
 	);
 
-	const map = new Map<number, ArticleWeek>();
 	const millisInDay = 24 * 60 * 60 * 1_000,
 		startMillis = start.getTime();
 
-	for (const {
-		date,
-		remissions,
-		sales,
-		id: articleId,
-		name,
-		mwst,
-		purchase,
-		sell,
-		market_sell: marketSell, // @ts-ignore
-	} of response[0]) {
-		let articleWeek = map.get(articleId);
-		if (articleWeek == null) {
-			articleWeek = {
-				id: articleId,
-				name,
-				start,
-				days: Array(7).fill({ remissions: 0, sales: 0, mwst, purchase, sell, marketSell }),
-			};
-			map.set(articleId, articleWeek);
+	// @ts-ignore
+	const days: SellingDay[] = response[0];
+	const daysByArticle = new Map<number, (SellingDay | null)[]>();
+	for (const day of days) {
+		let articleDays = daysByArticle.get(day.articleId!);
+
+		if (articleDays == null) {
+			articleDays = Array(7).fill(null);
+			daysByArticle.set(day.articleId!, articleDays);
 		}
 
 		// Math.round is here as a safety measure. Always make sure to set the time zone to "+00:00" in your MySQL server!
-		const index = Math.round((date.getTime() - startMillis) / millisInDay - 1);
-		articleWeek.days[index] = { remissions, sales, mwst, purchase, sell, marketSell };
+		const index = Math.round((day.date.getTime() - startMillis) / millisInDay);
+		articleDays![index] = { ...day };
+	}
+
+	const allPrices = await getPrices(end);
+
+	const weeks = new Map<number, ArticleWeek>();
+	const startWeekday = (6 + start.getUTCDay()) % 7;
+
+	for (const [articleId, prices] of allPrices.entries()) {
+		let week = weeks.get(articleId);
+		if (week == null) {
+			let days = daysByArticle.get(articleId) || Array(7).fill(null);
+
+			days = days.map((day, index) => {
+				const possiblePrices = prices[(startWeekday + index) % 7];
+
+				const date =
+					day?.date ||
+					dayjs(end)
+						.subtract(6 - index, "days")
+						.toDate();
+
+				const price = possiblePrices.find(
+					(price) => price.startDate <= date && (price.endDate == null || price.endDate > date)
+				);
+
+				if (day == null) {
+					return {
+						date,
+						remissions: 0,
+						sales: 0,
+						price,
+					};
+				} else {
+					return { ...day, price };
+				}
+			});
+
+			week = {
+				id: articleId,
+				name: "TBD",
+				start,
+				// @ts-ignore
+				days,
+			};
+
+			weeks.set(articleId, week!);
+		}
 	}
 
 	return {
 		code: 200,
-		body: JSON.stringify({ ...vendor, articleWeeks: [...map.values()] }),
+		body: JSON.stringify({ ...vendor, articleWeeks: [...weeks.values()] }),
 	};
 }

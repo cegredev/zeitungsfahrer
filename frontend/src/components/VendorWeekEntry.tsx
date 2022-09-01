@@ -1,7 +1,7 @@
 import { ArticleWeek } from "backend/src/models/vendor.model";
 import dayjs from "dayjs";
 import React from "react";
-import { weekdays } from "../consts";
+import { twoDecimalsFormat, weekdays } from "../consts";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {
@@ -9,6 +9,8 @@ interface Props {
 }
 
 function VendorWeekEntry({ articleWeek }: Props) {
+	console.log("week:", articleWeek);
+
 	const [allDays, setAllDays] = React.useState(articleWeek.days);
 
 	const startDate = React.useMemo(() => new Date(articleWeek.start), [articleWeek.start]);
@@ -74,8 +76,12 @@ function VendorWeekEntry({ articleWeek }: Props) {
 									}}
 								/>
 							</div>
-							<div>{sellingDay.mwst}</div>
-							<div></div>
+							<div>{sellingDay.price.sell}</div>
+							<div>
+								{twoDecimalsFormat.format(
+									(sellingDay.price.sell * (100 + sellingDay.price.mwst)) / 100
+								)}
+							</div>
 						</React.Fragment>
 					);
 				})}
