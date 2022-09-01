@@ -83,9 +83,9 @@ ORDER BY articles.id`,
 		startMillis = start.getTime();
 
 	// @ts-ignore
-	const days: SellingDay[] = response[0];
+	const allDays: (SellingDay & { name: string })[] = response[0];
 	const daysByArticle = new Map<number, (SellingDay | null)[]>();
-	for (const day of days) {
+	for (const day of allDays) {
 		let articleDays = daysByArticle.get(day.articleId!);
 
 		if (articleDays == null) {
@@ -135,7 +135,8 @@ ORDER BY articles.id`,
 
 			week = {
 				id: articleId,
-				name: "TBD",
+				// @ts-ignore
+				name: (await pool.execute("SELECT name FROM articles WHERE id=?", [articleId]))[0][0].name,
 				start,
 				// @ts-ignore
 				days,
