@@ -5,13 +5,12 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { months } from "../consts";
 
-const startDate = new Date();
-
 interface Props {
 	onChange: (date: Date) => void;
+	startDate: Date;
 }
 
-function TimeframeSelection({ onChange }: Props) {
+function TimeframeSelection({ onChange, startDate }: Props) {
 	const [date, _setDate] = React.useState(startDate);
 
 	const setDate = React.useCallback(

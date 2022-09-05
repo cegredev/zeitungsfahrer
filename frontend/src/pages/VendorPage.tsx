@@ -8,6 +8,8 @@ import VendorWeekEntry from "../components/VendorWeekEntry";
 import { useAtom } from "jotai";
 import { setVendorWeekAtom, vendorWeekAtom } from "../components/stores/vendor.store";
 
+const startDate = dayjs(new Date()).set("day", 0).toDate();
+
 function VendorPage() {
 	const vendorId = parseInt(useParams().id!);
 
@@ -25,7 +27,7 @@ function VendorPage() {
 	);
 
 	React.useEffect(() => {
-		fetchData(new Date());
+		fetchData(startDate);
 	}, [fetchData]);
 
 	return (
@@ -44,7 +46,7 @@ function VendorPage() {
 							PUT("/vendors", { id: vendorId, name: vendorWeek.name });
 						}}
 					/>
-					<TimeframeSelection onChange={fetchData} />
+					<TimeframeSelection onChange={fetchData} startDate={startDate} />
 					{vendorWeek.articleWeeks.map((articleWeek) => (
 						<VendorWeekEntry
 							key={"vendor-week-" + vendorId + "-" + articleWeek.id + "-" + articleWeek.start}
