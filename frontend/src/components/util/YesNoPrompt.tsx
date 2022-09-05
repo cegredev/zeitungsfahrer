@@ -4,11 +4,12 @@ interface Props {
 	trigger: JSX.Element;
 	header: string;
 	content: string;
-	onYes: () => Promise<void> | void;
+	onYes?: () => Promise<void> | void;
+	onYesButton?: (close: () => void) => JSX.Element;
 	onNo?: () => Promise<void> | void;
 }
 
-function YesNoPrompt({ trigger, header, content, onYes, onNo }: Props) {
+function YesNoPrompt({ trigger, header, content, onYes, onYesButton, onNo }: Props) {
 	return (
 		<Popup modal nested trigger={trigger}>
 			{/* @ts-ignore */}
@@ -27,14 +28,18 @@ function YesNoPrompt({ trigger, header, content, onYes, onNo }: Props) {
 						>
 							Nein
 						</button>
-						<button
-							onClick={async () => {
-								await onYes();
-								close();
-							}}
-						>
-							Ja
-						</button>
+						{onYesButton ? (
+							onYesButton(close)
+						) : (
+							<button
+								onClick={async () => {
+									await onYes!();
+									close();
+								}}
+							>
+								Ja
+							</button>
+						)}
 					</div>
 				</div>
 			)}

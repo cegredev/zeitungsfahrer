@@ -12,6 +12,8 @@ import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
+import { clearErrorMessageAtom, errorMessageAtom } from "./stores/utility.store";
+import Popup from "reactjs-popup";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
@@ -38,6 +40,8 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const [, removeArticle] = useAtom(removeArticleAtom);
 	const [, finishArticle] = useAtom(finishArticleAtom);
 	const [, cancelDraft] = useAtom(cancelArticleDraftAtom);
+	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
+	const [, clearErrorMessage] = useAtom(clearErrorMessageAtom);
 
 	const isDraft = article.id == null;
 	const cancelText = isDraft ? "Verwerfen" : "Löschen";
@@ -163,6 +167,18 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 				}}
 			/>
 
+			<Popup open={errorMessage.length > 0} closeOnDocumentClick onClose={clearErrorMessage}>
+				<div className="modal">
+					<div className="header" style={{ color: "red" }}>
+						Fehler
+					</div>
+					<div className="content">{errorMessage}</div>
+					<div className="actions">
+						<button onClick={clearErrorMessage}>Okay</button>
+					</div>
+				</div>
+			</Popup>
+
 			<YesNoPrompt
 				trigger={<button style={{ color: "green", gridColumnStart: 11 }}>{saveText}</button>}
 				header={saveText}
@@ -172,19 +188,25 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 
 					if (isDraft) {
 						const res = await POST("/articles", { ...info, startDate: new Date() });
+						const body = await res.json();
+
+						console.log(body);
 
 						if (res.ok) {
-							const body = await res.json();
-
 							info.id = body.id;
 
 							setArticle({ ...article, id: info.id });
 							finishArticle(info);
 						} else {
 							console.error(res);
+
+							setErrorMessage(body.userMessage);
 						}
 					} else {
-						await PUT("/articles", { startDate: dayjs(new Date()).format("YYYY-MM-DD"), article: info });
+						await PUT("/articles", {
+							startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+							article: info,
+						});
 					}
 
 					updateArticle(info);

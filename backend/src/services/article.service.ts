@@ -57,17 +57,24 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 	if (!validatePrices(prices)) {
 		return {
 			code: 400,
-			body: "The given prices contained errors",
+			body: { userMessage: "Die angegebenen Preise enthielten Fehler." },
 		};
 	}
 
-	const result = await pool.execute(`INSERT INTO articles (name) VALUES (?)`, [name]);
+	// @ts-ignore
+	if ((await pool.execute("SELECT 1 FROM articles WHERE name=?", [name]))[0].length >= 1) {
+		return {
+			code: 400,
+			body: { userMessage: "Es gibt bereits einen Artikel mit diesem Namen." },
+		};
+	}
+
+	const result = await pool.execute(`INSERT IGNORE INTO articles (name) VALUES (?)`, [name]);
 
 	// @ts-ignore
-	const id: number = result[0].insertId;
-	const startDate = new Date();
+	const id: number | null = result[0].insertId;
 
-	await createPrices(new Date("1970-01-01"), id, prices);
+	await createPrices(new Date("1970-01-01"), id!, prices);
 
 	return {
 		code: 201,
