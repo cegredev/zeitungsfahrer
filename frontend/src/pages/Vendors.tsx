@@ -26,7 +26,7 @@ function Vendors() {
 
 	return (
 		<div className="page vendors">
-			{loading ? "Laden..." : vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} vendor={vendor} />)}
+			{loading ? "Laden..." : vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} v={vendor} />)}
 			{!vendors.some((vendor) => vendor.id == null) && (
 				<div>
 					<button
@@ -34,6 +34,15 @@ function Vendors() {
 						onClick={async () => {
 							const vendor = {
 								name: "Neuer Händler",
+								address: "",
+								zipCode: 0,
+								city: "",
+								supplies: Array(7)
+									.fill(null)
+									.map((_, i) => ({
+										supply: 0,
+										weekday: i,
+									})),
 							};
 
 							const response = await (await POST("/vendors", vendor)).json();

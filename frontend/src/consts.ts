@@ -15,6 +15,8 @@ export const months = [
 
 export const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
+export const weekdaysShort = ["Mon", "Die", "Mitt", "Don", "Fre", "Sam", "Son"];
+
 export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
 	currency: "EUR",

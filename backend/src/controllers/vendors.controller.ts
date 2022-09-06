@@ -8,9 +8,7 @@ export async function getVendorsController(req: Request, res: Response) {
 }
 
 export async function postVendorController(req: Request<any, any, Vendor>, res: Response) {
-	const { name } = req.body;
-
-	await handler(async () => await createVendor(name), res);
+	await handler(async () => await createVendor(req.body), res);
 }
 
 export async function putVendorController(req: Request<any, any, Vendor>, res: Response) {
