@@ -5,7 +5,7 @@ import logger from "../logger.js";
 export async function handler(func: () => Promise<RouteReport>, res: Response) {
 	try {
 		const { code, body } = await func();
-		res.status(code).send(body);
+		res.status(code).send(JSON.stringify(body));
 		logger.info("Reponse: " + code);
 	} catch (e) {
 		console.error(e);

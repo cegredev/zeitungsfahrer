@@ -35,7 +35,7 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 
 	return {
 		code: 200,
-		body: JSON.stringify([...articles.values()]),
+		body: [...articles.values()],
 	};
 }
 
@@ -78,7 +78,7 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 
 	return {
 		code: 201,
-		body: JSON.stringify({ id }),
+		body: { id },
 	};
 }
 
@@ -88,7 +88,9 @@ export async function updateArticle(startDate: Date, article: Article): Promise<
 	if (!validatePrices(article.prices)) {
 		return {
 			code: 400,
-			body: "The given prices contained errors",
+			body: {
+				userMessage: "Die angegebenen Preise enthielten Fehler.",
+			},
 		};
 	}
 

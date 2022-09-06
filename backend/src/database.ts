@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 
 export interface RouteReport {
 	code: number;
-	body?: string | any;
+	body?: any;
 }
 
 export default pool;

@@ -6,7 +6,7 @@ export async function getVendors(): Promise<RouteReport> {
 
 	return {
 		code: 200,
-		body: JSON.stringify(result[0]),
+		body: result[0],
 	};
 }
 
@@ -18,7 +18,7 @@ export async function createVendor(name: string): Promise<RouteReport> {
 
 	return {
 		code: 200,
-		body: JSON.stringify({ id }),
+		body: { id },
 	};
 }
 

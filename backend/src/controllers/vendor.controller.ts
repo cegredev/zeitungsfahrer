@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { SellingDay, VendorWeek } from "../models/vendor.model.js";
-import { createOrUpdateSellingDays, getPrices, getVendorWeek } from "../services/vendor.service.js";
+import { createOrUpdateSellingDays, getVendorWeek } from "../services/vendor.service.js";
 import { handler } from "./controllers.js";
 
 export async function getVendorWeekController(
