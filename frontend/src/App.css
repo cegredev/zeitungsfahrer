@@ -8,12 +8,15 @@
 	margin: 0 10px;
 }
 
-.top-navbar a {
-	text-decoration: none;
+a {
 	color: black;
 }
 
-.top-navbar a:visited {
+.top-navbar a {
+	text-decoration: none;
+}
+
+a:visited {
 	color: inherit;
 }
 

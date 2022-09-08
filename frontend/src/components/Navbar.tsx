@@ -6,6 +6,7 @@ function Navbar() {
 			<Link to="/">Dashboard</Link>
 			<Link to="/articles">Artikel</Link>
 			<Link to="/vendors">Händler</Link>
+			<Link to="/settings">Einstellungen</Link>
 		</nav>
 	);
 }
