@@ -1,4 +1,10 @@
 {
+	"vendors/:id": {
+		"entries": [
+			{ "articleName": "Zeit", "articleId": 1, "included": true, "supplies": [1, 2, 3, 4, 5, 6, 7] },
+			{ "articleName": "Zeit", "articleId": 2, "included": true, "supplies": [1, 2, 3, 4, 5, 6, 7] }
+		]
+	},
 	"articles?:atDate": [
 		{
 			"id": 1,

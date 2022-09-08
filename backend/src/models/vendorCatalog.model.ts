@@ -1,6 +1,8 @@
-export interface VendorCatalogEntry {
-	articleName: string;
-	articleId: number;
-	included: boolean;
-	supplies: number[];
+export interface VendorCatalog {
+	entries: {
+		articleName: string;
+		articleId: number;
+		included: boolean;
+		supplies: number[];
+	}[];
 }
