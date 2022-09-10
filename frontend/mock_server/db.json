@@ -1,4 +1,26 @@
 {
+	"vendors": [
+		{
+			"name": "Händler 1",
+			"id": 1
+		},
+		{
+			"name": "Händler 2",
+			"id": 2
+		},
+		{
+			"name": "Händler 3",
+			"id": 3
+		},
+		{
+			"name": "Händler 4",
+			"id": 4
+		},
+		{
+			"name": "Händler 5",
+			"id": 5
+		}
+	],
 	"vendors/:id": {
 		"entries": [
 			{ "articleName": "Zeit", "articleId": 1, "included": true, "supplies": [1, 2, 3, 4, 5, 6, 7] },
