@@ -1,7 +1,7 @@
 import { Vendor } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import logger from "../logger.js";
-import { getVendorCatalog } from "./vendorCatalog.service.js";
+import { createOrUpdateVendorCatalog, getVendorCatalog } from "./vendorCatalog.service.js";
 
 export async function getVendors(): Promise<RouteReport> {
 	const result = await pool.execute(
@@ -21,7 +21,7 @@ export async function getVendor(id: number): Promise<Vendor> {
 	);
 
 	// @ts-ignore
-	return result[0][0];
+	return { id, ...result[0][0] };
 }
 
 export async function getVendorFull(id: number): Promise<RouteReport> {
@@ -63,31 +63,32 @@ export async function updateVendor({
 	email,
 	phone,
 	taxId,
-	catalog,
-}: Vendor): Promise<RouteReport> {
+}: // catalog,
+Vendor): Promise<RouteReport> {
+	console.log([firstName, lastName, address, zipCode, city, email, phone, taxId, id]);
 	await pool.execute(
 		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=? WHERE id=?",
 		[firstName, lastName, address, zipCode, city, email, phone, taxId, id]
 	);
 
-	if (catalog != null) {
-		for await (const entry of catalog.entries) {
-			await pool.execute("UPDATE vendor_catalog SET included=? WHERE vendor_id=? AND article_id=?", [
-				id,
-				entry.articleId,
-			]);
+	// if (catalog != null) {
+	// 	for await (const entry of catalog.entries) {
+	// 		await pool.execute("UPDATE vendor_catalog SET included=? WHERE vendor_id=? AND article_id=?", [
+	// 			id,
+	// 			entry.articleId,
+	// 		]);
 
-			let i = 0;
-			for await (const supply of entry.supplies) {
-				await pool.execute(
-					"UPDATE vendor_supplies SET supply=? WHERE vendor_id=? AND article_id=? AND weekday=?",
-					[supply, id, entry.articleId, i]
-				);
+	// 		let i = 0;
+	// 		for await (const supply of entry.supplies) {
+	// 			await pool.execute(
+	// 				"UPDATE vendor_supplies SET supply=? WHERE vendor_id=? AND article_id=? AND weekday=?",
+	// 				[supply, id, entry.articleId, i]
+	// 			);
 
-				i++;
-			}
-		}
-	}
+	// 			i++;
+	// 		}
+	// 	}
+	// }
 
 	return {
 		code: 200,

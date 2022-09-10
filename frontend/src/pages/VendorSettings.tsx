@@ -9,6 +9,7 @@ import { useAtom } from "jotai";
 import { setVendorWeekAtom, vendorWeekAtom } from "../components/stores/vendor.store";
 import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor } from "backend/src/models/vendors.model";
+import YesNoPrompt from "../components/util/YesNoPrompt";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -156,7 +157,16 @@ function VendorSettings() {
 						/>
 					</div>
 
-					<hr className="solid-divider" />
+					<YesNoPrompt
+						trigger={<button style={{ color: "green", float: "right" }}>Speichern</button>}
+						header="Speichern"
+						content={`Wollen Sie die Änderungen wirklich speichern?`}
+						onYes={async () => {
+							console.log(vendor);
+							PUT("/vendors", vendor);
+						}}
+					/>
+					<hr className="solid-divider" style={{ marginTop: 30 }} />
 
 					<div style={{ textAlign: "center", fontWeight: "bold" }}>Artikel</div>
 					<VendorCatalogSettings catalog={vendor.catalog!} />

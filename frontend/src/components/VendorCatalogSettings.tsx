@@ -39,7 +39,6 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 											entries: newEntries,
 										});
 
-										console.log(newEntries);
 										POST("/vendors/" + catalog.vendorId, {
 											vendorId: catalog.vendorId,
 											entries: newEntries,
