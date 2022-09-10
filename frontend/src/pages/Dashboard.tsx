@@ -37,7 +37,7 @@ function Dashboard() {
 							onClick={() => setSelectedIndex(i)}
 							onDoubleClick={() => navigate("/vendors/" + vendor.id)}
 						>
-							{vendor.name}
+							{vendor.lastName + ", " + vendor.firstName}
 						</div>
 						<input checked={true} type="checkbox" name="done" readOnly={true} />
 					</div>

@@ -1,13 +1,14 @@
+import { VendorCatalog } from "./vendorCatalog.model";
+
 export interface Vendor {
 	id?: number;
-	name: string;
+	firstName: string;
+	lastName: string;
 	address: string;
 	zipCode: number;
 	city: string;
-	supplies: VendorSupply[];
-}
-
-export interface VendorSupply {
-	weekday?: number;
-	supply: number;
+	email: string;
+	phone: string;
+	taxId: number;
+	catalog?: VendorCatalog;
 }

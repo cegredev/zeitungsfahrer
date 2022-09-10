@@ -1,22 +1,21 @@
 import { Article } from "backend/src/models/article.model";
 import { VendorCatalog } from "backend/src/models/vendorCatalog.model";
-import { VendorSupply } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import React from "react";
-import { GET } from "../api";
+import { GET, POST } from "../api";
 import { weekdaysShort } from "../consts";
 
-function VendorSettingsArticles() {
-	const [catalog, setCatalog] = React.useState<VendorCatalog | null>(null);
+function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }) {
+	const [catalog, setCatalog] = React.useState<VendorCatalog>(_catalog);
 
-	React.useEffect(() => {
-		const fetchArticles = async () => {
-			const response = await GET("/vendors/1");
-			setCatalog(await response.json());
-		};
+	// React.useEffect(() => {
+	// 	const fetchArticles = async () => {
+	// 		const response = await GET("/vendors/1");
+	// 		setCatalog(await response.json());
+	// 	};
 
-		fetchArticles();
-	}, [setCatalog]);
+	// 	fetchArticles();
+	// }, [setCatalog]);
 
 	console.log(catalog);
 
@@ -31,12 +30,19 @@ function VendorSettingsArticles() {
 									type="checkbox"
 									checked={entry.included}
 									onChange={() => {
+										const newEntries = catalog.entries.map((e) =>
+											e.articleId === entry.articleId ? { ...entry, included: !e.included } : e
+										);
+
 										setCatalog({
-											entries: catalog.entries.map((e) =>
-												e.articleId === entry.articleId
-													? { ...entry, included: !e.included }
-													: e
-											),
+											...catalog,
+											entries: newEntries,
+										});
+
+										console.log(newEntries);
+										POST("/vendors/" + catalog.vendorId, {
+											vendorId: catalog.vendorId,
+											entries: newEntries,
 										});
 									}}
 								/>
@@ -66,7 +72,12 @@ function VendorSettingsArticles() {
 													const newSupplies = [...newEntries[entryIndex].supplies];
 													newSupplies[i] = parseInt(evt.target.value);
 													newEntries[entryIndex].supplies = newSupplies;
-													setCatalog({ entries: newEntries });
+													setCatalog({
+														...catalog,
+														entries: newEntries,
+													});
+
+													POST("/vendors/" + catalog.vendorId, catalog);
 												}}
 											/>
 										</div>
@@ -80,4 +91,4 @@ function VendorSettingsArticles() {
 	);
 }
 
-export default VendorSettingsArticles;
+export default VendorCatalogSettings;

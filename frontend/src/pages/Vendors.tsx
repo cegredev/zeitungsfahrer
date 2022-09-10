@@ -4,6 +4,7 @@ import React from "react";
 import { GET, POST } from "../api";
 import { addVendorAtom, setVendorsAtom, vendorsListAtom } from "../components/stores/vendors.store";
 import VendorItem from "../components/VendorItem";
+import VendorSettings from "./VendorSettings";
 
 function Vendors() {
 	const [vendors] = useAtom(vendorsListAtom);
@@ -26,33 +27,7 @@ function Vendors() {
 
 	return (
 		<div className="page vendors">
-			{loading ? "Laden..." : vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} v={vendor} />)}
-			{!vendors.some((vendor) => vendor.id == null) && (
-				<div>
-					<button
-						className="create-item"
-						onClick={async () => {
-							const vendor = {
-								name: "Neuer Händler",
-								address: "",
-								zipCode: 0,
-								city: "",
-								supplies: Array(7)
-									.fill(null)
-									.map((_, i) => ({
-										supply: 0,
-										weekday: i,
-									})),
-							};
-
-							const response = await (await POST("/vendors", vendor)).json();
-							addVendor({ ...vendor, id: response.id });
-						}}
-					>
-						Händler hinzufügen
-					</button>
-				</div>
-			)}
+			{loading ? "Laden..." : vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} vendor={vendor} />)}
 		</div>
 	);
 }

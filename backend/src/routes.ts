@@ -5,8 +5,15 @@ import {
 	deleteArticleController,
 	putArticleController,
 } from "./controllers/article.controller.js";
-import { getVendorCatalogController } from "./controllers/venderCatalog.controller.js";
-import { getVendorWeekController, postSellingDaysController } from "./controllers/vendor.controller.js";
+import {
+	createOrUpdateVendorCatalogController,
+	getVendorCatalogController,
+} from "./controllers/venderCatalog.controller.js";
+import {
+	getVendorFullController,
+	getVendorWeekController,
+	postSellingDaysController,
+} from "./controllers/vendor.controller.js";
 import {
 	deleteVendorController,
 	getVendorsController,
@@ -31,7 +38,7 @@ function routes(app: Express) {
 		.put(putVendorController)
 		.delete(deleteVendorController);
 
-	app.route("/vendors/:id").get(getVendorCatalogController).post(postSellingDaysController);
+	app.route("/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorCatalogController);
 }
 
 export default routes;
