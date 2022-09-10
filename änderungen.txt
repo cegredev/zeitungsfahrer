@@ -1,5 +1,3 @@
-- händler kontaktdaten hinzufügen
-- umsatzsteuer nummer
 - daten werden bei andleren händlern gespeichert
 - gesamt abrechungnen auch pro zeitfenster
 - monatlich mit 1.1. anfangen

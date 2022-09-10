@@ -10,5 +10,6 @@ export interface Vendor {
 	email: string;
 	phone: string;
 	taxId: number;
+	active: boolean;
 	catalog?: VendorCatalog;
 }

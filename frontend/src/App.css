@@ -42,6 +42,10 @@ body {
 	height: 100%;
 }
 
+.vendor-settings input {
+	max-width: 90%;
+}
+
 .top-navbar a {
 	text-decoration: none;
 }

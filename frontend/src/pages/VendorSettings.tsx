@@ -18,6 +18,16 @@ const initialEndDate = dayjs(_today)
 
 const labelLeftPadding = { marginLeft: "10px" };
 
+const spanWhole: React.CSSProperties = {
+	gridColumn: "span 4",
+};
+
+const headerCSS: React.CSSProperties = {
+	...spanWhole,
+	textAlign: "center",
+	margin: 5,
+};
+
 function VendorSettings() {
 	const params = useParams();
 
@@ -37,6 +47,7 @@ function VendorSettings() {
 					email: "",
 					phone: "",
 					taxId: 0,
+					active: true,
 				};
 
 				const response = await GET("/vendors/" + params.id + "?catalogOnly=true");
@@ -53,12 +64,12 @@ function VendorSettings() {
 	}, [setVendor, params.id]);
 
 	return (
-		<div className="page" style={{ padding: 20 }}>
+		<div className="page vendor-settings" style={{ padding: 20 }}>
 			{vendor != null && (
 				<div style={{ padding: 30, backgroundColor: "lightgray", borderRadius: 10 }}>
-					<div style={{ textAlign: "center", fontWeight: "bold" }}>Adresse</div>
-					<div>
-						<label htmlFor="firstName">Vorname: </label>
+					<div style={{ display: "grid", gridTemplateColumns: "1fr 2.5fr 1fr 2.5fr", gap: 5 }}>
+						<h3 style={headerCSS}>Adresse</h3>
+						<label htmlFor="firstName">Vorname:</label>
 						<input
 							name="firstName"
 							type="text"
@@ -67,10 +78,7 @@ function VendorSettings() {
 								setVendor({ ...vendor, firstName: evt.target.value });
 							}}
 						/>
-						<label htmlFor="lastName" style={labelLeftPadding}>
-							{" "}
-							Nachname:{" "}
-						</label>
+						<label htmlFor="lastName">Nachname:</label>
 						<input
 							name="firstName"
 							type="text"
@@ -79,10 +87,7 @@ function VendorSettings() {
 								setVendor({ ...vendor, lastName: evt.target.value });
 							}}
 						/>
-					</div>
-
-					<div>
-						<label htmlFor="address">Adresse: </label>
+						<label htmlFor="address">Adresse:</label>
 						<input
 							name="address"
 							type="text"
@@ -91,10 +96,9 @@ function VendorSettings() {
 								setVendor({ ...vendor, address: evt.target.value });
 							}}
 						/>
-					</div>
-
-					<div>
-						<label htmlFor="zipCode">Postleitzahl: </label>
+						<div />
+						<div />
+						<label htmlFor="zipCode">Postleitzahl:</label>
 						<input
 							name="zipCode"
 							type="number"
@@ -103,9 +107,7 @@ function VendorSettings() {
 								setVendor({ ...vendor, zipCode: parseInt(evt.target.value) });
 							}}
 						/>
-						<label htmlFor="city" style={labelLeftPadding}>
-							Ort:{" "}
-						</label>
+						<label htmlFor="city">Ort:</label>
 						<input
 							name="city"
 							type="text"
@@ -114,12 +116,10 @@ function VendorSettings() {
 								setVendor({ ...vendor, city: evt.target.value });
 							}}
 						/>
-					</div>
+						<hr className="solid-divider" style={spanWhole} />
 
-					<hr className="solid-divider" />
+						<h3 style={headerCSS}>Kontakt</h3>
 
-					<div style={{ textAlign: "center", fontWeight: "bold" }}>Kontakt</div>
-					<div>
 						<label htmlFor="email">Email: </label>
 						<input
 							name="email"
@@ -129,8 +129,6 @@ function VendorSettings() {
 								setVendor({ ...vendor, email: evt.target.value });
 							}}
 						/>
-					</div>
-					<div>
 						<label htmlFor="phone">Telefon: </label>
 						<input
 							name="phone"
@@ -140,13 +138,12 @@ function VendorSettings() {
 								setVendor({ ...vendor, phone: evt.target.value });
 							}}
 						/>
-					</div>
 
-					<hr className="solid-divider" />
+						<hr className="solid-divider" style={spanWhole} />
 
-					<div style={{ textAlign: "center", fontWeight: "bold" }}>Sonstiges</div>
-					<div>
-						<label htmlFor="taxId">Steuernummer: </label>
+						<h3 style={headerCSS}>Sonstiges</h3>
+
+						<label htmlFor="taxId">Steuernr.:</label>
 						<input
 							name="taxId"
 							type="number"
@@ -155,6 +152,18 @@ function VendorSettings() {
 								setVendor({ ...vendor, taxId: parseInt(evt.target.value) });
 							}}
 						/>
+
+						<div>
+							<input
+								name="active"
+								type="checkbox"
+								checked={vendor.active}
+								onChange={() => {
+									setVendor({ ...vendor, active: !vendor.active });
+								}}
+							/>
+							<label htmlFor="active">Aktiv </label>
+						</div>
 					</div>
 
 					<YesNoPrompt
@@ -168,7 +177,7 @@ function VendorSettings() {
 					/>
 					<hr className="solid-divider" style={{ marginTop: 30 }} />
 
-					<div style={{ textAlign: "center", fontWeight: "bold" }}>Artikel</div>
+					<h3 style={headerCSS}>Artikel</h3>
 					<VendorCatalogSettings catalog={vendor.catalog!} />
 				</div>
 			)}

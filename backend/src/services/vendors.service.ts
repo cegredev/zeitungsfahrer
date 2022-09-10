@@ -5,7 +5,7 @@ import { createOrUpdateVendorCatalog, getVendorCatalog } from "./vendorCatalog.s
 
 export async function getVendors(): Promise<RouteReport> {
 	const result = await pool.execute(
-		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId FROM vendors ORDER BY last_name`
+		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors ORDER BY last_name`
 	);
 
 	return {
@@ -16,7 +16,7 @@ export async function getVendors(): Promise<RouteReport> {
 
 export async function getVendor(id: number): Promise<Vendor> {
 	const result = await pool.execute(
-		"SELECT first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId FROM vendors WHERE id=?",
+		"SELECT first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors WHERE id=?",
 		[id]
 	);
 

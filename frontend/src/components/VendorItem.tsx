@@ -11,7 +11,12 @@ function VendorItem({ vendor }: { vendor: Vendor }) {
 
 	return (
 		<div className="vendor-item">
-			<h1 style={{ textAlign: "center" }}>{vendor.firstName + " " + vendor.lastName}</h1>
+			<h1 style={{ textAlign: "center", margin: 5 }}>{vendor.firstName + " " + vendor.lastName}</h1>
+			<h5
+				style={{ fontWeight: "normal", textAlign: "center", margin: 0, color: vendor.active ? "green" : "red" }}
+			>
+				{vendor.active ? "Aktiv" : "Inaktiv"}
+			</h5>
 
 			<hr className="solid-divider" />
 
