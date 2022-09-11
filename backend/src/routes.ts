@@ -9,7 +9,7 @@ import { createOrUpdateVendorController, getVendorCatalogController } from "./co
 import {
 	getVendorFullController,
 	getVendorWeekController,
-	postSellingDaysController,
+	postArticleRecordsController,
 } from "./controllers/vendor.controller.js";
 import {
 	deleteVendorController,
@@ -36,6 +36,8 @@ function routes(app: Express) {
 		.delete(deleteVendorController);
 
 	app.route("/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
+
+	app.route("/records/:id").get(getVendorWeekController).post(postArticleRecordsController);
 }
 
 export default routes;

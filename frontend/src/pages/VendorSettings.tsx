@@ -1,25 +1,13 @@
-import dayjs from "dayjs";
 import React from "react";
-
 import { useNavigate, useParams } from "react-router-dom";
 import { DELETE, GET, POST, PUT } from "../api";
-import TimeframeSelection from "../components/TimeframeSelection";
-import VendorWeekEntry from "../components/VendorWeekEntry";
 import { useAtom } from "jotai";
-import { setVendorWeekAtom, vendorWeekAtom } from "../components/stores/vendor.store";
 import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
 import { removeVendorAtom } from "../components/stores/vendors.store";
 import { errorMessageAtom } from "../components/stores/utility.store";
-
-const _today = new Date();
-const initialEndDate = dayjs(_today)
-	.add((7 - _today.getDay()) % 7, "days")
-	.toDate();
-
-const labelLeftPadding = { marginLeft: "10px" };
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",

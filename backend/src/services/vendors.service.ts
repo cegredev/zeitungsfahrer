@@ -24,7 +24,13 @@ export async function getVendor(id: number): Promise<Vendor> {
 	return { id, ...result[0][0] };
 }
 
-export async function getVendorFull(id: number): Promise<RouteReport> {
+export async function getVendorFull(id: number): Promise<Vendor> {
+	const vendor = await getVendor(id);
+	const catalog = await getVendorCatalog(id);
+	return { ...vendor, catalog };
+}
+
+export async function getVendorFullRoute(id: number): Promise<RouteReport> {
 	const vendor = await getVendor(id);
 	const catalog = await getVendorCatalog(id);
 	return {

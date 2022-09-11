@@ -31,6 +31,13 @@ export async function getVendorCatalog(vendorId: number): Promise<VendorCatalog>
 	return { vendorId, entries: [...map.values()] };
 }
 
+export async function getVendorCatalogRoute(vendorId: number): Promise<RouteReport> {
+	return {
+		code: 200,
+		body: await getVendorCatalog(vendorId),
+	};
+}
+
 export async function createOrUpdateVendorCatalog(catalog: VendorCatalog): Promise<RouteReport> {
 	for (const entry of catalog.entries) {
 		const included = entry.included ? 1 : 0;

@@ -1,4 +1,4 @@
-import { ArticleWeek } from "backend/src/models/vendor.model";
+import { ArticleRecords } from "backend/src/models/vendor.model";
 import dayjs from "dayjs";
 import React from "react";
 import { POST } from "../api";
@@ -7,18 +7,18 @@ import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {
 	vendorId: number;
-	articleWeek: ArticleWeek;
+	_records: ArticleRecords;
 }
 
-function VendorWeekEntry({ vendorId, articleWeek }: Props) {
-	const [allDays, setAllDays] = React.useState(articleWeek.days);
+function ArticleRecordsItem({ vendorId, _records }: Props) {
+	const [records, setRecords] = React.useState(_records);
 
-	const startDate = React.useMemo(() => new Date(articleWeek.start), [articleWeek.start]);
+	const startDate = React.useMemo(() => new Date(records.start), [records.start]);
 	const weekdayOffset = (6 + startDate.getUTCDay()) % 7; // Sunday is 0 instead of Monday
 
 	return (
 		<div className="vendor-week-entry">
-			<h3>{articleWeek.name}</h3>
+			<h3>{records.name}</h3>
 			<div className="solid-divider" />
 
 			<div className="vendor-table">
@@ -33,53 +33,54 @@ function VendorWeekEntry({ vendorId, articleWeek }: Props) {
 					<div>Betrag Brutto</div>
 				</>
 				{/* Data */}
-				{allDays.map((sellingDay, i) => {
+				{records.records.map((record, i) => {
 					const weekday = (i + weekdayOffset) % 7;
 					const date = dayjs(startDate).add(i, "day").format("DD.MM.YYYY");
+					const soldAmount = record.supply - record.remissions;
 
 					return (
-						<React.Fragment key={"sales-" + articleWeek.id + "-" + i}>
+						<React.Fragment key={"sales-" + records.id + "-" + i}>
 							<div>{date}</div>
 							<div>{weekdays[weekday]}</div>
-							<div>{sellingDay.remissions + sellingDay.sales}</div>
-							{/* <div>{sales.remissions}</div> */}
+							<div className="centering-div">
+								<input
+									type="number"
+									className="article-input"
+									min={record.remissions}
+									max={record.supply}
+									value={record.supply}
+									onChange={(evt) => {
+										const newRecords = [...records.records];
+										newRecords[i] = {
+											...record,
+											supply: parseInt(evt.target.value),
+										};
+										setRecords({ ...records, records: newRecords });
+									}}
+								/>
+							</div>
 							<div className="centering-div">
 								<input
 									type="number"
 									className="article-input"
 									min={0}
-									value={sellingDay.remissions}
+									max={record.supply}
+									value={record.remissions}
 									onChange={(evt) => {
-										const newAllDays = [...allDays];
-										newAllDays[i] = {
-											...sellingDay,
+										const newRecords = [...records.records];
+										newRecords[i] = {
+											...record,
 											remissions: parseInt(evt.target.value),
 										};
-										setAllDays(newAllDays);
+										setRecords({ ...records, records: newRecords });
 									}}
 								/>
 							</div>
-							<div className="centering-div">
-								<input
-									type="number"
-									className="article-input"
-									// style={{ maxWidth: "100%" }}
-									min={0}
-									value={sellingDay.sales}
-									onChange={(evt) => {
-										const newAllSales = [...allDays];
-										newAllSales[i] = {
-											...sellingDay,
-											sales: parseInt(evt.target.value),
-										};
-										setAllDays(newAllSales);
-									}}
-								/>
-							</div>
-							<div>{twoDecimalsFormat.format(sellingDay.sales * sellingDay.price.sell)}</div>
+							<div>{soldAmount}</div>
+							<div>{twoDecimalsFormat.format(soldAmount * record.price.sell)}</div>
 							<div>
 								{twoDecimalsFormat.format(
-									(sellingDay.sales * sellingDay.price.sell * (100 + sellingDay.price.mwst)) / 100
+									(soldAmount * record.price.sell * (100 + record.price.mwst)) / 100
 								)}
 							</div>
 						</React.Fragment>
@@ -91,7 +92,7 @@ function VendorWeekEntry({ vendorId, articleWeek }: Props) {
 					header="Speichern"
 					content={`Wollen Sie das gewählte Element wirklich speichern?`}
 					onYes={() => {
-						POST(`/vendors/${vendorId}`, { articleId: articleWeek.id, days: allDays });
+						POST(`/records/${vendorId}`, records);
 					}}
 				/>
 			</div>
@@ -99,4 +100,4 @@ function VendorWeekEntry({ vendorId, articleWeek }: Props) {
 	);
 }
 
-export default VendorWeekEntry;
+export default ArticleRecordsItem;

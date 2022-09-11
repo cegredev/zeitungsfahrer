@@ -35,7 +35,7 @@ function Dashboard() {
 						<div
 							style={{ flex: 1, userSelect: "none" }}
 							onClick={() => setSelectedIndex(i)}
-							onDoubleClick={() => navigate("/vendors/" + vendor.id)}
+							onDoubleClick={() => navigate("/records/" + vendor.id)}
 						>
 							{vendor.lastName + ", " + vendor.firstName}
 						</div>

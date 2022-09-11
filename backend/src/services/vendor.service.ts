@@ -1,8 +1,9 @@
 import pool, { RouteReport } from "../database.js";
-import { SellingDay, ArticleWeek } from "../models/vendor.model.js";
+import { Record, ArticleRecords, VendorRecords } from "../models/vendor.model.js";
 import dayjs from "dayjs";
 import { Price } from "../models/article.model.js";
 import { DATE_FORMAT } from "../consts.js";
+import { getVendorFull } from "./vendors.service.js";
 
 export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
 	const start = dayjs(end).subtract(6, "days").toDate();
@@ -57,110 +58,116 @@ export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
 	return byArticleByWeekday;
 }
 
-export async function getVendorWeek(vendorId: number, end: Date): Promise<RouteReport> {
-	const res = await pool.execute("SELECT * FROM vendors WHERE id=?", [vendorId]);
-	// @ts-ignore
-	const vendor = res[0][0];
+export async function getVendorRecords(vendorId: number, end: Date): Promise<VendorRecords> {
+	const numOfDays = 7;
 
-	const start = dayjs(end).subtract(6, "days").toDate();
+	const start = dayjs(end)
+		.subtract(numOfDays - 1, "days")
+		.toDate();
 
-	const sellingDaysResponse = await pool.execute(
-		`
-SELECT selling_days.date, selling_days.remissions, selling_days.sales, articles.id as articleId, articles.name
-FROM selling_days
-INNER JOIN articles ON
-	selling_days.article_id=articles.id
-WHERE selling_days.vendor_id=? AND selling_days.date BETWEEN ? AND ?
-ORDER BY articles.id`,
-		[vendorId, start, end]
-	);
+	const vendor = await getVendorFull(vendorId);
 
 	const millisInDay = 24 * 60 * 60 * 1_000,
-		startMillis = start.getTime();
-
-	// @ts-ignore
-	const sellingDays: (SellingDay & { name: string })[] = sellingDaysResponse[0],
-		daysByArticle = new Map<number, (SellingDay | null)[]>();
-
-	// Sorts all days into an array matching their articleId at the index representing their weekday
-	for (const day of sellingDays) {
-		let articleDays = daysByArticle.get(day.articleId!);
-
-		if (articleDays == null) {
-			articleDays = Array(7).fill(null);
-			daysByArticle.set(day.articleId!, articleDays);
-		}
-
-		// Math.round is here as a safety measure. Always make sure to set the time zone to "+00:00" in your MySQL server!
-		const index = Math.round((day.date.getTime() - startMillis) / millisInDay);
-		articleDays![index] = { ...day };
-	}
-
-	const allPrices: Map<number, Price[][]> = await getPrices(end);
-
-	const weeks = new Map<number, ArticleWeek>(),
+		startMillis = start.getTime(),
 		startWeekday = (6 + start.getUTCDay()) % 7;
 
-	for (const [articleId, prices] of allPrices.entries()) {
-		let days = daysByArticle.get(articleId) || Array(7).fill(null);
+	const includedArticleRecords: Map<number, ArticleRecords> = new Map();
+	for (const entry of vendor.catalog!.entries) {
+		if (entry.included) {
+			const response = await pool.execute(
+				`
+				SELECT records.date, supply, remissions
+				FROM records
+				WHERE records.vendor_id=? AND records.article_id=? AND records.date BETWEEN ? AND ?
+				ORDER BY records.article_id
+			`,
+				[vendorId, entry.articleId, start, end]
+			);
 
-		days = days.map((day, index) => {
-			const possiblePrices = prices[(startWeekday + index) % 7];
+			const catalogEntry = vendor.catalog!.entries.find((e) => e.articleId === entry.articleId)!;
+
+			const articleRecords = {
+				id: entry.articleId,
+				name: entry.articleName,
+				start,
+				records: Array(numOfDays)
+					.fill(null)
+					.map((_, index) => ({
+						date: dayjs(start).add(index, "days").toDate(),
+						supply: catalogEntry.supplies[(startWeekday + index) % 7],
+						remissions: 0,
+					})),
+			};
+
+			// @ts-ignore
+			const records: Record[] = response[0];
+			for (const record of records) {
+				const index = Math.round((record.date.getTime() - startMillis) / millisInDay);
+				articleRecords.records[index] = record;
+			}
+
+			// @ts-ignore FIXME
+			includedArticleRecords.set(entry.articleId, articleRecords);
+		}
+	}
+
+	const allPrices = await getPrices(end);
+
+	for (const [articleId, prices] of allPrices.entries()) {
+		const articleRecords = includedArticleRecords.get(articleId);
+		if (articleRecords == null) continue;
+
+		articleRecords.records = articleRecords.records.map((record, index) => {
+			const weekday = (startWeekday + index) % 7;
+			const possiblePrices = prices[weekday];
 
 			const date =
-				day?.date ||
+				record?.date ||
 				dayjs(end)
-					.subtract(6 - index, "days")
+					.subtract(numOfDays - 1 - index, "days")
 					.toDate();
 
-			const price = possiblePrices.find((p) => p.startDate <= date && (p.endDate == null || p.endDate > date));
+			const price = possiblePrices.find((p) => p.startDate <= date && (p.endDate == null || p.endDate > date))!;
 
-			return day == null
+			return record == null
 				? {
 						date,
+						supply: 10,
 						remissions: 0,
-						sales: 0,
 						price,
 				  }
-				: { ...day, price };
+				: { ...record, price };
 		});
-
-		const week = {
-			id: articleId,
-			// @ts-ignore
-			name: (await pool.execute("SELECT name FROM articles WHERE id=?", [articleId]))[0][0].name,
-			start,
-			// @ts-ignore
-			days,
-		};
-
-		weeks.set(articleId, week);
 	}
 
 	return {
-		code: 200,
-		body: { ...vendor, articleWeeks: [...weeks.values()] },
+		id: vendorId,
+		name: vendor.firstName + " " + vendor.lastName,
+		articleRecords: [...includedArticleRecords.values()],
 	};
 }
 
-export async function createOrUpdateSellingDays(
-	vendorId: number,
-	articleId: number,
-	days: SellingDay[]
-): Promise<RouteReport> {
-	for (const day of days) {
+export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
+	return {
+		code: 200,
+		body: await getVendorRecords(vendorId, end),
+	};
+}
+
+export async function createOrUpdateArticleRecords(vendorId: number, records: ArticleRecords): Promise<RouteReport> {
+	for (const record of records.records) {
 		pool.execute(
-			`INSERT INTO selling_days (date, article_id, vendor_id, remissions, sales) VALUES (?, ?, ?, ?, ?)
+			`INSERT INTO records (date, article_id, vendor_id, supply, remissions) VALUES (?, ?, ?, ?, ?)
 			ON DUPLICATE KEY
-			UPDATE remissions=?, sales=?`,
+			UPDATE supply=?, remissions=?`,
 			[
-				dayjs(day.date).format("YYYY-MM-DD"),
-				articleId,
+				dayjs(record.date).format("YYYY-MM-DD"),
+				records.id,
 				vendorId,
-				day.remissions,
-				day.sales,
-				day.remissions,
-				day.sales,
+				record.supply,
+				record.remissions,
+				record.supply,
+				record.remissions,
 			]
 		);
 	}

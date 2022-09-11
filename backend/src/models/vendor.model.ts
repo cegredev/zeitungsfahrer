@@ -1,24 +1,26 @@
 import { Price } from "./article.model.js";
 import { Vendor } from "./vendors.model.js";
 
-export interface SellingDay {
+export interface Record {
 	articleId?: number;
 	date: Date;
+	supply: number;
 	remissions: number;
-	sales: number;
 	price: Price;
 }
 
-export interface ArticleWeek {
+export interface ArticleRecords {
 	id: number;
 	name: string;
 	start: Date;
 	/**
 	 * Maps article ID to sales.
 	 */
-	days: SellingDay[];
+	records: Record[];
 }
 
-export interface VendorWeek extends Vendor {
-	articleWeeks: ArticleWeek[];
+export interface VendorRecords {
+	id: number;
+	name: string;
+	articleRecords: ArticleRecords[];
 }

@@ -9,15 +9,6 @@ import LabeledCheckbox from "./util/LabeledCheckbox";
 function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }) {
 	const [catalog, setCatalog] = React.useState<VendorCatalog>(_catalog);
 
-	// React.useEffect(() => {
-	// 	const fetchArticles = async () => {
-	// 		const response = await GET("/vendors/1");
-	// 		setCatalog(await response.json());
-	// 	};
-
-	// 	fetchArticles();
-	// }, [setCatalog]);
-
 	return (
 		<div style={{ maxWidth: 600 }}>
 			{catalog &&
@@ -27,7 +18,7 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 							<LabeledCheckbox
 								text={entry.articleName}
 								value={entry.included}
-								setValue={(val) => {
+								setValue={() => {
 									const newEntries = catalog.entries.map((e) =>
 										e.articleId === entry.articleId ? { ...entry, included: !e.included } : e
 									);
@@ -43,28 +34,6 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 									});
 								}}
 							/>
-							{/* <div style={{ display: "flex", flexDirection: "row" }}>
-								<input
-									type="checkbox"
-									checked={entry.included}
-									onChange={() => {
-										const newEntries = catalog.entries.map((e) =>
-											e.articleId === entry.articleId ? { ...entry, included: !e.included } : e
-										);
-
-										setCatalog({
-											...catalog,
-											entries: newEntries,
-										});
-
-										POST("/vendors/" + catalog.vendorId, {
-											vendorId: catalog.vendorId,
-											entries: newEntries,
-										});
-									}}
-								/>
-								<div>{entry.articleName}</div> */}
-							{/* </div> */}
 
 							{entry.included && (
 								<div

@@ -12,6 +12,7 @@ import Footer from "./components/Footer";
 import Vendors from "./pages/Vendors";
 import Articles from "./pages/Articles";
 import Settings from "./pages/Settings";
+import Records from "./pages/Records";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -39,6 +40,7 @@ function AppContentWrapper() {
 				<Route path="/articles" element={<Articles />} />
 				<Route path="/vendors" element={<Vendors />} />
 				<Route path="/vendors/:id" element={<VendorSettings />} />
+				<Route path="/records/:id" element={<Records />} />
 				<Route path="/settings" element={<Settings />} />
 				<Route path="*" element={<Error404 />} />
 			</Routes>
