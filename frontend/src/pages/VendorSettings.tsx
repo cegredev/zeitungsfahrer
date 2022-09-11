@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 import React from "react";
 
-import { useParams } from "react-router-dom";
-import { GET, PUT } from "../api";
+import { useNavigate, useParams } from "react-router-dom";
+import { DELETE, GET, POST, PUT } from "../api";
 import TimeframeSelection from "../components/TimeframeSelection";
 import VendorWeekEntry from "../components/VendorWeekEntry";
 import { useAtom } from "jotai";
@@ -10,6 +10,9 @@ import { setVendorWeekAtom, vendorWeekAtom } from "../components/stores/vendor.s
 import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
+import LabeledCheckbox from "../components/util/LabeledCheckbox";
+import { removeVendorAtom } from "../components/stores/vendors.store";
+import { errorMessageAtom } from "../components/stores/utility.store";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -29,31 +32,37 @@ const headerCSS: React.CSSProperties = {
 };
 
 function VendorSettings() {
-	const params = useParams();
+	const navigate = useNavigate();
+
+	const id = useParams().id!;
+	const isDraft = id === "create";
 
 	const [vendor, setVendor] = React.useState<Vendor | null>(null);
+	const [, removeVendor] = useAtom(removeVendorAtom);
+
+	const [, setErrorMessage] = useAtom(errorMessageAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			let data: Vendor | null = null;
 
-			if (params.id === "create") {
+			if (isDraft) {
 				const template = {
 					firstName: "",
 					lastName: "",
 					address: "",
-					zipCode: 0,
+					zipCode: "",
 					city: "",
 					email: "",
 					phone: "",
-					taxId: 0,
+					taxId: "",
 					active: true,
 				};
 
-				const response = await GET("/vendors/" + params.id + "?catalogOnly=true");
+				const response = await GET("/vendors/" + id + "?catalogOnly=true");
 				data = { ...template, catalog: await response.json() };
 			} else {
-				const response = await GET("/vendors/" + params.id);
+				const response = await GET("/vendors/" + id);
 				data = await response.json();
 			}
 
@@ -61,7 +70,7 @@ function VendorSettings() {
 		}
 
 		fetchData();
-	}, [setVendor, params.id]);
+	}, [setVendor, isDraft, id]);
 
 	return (
 		<div className="page vendor-settings" style={{ padding: 20 }}>
@@ -104,7 +113,7 @@ function VendorSettings() {
 							type="number"
 							value={vendor.zipCode}
 							onChange={(evt) => {
-								setVendor({ ...vendor, zipCode: parseInt(evt.target.value) });
+								setVendor({ ...vendor, zipCode: evt.target.value });
 							}}
 						/>
 						<label htmlFor="city">Ort:</label>
@@ -149,21 +158,19 @@ function VendorSettings() {
 							type="number"
 							value={vendor.taxId}
 							onChange={(evt) => {
-								setVendor({ ...vendor, taxId: parseInt(evt.target.value) });
+								setVendor({ ...vendor, taxId: evt.target.value });
 							}}
 						/>
 
-						<div>
-							<input
-								name="active"
-								type="checkbox"
-								checked={vendor.active}
-								onChange={() => {
+						{!isDraft && (
+							<LabeledCheckbox
+								text="Aktiv"
+								value={vendor.active}
+								setValue={() => {
 									setVendor({ ...vendor, active: !vendor.active });
 								}}
 							/>
-							<label htmlFor="active">Aktiv </label>
-						</div>
+						)}
 					</div>
 
 					<YesNoPrompt
@@ -171,14 +178,51 @@ function VendorSettings() {
 						header="Speichern"
 						content={`Wollen Sie die Änderungen wirklich speichern?`}
 						onYes={async () => {
-							console.log(vendor);
-							PUT("/vendors", vendor);
+							if (isDraft) {
+								const response = await POST("/vendors", vendor);
+								const data = await response.json();
+								navigate(`/vendors/${data.id}`);
+								navigate(0);
+							} else {
+								await PUT("/vendors", vendor);
+							}
 						}}
 					/>
+					{!isDraft && (
+						<React.Fragment>
+							<hr className="solid-divider" style={{ marginTop: 30 }} />
+							<h3 style={headerCSS}>Artikel</h3>
+							<VendorCatalogSettings catalog={vendor.catalog!} />
+						</React.Fragment>
+					)}
+
 					<hr className="solid-divider" style={{ marginTop: 30 }} />
 
-					<h3 style={headerCSS}>Artikel</h3>
-					<VendorCatalogSettings catalog={vendor.catalog!} />
+					<div style={{ ...spanWhole, textAlign: "center", marginTop: 25 }}>
+						<YesNoPrompt
+							trigger={<button style={{ color: "red", fontSize: "medium" }}>Händler löschen</button>}
+							header={"Löschen"}
+							content={`Wollen Sie den Händler "${
+								vendor.firstName + " " + vendor.lastName
+							}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
+							onYes={async () => {
+								console.log(Object.values(vendor).map((val) => String(val)));
+
+								if (
+									Object.values(vendor)
+										.map((val) => String(val).length)
+										.some((length) => length === 0)
+								) {
+									setErrorMessage("Bitte füllen Sie alle Felder aus.");
+									return;
+								}
+
+								await DELETE("/vendors", { id: vendor.id! });
+								removeVendor(vendor.id!);
+								navigate("/vendors");
+							}}
+						/>
+					</div>
 				</div>
 			)}
 		</div>

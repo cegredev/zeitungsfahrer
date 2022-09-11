@@ -12,7 +12,7 @@ import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
-import { clearErrorMessageAtom, errorMessageAtom } from "./stores/utility.store";
+import { errorMessageAtom } from "./stores/utility.store";
 import Popup from "reactjs-popup";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
@@ -40,8 +40,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const [, removeArticle] = useAtom(removeArticleAtom);
 	const [, finishArticle] = useAtom(finishArticleAtom);
 	const [, cancelDraft] = useAtom(cancelArticleDraftAtom);
-	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
-	const [, clearErrorMessage] = useAtom(clearErrorMessageAtom);
+	const [, setErrorMessage] = useAtom(errorMessageAtom);
 
 	const isDraft = article.id == null;
 	const cancelText = isDraft ? "Verwerfen" : "Löschen";
@@ -167,18 +166,6 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 				}}
 			/>
 
-			<Popup open={errorMessage.length > 0} closeOnDocumentClick onClose={clearErrorMessage}>
-				<div className="modal">
-					<div className="header" style={{ color: "red" }}>
-						Fehler
-					</div>
-					<div className="content">{errorMessage}</div>
-					<div className="actions">
-						<button onClick={clearErrorMessage}>Okay</button>
-					</div>
-				</div>
-			</Popup>
-
 			<YesNoPrompt
 				trigger={<button style={{ color: "green", gridColumnStart: 11 }}>{saveText}</button>}
 				header={saveText}
@@ -189,8 +176,6 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 					if (isDraft) {
 						const res = await POST("/articles", { ...info, startDate: new Date() });
 						const body = await res.json();
-
-						console.log(body);
 
 						if (res.ok) {
 							info.id = body.id;

@@ -72,9 +72,9 @@ export async function createArticle(name: string, prices: Price[]): Promise<Rout
 	const result = await pool.execute(`INSERT IGNORE INTO articles (name) VALUES (?)`, [name]);
 
 	// @ts-ignore
-	const id: number | null = result[0].insertId;
+	const id: number = result[0].insertId;
 
-	await createPrices(new Date("1970-01-01"), id!, prices);
+	await createPrices(new Date("1970-01-01"), id, prices);
 
 	return {
 		code: 201,

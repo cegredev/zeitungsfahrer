@@ -34,8 +34,8 @@ export async function getVendorFull(id: number): Promise<RouteReport> {
 }
 
 export async function createVendor(vendor: Vendor): Promise<RouteReport> {
-	await pool.execute(
-		`INSERT INTO vendors (first_name, last_name, address, zip_code, city, email, phone, tax_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+	const response = await pool.execute(
+		`INSERT INTO vendors (first_name, last_name, address, zip_code, city, email, phone, tax_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		[
 			vendor.firstName,
 			vendor.lastName,
@@ -48,8 +48,12 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 		]
 	);
 
+	// @ts-ignore
+	const id: number = response[0].insertId;
+
 	return {
 		code: 200,
+		body: { id },
 	};
 }
 
@@ -62,13 +66,13 @@ export async function updateVendor({
 	city,
 	email,
 	phone,
+	active,
 	taxId,
 }: // catalog,
 Vendor): Promise<RouteReport> {
-	console.log([firstName, lastName, address, zipCode, city, email, phone, taxId, id]);
 	await pool.execute(
-		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=? WHERE id=?",
-		[firstName, lastName, address, zipCode, city, email, phone, taxId, id]
+		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=?, active=? WHERE id=?",
+		[firstName, lastName, address, zipCode, city, email, phone, taxId, active, id]
 	);
 
 	// if (catalog != null) {

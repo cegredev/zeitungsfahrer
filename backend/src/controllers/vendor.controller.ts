@@ -16,8 +16,6 @@ export async function getVendorFullController(
 	req: Request<{ id: number }, any, any, { catalogOnly: "false" | "true" }>,
 	res: Response<VendorWeek>
 ) {
-	console.log(req.query.catalogOnly);
-
 	if (req.query.catalogOnly === "true") {
 		handler(async () => ({ code: 200, body: await getVendorCatalog(req.params.id) }), res);
 	} else {

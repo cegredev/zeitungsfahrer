@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import React from "react";
 import { GET, POST } from "../api";
 import { weekdaysShort } from "../consts";
+import LabeledCheckbox from "./util/LabeledCheckbox";
 
 function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }) {
 	const [catalog, setCatalog] = React.useState<VendorCatalog>(_catalog);
@@ -17,15 +18,32 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 	// 	fetchArticles();
 	// }, [setCatalog]);
 
-	console.log(catalog);
-
 	return (
 		<div style={{ maxWidth: 600 }}>
 			{catalog &&
 				catalog.entries.map((entry, entryIndex) => {
 					return (
 						<React.Fragment key={"article-supplies-" + entry.articleId}>
-							<div style={{ display: "flex", flexDirection: "row" }}>
+							<LabeledCheckbox
+								text={entry.articleName}
+								value={entry.included}
+								setValue={(val) => {
+									const newEntries = catalog.entries.map((e) =>
+										e.articleId === entry.articleId ? { ...entry, included: !e.included } : e
+									);
+
+									setCatalog({
+										...catalog,
+										entries: newEntries,
+									});
+
+									POST("/vendors/" + catalog.vendorId, {
+										vendorId: catalog.vendorId,
+										entries: newEntries,
+									});
+								}}
+							/>
+							{/* <div style={{ display: "flex", flexDirection: "row" }}>
 								<input
 									type="checkbox"
 									checked={entry.included}
@@ -45,8 +63,8 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 										});
 									}}
 								/>
-								<div>{entry.articleName}</div>
-							</div>
+								<div>{entry.articleName}</div> */}
+							{/* </div> */}
 
 							{entry.included && (
 								<div
@@ -62,21 +80,24 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 									{entry.supplies!.map((supply, i) => (
 										<div key={"supply-input-" + i} className="centering-div">
 											<input
-												value={supply}
+												value={supply === -1 ? "" : supply}
 												style={{ width: "80%" }}
 												type="number"
 												min={0}
 												onChange={(evt) => {
+													const value = evt.target.value;
+													const isValid = value.length > 0;
+
 													const newEntries = [...catalog.entries];
 													const newSupplies = [...newEntries[entryIndex].supplies];
-													newSupplies[i] = parseInt(evt.target.value);
+													newSupplies[i] = isValid ? parseInt(value) : -1;
 													newEntries[entryIndex].supplies = newSupplies;
 													setCatalog({
 														...catalog,
 														entries: newEntries,
 													});
 
-													POST("/vendors/" + catalog.vendorId, catalog);
+													if (isValid) POST("/vendors/" + catalog.vendorId, catalog);
 												}}
 											/>
 										</div>

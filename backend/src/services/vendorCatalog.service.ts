@@ -9,8 +9,6 @@ export async function getVendorCatalog(vendorId: number): Promise<VendorCatalog>
 		[vendorId, vendorId]
 	);
 
-	console.log("response, ", response[0]);
-
 	const map = new Map<number, VendorCatalogEntry>();
 	// @ts-ignore
 	for (const { name, articleId, weekday, supply, included } of response[0]) {
@@ -27,12 +25,8 @@ export async function getVendorCatalog(vendorId: number): Promise<VendorCatalog>
 			map.set(articleId, article);
 		}
 
-		// console.log(articleId, map.get(2)?.supplies);
-
 		article.supplies![weekday] = supply;
 	}
-
-	// console.log(map.values());
 
 	return { vendorId, entries: [...map.values()] };
 }

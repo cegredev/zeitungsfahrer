@@ -5,11 +5,11 @@ export interface Vendor {
 	firstName: string;
 	lastName: string;
 	address: string;
-	zipCode: number;
+	zipCode: string;
 	city: string;
 	email: string;
 	phone: string;
-	taxId: number;
+	taxId: string;
 	active: boolean;
 	catalog?: VendorCatalog;
 }
