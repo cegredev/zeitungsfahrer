@@ -140,10 +140,25 @@ export async function getVendorRecords(vendorId: number, end: Date): Promise<Ven
 		});
 	}
 
+	const articleRecords = [...includedArticleRecords.values()].map((records) => {
+		const prices = records.records.map((record) => [
+			(record.supply - record.remissions) * record.price.sell,
+			record.price.mwst,
+		]);
+
+		return {
+			...records,
+			totalValueNetto: prices.map(([price, _mwst]) => price).reduce((prev, current) => prev + current),
+			totalValueBrutto: prices
+				.map(([price, mwst]) => price * (1.0 + mwst / 100))
+				.reduce((prev, current) => prev + current),
+		};
+	});
+
 	return {
 		id: vendorId,
 		name: vendor.firstName + " " + vendor.lastName,
-		articleRecords: [...includedArticleRecords.values()],
+		articleRecords,
 	};
 }
 

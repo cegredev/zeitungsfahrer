@@ -13,6 +13,8 @@ export interface ArticleRecords {
 	id: number;
 	name: string;
 	start: Date;
+	totalValueNetto: number;
+	totalValueBrutto: number;
 	/**
 	 * Maps article ID to sales.
 	 */

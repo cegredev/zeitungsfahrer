@@ -7,6 +7,7 @@ import TimeframeSelection from "../components/TimeframeSelection";
 import { useAtom } from "jotai";
 import { vendorRecordsAtom } from "../components/stores/vendor.store";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
+import { twoDecimalsFormat } from "../consts";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -37,9 +38,43 @@ function Records() {
 			{vendorRecords == null ? (
 				"Laden..."
 			) : (
-				<React.Fragment>
+				<div style={{ maxWidth: 800, display: "flex", flexDirection: "column", alignItems: "center" }}>
 					<h1>{vendorRecords.name}</h1>
 					<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
+					<div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
+						<div style={{ flex: 1 }}></div>
+						<div
+							style={{
+								display: "flex",
+								flexDirection: "row",
+								fontWeight: "bold",
+								justifyContent: "flex-end",
+								gap: 20,
+								backgroundColor: "lightgray",
+								padding: 5,
+								margin: 5,
+								borderRadius: 5,
+							}}
+						>
+							<div style={{ gridColumnStart: 5 }}>Gesamt:</div>
+							<div>
+								{twoDecimalsFormat.format(
+									vendorRecords.articleRecords
+										.map((records) => records.totalValueNetto)
+										.reduce((prev, current) => prev + current)
+								)}{" "}
+								(Netto)
+							</div>
+							<div>
+								{twoDecimalsFormat.format(
+									vendorRecords.articleRecords
+										.map((records) => records.totalValueBrutto)
+										.reduce((prev, current) => prev + current)
+								)}{" "}
+								(Brutto)
+							</div>
+						</div>
+					</div>
 					{vendorRecords.articleRecords.map((articleRecords) => (
 						<ArticleRecordsItem
 							key={"vendor-week-" + vendorId + "-" + articleRecords.id + "-" + articleRecords.start}
@@ -47,7 +82,7 @@ function Records() {
 							_records={articleRecords}
 						/>
 					))}
-				</React.Fragment>
+				</div>
 			)}
 		</div>
 	);

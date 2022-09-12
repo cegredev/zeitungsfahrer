@@ -40,14 +40,12 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 }
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
-	// TODO: Test that this works!
-
-	const response = await pool.execute(`
-		SELECT articles.name, records.supply, records.remissions FROM articles
-		LEFT JOIN records ON articles.id=records.article_id
-		WHERE records.vendor_id=?
+	const response = await pool.execute(
+		`
+		SELECT articles.name, vendor_supplies.supply FROM articles
+		LEFT JOIN vendor_supplies ON articles.id=vendor_supplies.article_id AND vendor_supplies.vendor_id=? AND vendor_supplies.weekday=?
 	`,
-		[vendorId]
+		[vendorId, (6 + new Date().getDay()) % 7]
 	);
 
 	return {

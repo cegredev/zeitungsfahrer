@@ -1,7 +1,7 @@
 import { Vendor } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import logger from "../logger.js";
-import { createOrUpdateVendorCatalog, getVendorCatalog } from "./vendorCatalog.service.js";
+import { getVendorCatalog } from "./vendorCatalog.service.js";
 
 export async function getVendors(): Promise<RouteReport> {
 	const result = await pool.execute(

@@ -41,7 +41,7 @@ function routes(app: Express) {
 	app.route("/records/:id").get(getVendorWeekController).post(postArticleRecordsController);
 
 	// FIXME Make this smarter
-	app.route("/todaysRecords/:id").get(getTodaysArticleRecordsController);
+	app.route("/todaysRecords/:vendorId").get(getTodaysArticleRecordsController);
 }
 
 export default routes;

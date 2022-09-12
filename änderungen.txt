@@ -1,9 +1,3 @@
-- daten werden bei andleren händlern gespeichert
-- gesamt abrechungnen auch pro zeitfenster
 - monatlich mit 1.1. anfangen
-- händler artikel
 - verschiedene bildschirmgrößen
-- händler über einstellung aufnehmen
-- händler sollen ausgestellt werden können über einstellungen
 - häkchen stehen für wer schon da war
-- artikel zeigt wie viele artikel er am aktuellen tag bekommt

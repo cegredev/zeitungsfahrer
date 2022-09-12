@@ -88,13 +88,18 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 				})}
 
 				<YesNoPrompt
-					trigger={<button style={{ color: "green", gridColumnStart: 7 }}>Speichern</button>}
+					trigger={<button style={{ color: "green" }}>Speichern</button>}
 					header="Speichern"
 					content={`Wollen Sie das gewählte Element wirklich speichern?`}
 					onYes={() => {
 						POST(`/records/${vendorId}`, records);
 					}}
 				/>
+
+				<div style={{ gridColumnStart: 6, fontWeight: "bold" }}>
+					{twoDecimalsFormat.format(records.totalValueNetto)}
+				</div>
+				<div style={{ fontWeight: "bold" }}>{twoDecimalsFormat.format(records.totalValueBrutto)}</div>
 			</div>
 		</div>
 	);
