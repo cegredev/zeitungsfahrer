@@ -13,12 +13,15 @@ const mockServer = MockServer.Create(config);
 const app = mockServer.app;
 
 // Sets global injectors, middlewares, store and rewriters
-mockServer.setData({
-  injectors: "./injectors.json",
-  middlewares: "./middlewares.js",
-  store: "./store.json",
-  rewriters: "./rewriters.json"
-}, { log }); // pass mockServer instance to use it in middleware.js method
+mockServer.setData(
+	{
+		injectors: "./injectors.json",
+		middlewares: "./middlewares.js",
+		store: "./store.json",
+		rewriters: "./rewriters.json",
+	},
+	{ log }
+); // pass mockServer instance to use it in middleware.js method
 
 // Make sure to use this at first, before all the resources
 const rewriter = mockServer.rewriter();
@@ -33,8 +36,8 @@ const isAuthorized = (_req) => true;
 
 // Custom Middleware
 app.use((req, res, next) => {
-  if (isAuthorized(req)) return next(); // continue to Mock Server router
-  res.sendStatus(401);
+	if (isAuthorized(req)) return next(); // continue to Mock Server router
+	res.sendStatus(401);
 });
 
 // Custom Routes

@@ -39,6 +39,23 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	};
 }
 
+export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
+	// TODO: Test that this works!
+
+	const response = await pool.execute(`
+		SELECT articles.name, records.supply, records.remissions FROM articles
+		LEFT JOIN records ON articles.id=records.article_id
+		WHERE records.vendor_id=?
+	`,
+		[vendorId]
+	);
+
+	return {
+		code: 200,
+		body: response[0],
+	};
+}
+
 export async function createPrices(startDate: Date, articleId: number, prices: Price[]): Promise<void> {
 	await pool.query(
 		"INSERT INTO prices (start_date, weekday, article_id, mwst, purchase, sell, market_sell) VALUES " +

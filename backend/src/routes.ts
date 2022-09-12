@@ -4,8 +4,9 @@ import {
 	postArticleController,
 	deleteArticleController,
 	putArticleController,
+	getTodaysArticleRecordsController,
 } from "./controllers/article.controller.js";
-import { createOrUpdateVendorController, getVendorCatalogController } from "./controllers/venderCatalog.controller.js";
+import { createOrUpdateVendorController } from "./controllers/venderCatalog.controller.js";
 import {
 	getVendorFullController,
 	getVendorWeekController,
@@ -38,6 +39,9 @@ function routes(app: Express) {
 	app.route("/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
 
 	app.route("/records/:id").get(getVendorWeekController).post(postArticleRecordsController);
+
+	// FIXME Make this smarter
+	app.route("/todaysRecords/:id").get(getTodaysArticleRecordsController);
 }
 
 export default routes;

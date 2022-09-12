@@ -1,4 +1,22 @@
 {
+	"todaysRecords": [
+		{
+			"name": "Zeit",
+			"sold": 3
+		},
+		{
+			"name": "Zeit",
+			"sold": 0
+		},
+		{
+			"name": "Zeit",
+			"sold": 3
+		},
+		{
+			"name": "Zeit",
+			"sold": 3
+		}
+	],
 	"vendors": [
 		{
 			"name": "Händler 1",

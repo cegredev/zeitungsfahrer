@@ -16,10 +16,14 @@
 		"winston": "^3.8.1"
 	},
 	"scripts": {
-		"start": "nodemon src/app.ts"
+		"start": "nodemon src/app.ts",
+		"mocks": "mocks-server"
 	},
 	"type": "module",
 	"engines": {
 		"node": "16.x"
+	},
+	"devDependencies": {
+		"@mocks-server/main": "^3.12.0"
 	}
 }
