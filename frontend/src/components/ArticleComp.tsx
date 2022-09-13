@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { Article as ArticleInfo } from "backend/src/models/articles.model";
+import { Article } from "backend/src/models/articles.model";
 import {
 	finishArticleAtom,
 	removeArticleAtom,
@@ -31,7 +31,7 @@ const gridSpan3: React.CSSProperties = {
 	gridColumn: "span 3",
 };
 
-function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
+function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 	const [article, setArticle] = React.useState({ id: articleInfo.id, name: articleInfo.name });
 	const [prices, setPrices] = React.useState(articleInfo.prices);
 
@@ -200,4 +200,4 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	);
 }
 
-export default Article;
+export default ArticleComp;
