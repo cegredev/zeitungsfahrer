@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { GET } from "../api";
 import TimeframeSelection from "../components/TimeframeSelection";
 import { useAtom } from "jotai";
-import { vendorRecordsAtom } from "../components/stores/vendor.store";
+import { vendorRecordsAtom } from "../components/stores/vendors.store";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
 import { twoDecimalsFormat } from "../consts";
 

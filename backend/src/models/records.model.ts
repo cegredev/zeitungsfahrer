@@ -1,5 +1,4 @@
-import { Price } from "./article.model.js";
-import { Vendor } from "./vendors.model.js";
+import { Price } from "./articles.model.js";
 
 export interface Record {
 	articleId?: number;

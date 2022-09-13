@@ -1,7 +1,10 @@
 import { atom } from "jotai";
 import { Vendor } from "backend/src/models/vendors.model";
+import { VendorRecords } from "backend/src/models/records.model";
 
 export const vendorsListAtom = atom<Vendor[]>([]);
+
+export const vendorRecordsAtom = atom<VendorRecords | undefined>(undefined);
 
 export const setVendorsAtom = atom(undefined, (_get, set, vendors: Vendor[]) => {
 	set(vendorsListAtom, vendors);

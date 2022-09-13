@@ -1,6 +1,16 @@
 import { Request, Response } from "express";
+import { VendorRecords } from "../models/records.model.js";
 import { Vendor } from "../models/vendors.model.js";
-import { createVendor, deleteVendor, getVendors, updateVendor } from "../services/vendors.service.js";
+import {
+	createOrUpdateVendorCatalog,
+	createVendor,
+	deleteVendor,
+	getVendorCatalog,
+	getVendorCatalogRoute,
+	getVendorFullRoute,
+	getVendors,
+	updateVendor,
+} from "../services/vendors.service.js";
 import { handler } from "./controllers.js";
 
 export async function getVendorsController(req: Request, res: Response) {
@@ -17,4 +27,19 @@ export async function putVendorController(req: Request<any, any, Vendor>, res: R
 
 export async function deleteVendorController(req: Request<any, any, { id: number }>, res: Response) {
 	await handler(async () => await deleteVendor(req.body.id), res);
+}
+
+export async function getVendorFullController(
+	req: Request<{ id: number }, any, any, { catalogOnly: "false" | "true" }>,
+	res: Response<VendorRecords>
+) {
+	if (req.query.catalogOnly === "true") {
+		await handler(async () => await getVendorCatalogRoute(req.params.id), res);
+	} else {
+		await handler(async () => await getVendorFullRoute(req.params.id), res);
+	}
+}
+
+export async function createOrUpdateVendorController(req: Request<Vendor>, res: Response) {
+	await handler(async () => createOrUpdateVendorCatalog(req.body), res);
 }

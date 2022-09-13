@@ -1,8 +1,6 @@
-import { Article } from "backend/src/models/article.model";
-import { VendorCatalog } from "backend/src/models/vendorCatalog.model";
-import dayjs from "dayjs";
+import { VendorCatalog } from "backend/src/models/vendors.model";
 import React from "react";
-import { GET, POST } from "../api";
+import { POST } from "../api";
 import { weekdaysShort } from "../consts";
 import LabeledCheckbox from "./util/LabeledCheckbox";
 

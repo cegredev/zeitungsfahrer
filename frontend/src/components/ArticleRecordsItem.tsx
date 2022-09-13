@@ -1,4 +1,4 @@
-import { ArticleRecords } from "backend/src/models/vendor.model";
+import { ArticleRecords } from "backend/src/models/records.model";
 import dayjs from "dayjs";
 import React from "react";
 import { POST } from "../api";

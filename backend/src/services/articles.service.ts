@@ -1,7 +1,60 @@
-import { Article, Price, validatePrices } from "../models/article.model.js";
+import { Article, Price, validatePrices } from "../models/articles.model.js";
 import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
-import { getVendorRecords } from "./vendor.service.js";
+import { DATE_FORMAT } from "../consts.js";
+
+export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
+	const start = dayjs(end).subtract(6, "days").toDate();
+
+	const response = await pool.execute(
+		`SELECT start_date as startDate, weekday, article_id as articleId, mwst, purchase, sell, market_sell as marketSell, end_date as endDate
+		FROM prices
+		WHERE start_date <= ? AND (end_date > ? OR end_date IS NULL)
+		ORDER BY start_date`,
+		[dayjs(end).format(DATE_FORMAT), dayjs(start).format(DATE_FORMAT)]
+	);
+
+	const byArticleByWeekday = new Map<number, Price[][]>();
+
+	// @ts-ignore
+	for (const price of response[0]) {
+		let byWeekday = byArticleByWeekday.get(price.articleId);
+
+		if (byWeekday == null) {
+			byWeekday = Array(7)
+				.fill(null)
+				.map(() => []);
+			byArticleByWeekday.set(price.articleId, byWeekday);
+		}
+
+		byWeekday[price.weekday].push(price);
+	}
+
+	const startWeekday = (6 + start.getUTCDay()) % 7;
+
+	for (const [key, week] of byArticleByWeekday.entries()) {
+		byArticleByWeekday.set(
+			key,
+			week.map((prices, index) =>
+				prices.length === 0
+					? [
+							{
+								startDate: end,
+								weekday: (startWeekday + index) % 7,
+								articleId: key,
+								mwst: 0,
+								purchase: 0,
+								sell: 0,
+								marketSell: 0,
+							},
+					  ]
+					: prices
+			)
+		);
+	}
+
+	return byArticleByWeekday;
+}
 
 export async function getArticles(atDate: Date): Promise<RouteReport> {
 	const result = await pool.execute(
@@ -37,32 +90,6 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	return {
 		code: 200,
 		body: [...articles.values()],
-	};
-}
-
-export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
-	const response = await pool.execute(
-		`
-		SELECT articles.name, vendor_supplies.supply FROM articles
-		LEFT JOIN vendor_supplies ON articles.id=vendor_supplies.article_id AND vendor_supplies.vendor_id=? AND vendor_supplies.weekday=?
-	`,
-		[vendorId, (6 + new Date().getDay()) % 7]
-	);
-
-	const vendorRecords = await getVendorRecords(vendorId, new Date(), new Date());
-
-	return {
-		code: 200,
-		body: {
-			articles: [...response[0]],
-			// articles: vendorRecords.articleRecords.map((record) => ({
-			// 	name: record.name,
-			// 	supply: record.records[0]!.supply,
-			// })),
-			totalValueBrutto: vendorRecords.articleRecords
-				.map((records) => records.totalValueBrutto)
-				.reduce((prev, current) => prev + current, 0),
-		},
 	};
 }
 

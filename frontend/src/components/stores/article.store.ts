@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { Article } from "backend/src/models/article.model";
+import { Article } from "backend/src/models/articles.model";
 
 function createEmptyArticle(): Article {
 	return {

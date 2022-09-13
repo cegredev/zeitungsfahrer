@@ -3,7 +3,7 @@ import React from "react";
 import { articlesListAtom, setArticlesAtom, draftArticleAtom } from "./stores/article.store";
 import Article from "./Article";
 import { GET } from "../api";
-import { Article as ArticleInfo } from "backend/src/models/article.model";
+import { Article as ArticleInfo } from "backend/src/models/articles.model";
 import dayjs from "dayjs";
 
 function ArticlesList() {

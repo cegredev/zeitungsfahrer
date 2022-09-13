@@ -1,5 +1,3 @@
-import { VendorCatalog } from "./vendorCatalog.model";
-
 export interface Vendor {
 	id?: number;
 	firstName: string;
@@ -13,4 +11,16 @@ export interface Vendor {
 	active: boolean;
 	lastRecordEntry: Date;
 	catalog?: VendorCatalog;
+}
+
+export interface VendorCatalogEntry {
+	articleName: string;
+	articleId: number;
+	included: boolean;
+	supplies: number[];
+}
+
+export interface VendorCatalog {
+	vendorId?: number;
+	entries: VendorCatalogEntry[];
 }

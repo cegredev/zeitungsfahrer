@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { Article as ArticleInfo } from "backend/src/models/article.model";
+import { Article as ArticleInfo } from "backend/src/models/articles.model";
 import {
 	finishArticleAtom,
 	removeArticleAtom,
@@ -13,7 +13,6 @@ import YesNoPrompt from "./util/YesNoPrompt";
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
 import { errorMessageAtom } from "./stores/utility.store";
-import Popup from "reactjs-popup";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",

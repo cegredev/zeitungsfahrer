@@ -4,16 +4,16 @@ import {
 	postArticleController,
 	deleteArticleController,
 	putArticleController,
-	getTodaysArticleRecordsController,
-} from "./controllers/article.controller.js";
-import { createOrUpdateVendorController } from "./controllers/venderCatalog.controller.js";
+} from "./controllers/articles.controller.js";
 import {
-	getVendorFullController,
-	getVendorWeekController,
+	getTodaysRecordsController,
+	getVendorRecordsController,
 	postArticleRecordsController,
-} from "./controllers/vendor.controller.js";
+} from "./controllers/records.controller.js";
 import {
+	createOrUpdateVendorController,
 	deleteVendorController,
+	getVendorFullController,
 	getVendorsController,
 	postVendorController,
 	putVendorController,
@@ -38,10 +38,10 @@ function routes(app: Express) {
 
 	app.route("/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
 
-	app.route("/records/:id").get(getVendorWeekController).post(postArticleRecordsController);
+	app.route("/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
 	// FIXME Make this smarter
-	app.route("/records/:vendorId/today").get(getTodaysArticleRecordsController);
+	app.route("/records/:vendorId/today").get(getTodaysRecordsController);
 }
 
 export default routes;
