@@ -5,8 +5,13 @@ import { getVendorCatalog } from "./vendorCatalog.service.js";
 
 export async function getVendors(): Promise<RouteReport> {
 	const result = await pool.execute(
-		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors ORDER BY last_name`
+		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
+				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry
+		 FROM vendors ORDER BY last_name`
 	);
+
+	// @ts-ignore
+	console.log(result[0], result[0][0].lastRecordEntry, result[0][0].lastRecordEntry.getTime());
 
 	return {
 		code: 200,

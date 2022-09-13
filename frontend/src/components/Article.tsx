@@ -47,7 +47,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 	const saveText = isDraft ? "Hinzufügen" : "Speichern";
 
 	return (
-		<div className="article">
+		<div className="article" style={{ minWidth: 700 }}>
 			<div style={gridSpan2}>
 				<input
 					type="text"
@@ -85,7 +85,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						<div>{weekdays[index]}</div>
 
 						{/* Mwst */}
-						<div className="display-block" style={gridSpan2}>
+						<div className="display-block" style={{ ...gridSpan2, whiteSpace: "nowrap" }}>
 							<input
 								type="number"
 								min={0}
@@ -101,7 +101,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						</div>
 
 						{/* Sell price */}
-						<div className="display-block">
+						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
 							<input
 								type="number"
 								className="article-input"
@@ -118,7 +118,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						<div style={gridSpan2}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
 
 						{/*  Purchase price */}
-						<div className="display-block">
+						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
 							<input
 								type="number"
 								className="article-input"
@@ -134,7 +134,7 @@ function Article({ articleInfo }: { articleInfo: ArticleInfo }) {
 						<div style={gridSpan2}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
 
 						{/*  Purchase price */}
-						<div className="display-block">
+						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
 							<input
 								type="number"
 								className="article-input"

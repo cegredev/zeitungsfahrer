@@ -11,5 +11,6 @@ export interface Vendor {
 	phone: string;
 	taxId: string;
 	active: boolean;
+	lastRecordEntry: Date;
 	catalog?: VendorCatalog;
 }

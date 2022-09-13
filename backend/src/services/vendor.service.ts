@@ -168,6 +168,11 @@ export async function getVendorRecordsRoute(vendorId: number, end: Date): Promis
 }
 
 export async function createOrUpdateArticleRecords(vendorId: number, records: ArticleRecords): Promise<RouteReport> {
+	await pool.execute("UPDATE vendors SET last_record_entry=? WHERE id=?", [
+		dayjs(new Date()).format(DATE_FORMAT),
+		vendorId,
+	]);
+
 	for (const record of records.records) {
 		pool.execute(
 			`INSERT INTO records (date, article_id, vendor_id, supply, remissions) VALUES (?, ?, ?, ?, ?)

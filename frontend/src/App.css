@@ -24,6 +24,7 @@ body > #root > div {
 	font-size: 25px;
 	padding: 10px;
 	background-color: grey;
+	/* width: 100%; */
 }
 
 .top-navbar > * {
@@ -154,7 +155,7 @@ a:visited {
 
 .article {
 	display: grid;
-	grid-template-columns: repeat(11, 1fr);
+	grid-template-columns: 1fr 1fr 0.2fr 1fr 1fr 0fr 1fr 1fr 0fr 1fr 1fr;
 	gap: 0.5rem;
 	margin: 10px 0px;
 

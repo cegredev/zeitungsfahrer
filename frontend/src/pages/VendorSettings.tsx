@@ -44,6 +44,7 @@ function VendorSettings() {
 					email: "",
 					phone: "",
 					taxId: "",
+					lastRecordEntry: new Date("1970-01-01"),
 					active: true,
 				};
 

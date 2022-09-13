@@ -3,6 +3,7 @@ import React from "react";
 import { GET } from "../api";
 import { useNavigate } from "react-router-dom";
 import { twoDecimalsFormat } from "../consts";
+import dayjs from "dayjs";
 
 function Dashboard() {
 	const navigate = useNavigate();
@@ -17,8 +18,13 @@ function Dashboard() {
 	React.useEffect(() => {
 		async function fetchData() {
 			const res = await GET("/vendors");
-			const newVendors: Vendor[] = await res.json();
+			const newVendors: Vendor[] = (await res.json()).map((vendor: Vendor) => ({
+				...vendor,
+				lastRecordEntry: new Date(vendor.lastRecordEntry),
+			}));
 			setVendors(newVendors);
+
+			console.log(newVendors);
 
 			const newIndex = newVendors.findIndex((vendor) => vendor.active);
 			setSelectedIndex(newIndex);
@@ -73,7 +79,10 @@ function Dashboard() {
 								</div>
 								<input
 									disabled={!vendor.active}
-									checked={true}
+									checked={
+										dayjs(new Date()).subtract(1, "day").toDate().getTime() <
+										vendor.lastRecordEntry.getTime()
+									}
 									type="checkbox"
 									name="done"
 									readOnly={true}
