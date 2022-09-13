@@ -1,6 +1,7 @@
 import { Article, Price, validatePrices } from "../models/article.model.js";
 import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
+import { getVendorRecords } from "./vendor.service.js";
 
 export async function getArticles(atDate: Date): Promise<RouteReport> {
 	const result = await pool.execute(
@@ -48,9 +49,16 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		[vendorId, (6 + new Date().getDay()) % 7]
 	);
 
+	const vendorRecords = await getVendorRecords(vendorId, new Date(), new Date());
+
 	return {
 		code: 200,
-		body: response[0],
+		body: {
+			articles: [...response[0]],
+			totalValueBrutto: vendorRecords.articleRecords
+				.map((records) => records.totalValueBrutto)
+				.reduce((prev, current) => prev + current, 0),
+		},
 	};
 }
 

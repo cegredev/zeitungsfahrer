@@ -33,19 +33,21 @@ function AppContentWrapper() {
 				</div>
 			</Popup>
 
-			<Navbar />
+			<div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+				<Navbar />
 
-			<Routes>
-				<Route path="/" element={<Dashboard />} />
-				<Route path="/articles" element={<Articles />} />
-				<Route path="/vendors" element={<Vendors />} />
-				<Route path="/vendors/:id" element={<VendorSettings />} />
-				<Route path="/records/:id" element={<Records />} />
-				<Route path="/settings" element={<Settings />} />
-				<Route path="*" element={<Error404 />} />
-			</Routes>
+				<Routes>
+					<Route path="/" element={<Dashboard />} />
+					<Route path="/articles" element={<Articles />} />
+					<Route path="/vendors" element={<Vendors />} />
+					<Route path="/vendors/:id" element={<VendorSettings />} />
+					<Route path="/records/:id" element={<Records />} />
+					<Route path="/settings" element={<Settings />} />
+					<Route path="*" element={<Error404 />} />
+				</Routes>
 
-			<Footer />
+				<Footer />
+			</div>
 		</React.Fragment>
 	);
 }

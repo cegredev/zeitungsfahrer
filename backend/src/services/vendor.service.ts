@@ -2,7 +2,7 @@ import pool, { RouteReport } from "../database.js";
 import { Record, ArticleRecords, VendorRecords } from "../models/vendor.model.js";
 import dayjs from "dayjs";
 import { Price } from "../models/article.model.js";
-import { DATE_FORMAT } from "../consts.js";
+import { DATE_FORMAT, numOfDays } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
 
 export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
@@ -58,13 +58,7 @@ export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
 	return byArticleByWeekday;
 }
 
-export async function getVendorRecords(vendorId: number, end: Date): Promise<VendorRecords> {
-	const numOfDays = 7;
-
-	const start = dayjs(end)
-		.subtract(numOfDays - 1, "days")
-		.toDate();
-
+export async function getVendorRecords(vendorId: number, start: Date, end: Date): Promise<VendorRecords> {
 	const vendor = await getVendorFull(vendorId);
 
 	const millisInDay = 24 * 60 * 60 * 1_000,
@@ -163,9 +157,13 @@ export async function getVendorRecords(vendorId: number, end: Date): Promise<Ven
 }
 
 export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
+	const start = dayjs(end)
+		.subtract(7 - 1, "days")
+		.toDate();
+
 	return {
 		code: 200,
-		body: await getVendorRecords(vendorId, end),
+		body: await getVendorRecords(vendorId, start, end),
 	};
 }
 
