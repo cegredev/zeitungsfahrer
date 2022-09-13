@@ -2,7 +2,7 @@ import pool, { RouteReport } from "../database.js";
 import { Record, ArticleRecords, VendorRecords } from "../models/vendor.model.js";
 import dayjs from "dayjs";
 import { Price } from "../models/article.model.js";
-import { DATE_FORMAT, numOfDays } from "../consts.js";
+import { DATE_FORMAT } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
 
 export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
@@ -58,8 +58,23 @@ export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
 	return byArticleByWeekday;
 }
 
+function normalizeDate(date: Date): Date {
+	return new Date(dayjs(date).format("YYYY-MM-DD"));
+}
+
+function daysBetween(a: Date, b: Date): number {
+	const millisInDay = 1000 * 60 * 60 * 24;
+
+	return Math.abs(Math.round((b.getTime() - a.getTime()) / millisInDay));
+}
+
 export async function getVendorRecords(vendorId: number, start: Date, end: Date): Promise<VendorRecords> {
 	const vendor = await getVendorFull(vendorId);
+
+	start = normalizeDate(start);
+	end = normalizeDate(end);
+
+	const numOfDays = daysBetween(start, end) + 1;
 
 	const millisInDay = 24 * 60 * 60 * 1_000,
 		startMillis = start.getTime(),
@@ -75,7 +90,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 				WHERE records.vendor_id=? AND records.article_id=? AND records.date BETWEEN ? AND ?
 				ORDER BY records.article_id
 			`,
-				[vendorId, entry.articleId, start, end]
+				[vendorId, entry.articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 			);
 
 			const catalogEntry = vendor.catalog!.entries.find((e) => e.articleId === entry.articleId)!;

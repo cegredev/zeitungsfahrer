@@ -55,6 +55,10 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		code: 200,
 		body: {
 			articles: [...response[0]],
+			// articles: vendorRecords.articleRecords.map((record) => ({
+			// 	name: record.name,
+			// 	supply: record.records[0]!.supply,
+			// })),
 			totalValueBrutto: vendorRecords.articleRecords
 				.map((records) => records.totalValueBrutto)
 				.reduce((prev, current) => prev + current, 0),

@@ -1,6 +1,5 @@
 import { Vendor } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
-import logger from "../logger.js";
 import { getVendorCatalog } from "./vendorCatalog.service.js";
 
 export async function getVendors(): Promise<RouteReport> {
@@ -9,9 +8,6 @@ export async function getVendors(): Promise<RouteReport> {
 				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry
 		 FROM vendors ORDER BY last_name`
 	);
-
-	// @ts-ignore
-	console.log(result[0], result[0][0].lastRecordEntry, result[0][0].lastRecordEntry.getTime());
 
 	return {
 		code: 200,

@@ -29,7 +29,7 @@ function Dashboard() {
 			const newIndex = newVendors.findIndex((vendor) => vendor.active);
 			setSelectedIndex(newIndex);
 
-			const res2 = await GET("/todaysRecords/" + newVendors[newIndex].id);
+			const res2 = await GET(`/records/${newVendors[newIndex].id}/today`);
 			setArticles(await res2.json());
 		}
 
@@ -66,7 +66,7 @@ function Dashboard() {
 									style={{ flex: 1, userSelect: "none", color: vendor.active ? "inherit" : "gray" }}
 									onClick={async () => {
 										if (!vendor.active) return;
-										const articles = await GET("/todaysRecords/" + vendors[i].id);
+										const articles = await GET(`/records/${vendors[i].id}/today`);
 										setArticles(await articles.json());
 										setSelectedIndex(i);
 									}}
