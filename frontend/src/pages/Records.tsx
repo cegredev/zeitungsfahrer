@@ -8,6 +8,7 @@ import { useAtom } from "jotai";
 import { vendorRecordsAtom } from "../components/stores/records.store";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
 import { twoDecimalsFormat } from "../consts";
+import { VendorRecords } from "backend/src/models/records.model";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -17,7 +18,7 @@ const initialEndDate = dayjs(_today)
 function Records() {
 	const vendorId = parseInt(useParams().id!);
 
-	const [vendorRecords, setVendorRecords] = useAtom(vendorRecordsAtom);
+	const [vendorRecords, setVendorRecords] = React.useState<VendorRecords | undefined>(undefined);
 
 	const fetchData = React.useCallback(
 		async (end: Date): Promise<void> => {

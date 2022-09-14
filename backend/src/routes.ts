@@ -40,7 +40,6 @@ function routes(app: Express) {
 
 	app.route("/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
-	// FIXME Make this smarter
 	app.route("/records/:vendorId/today").get(getTodaysRecordsController);
 }
 

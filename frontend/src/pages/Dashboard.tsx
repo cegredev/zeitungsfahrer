@@ -17,7 +17,7 @@ function Dashboard() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET("/vendors");
+			const res = await GET("/vendors?includeInactive=false");
 			const newVendors: Vendor[] = (await res.json()).map((vendor: Vendor) => ({
 				...vendor,
 				lastRecordEntry: new Date(vendor.lastRecordEntry),
