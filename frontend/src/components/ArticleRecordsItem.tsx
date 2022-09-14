@@ -47,7 +47,6 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 									type="number"
 									className="article-input"
 									min={record.remissions}
-									max={record.supply}
 									value={record.supply}
 									onChange={(evt) => {
 										const newRecords = [...records.records];

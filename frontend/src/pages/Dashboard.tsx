@@ -24,8 +24,6 @@ function Dashboard() {
 			}));
 			setVendors(newVendors);
 
-			console.log(newVendors);
-
 			const newIndex = newVendors.findIndex((vendor) => vendor.active);
 			setSelectedIndex(newIndex);
 
