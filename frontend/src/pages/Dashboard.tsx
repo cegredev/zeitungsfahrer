@@ -64,9 +64,14 @@ function Dashboard() {
 									style={{ flex: 1, userSelect: "none", color: vendor.active ? "inherit" : "gray" }}
 									onClick={async () => {
 										if (!vendor.active) return;
+										setSelectedIndex(i);
+										setArticles({
+											articles: [],
+											totalValueBrutto: 0,
+										});
+
 										const articles = await GET(`/records/${vendors[i].id}/today`);
 										setArticles(await articles.json());
-										setSelectedIndex(i);
 									}}
 									onDoubleClick={() => {
 										if (!vendor.active) return;

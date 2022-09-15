@@ -16,8 +16,7 @@
 		"winston": "^3.8.1"
 	},
 	"scripts": {
-		"start": "nodemon src/app.ts",
-		"mocks": "mocks-server"
+		"start": "nodemon src/app.ts"
 	},
 	"type": "module",
 	"engines": {
