@@ -4,16 +4,14 @@ import { GET } from "../api";
 import { useNavigate } from "react-router-dom";
 import { twoDecimalsFormat } from "../consts";
 import dayjs from "dayjs";
+import { DashboardRecords } from "backend/src/models/records.model";
 
 function Dashboard() {
 	const navigate = useNavigate();
 
 	const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
 	const [vendors, setVendors] = React.useState<Vendor[]>([]);
-	const [articles, setArticles] = React.useState<{
-		articles: { name: string; supply?: Number }[];
-		totalValueBrutto: number;
-	}>({ articles: [], totalValueBrutto: 0 });
+	const [articles, setArticles] = React.useState<DashboardRecords>({ articles: [], totalValueBrutto: 0 });
 
 	React.useEffect(() => {
 		async function fetchData() {

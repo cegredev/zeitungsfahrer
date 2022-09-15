@@ -25,3 +25,8 @@ export interface VendorRecords {
 	name: string;
 	articleRecords: ArticleRecords[];
 }
+
+export interface DashboardRecords {
+	articles: { name: string; supply?: Number }[];
+	totalValueBrutto: number;
+}

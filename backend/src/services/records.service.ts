@@ -12,6 +12,8 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 	start = normalizeDate(start);
 	end = normalizeDate(end);
 
+	console.log(start, end);
+
 	const numOfDays = daysBetween(start, end) + 1;
 
 	const millisInDay = 24 * 60 * 60 * 1_000,
@@ -118,7 +120,14 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		[vendorId, (6 + new Date().getDay()) % 7]
 	);
 
-	const vendorRecords = await getVendorRecords(vendorId, new Date(), new Date());
+	const today = new Date();
+	const vendorRecords = await getVendorRecords(
+		vendorId,
+		dayjs(today)
+			.subtract((6 + today.getDay()) % 7, "days")
+			.toDate(),
+		today
+	);
 
 	return {
 		code: 200,
