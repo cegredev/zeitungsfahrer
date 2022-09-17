@@ -179,8 +179,6 @@ export async function updateArticle(startDate: Date, article: Article): Promise<
 }
 
 export async function deleteArticle(id: number): Promise<RouteReport> {
-	// TODO: Check if this is redundant due to cascading
-	await pool.execute("DELETE FROM prices WHERE article_id=?", [id]);
 	await pool.execute("DELETE FROM articles WHERE id=?", [id]);
 
 	return {

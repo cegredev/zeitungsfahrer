@@ -86,25 +86,6 @@ Vendor): Promise<RouteReport> {
 		[firstName, lastName, address, zipCode, city, email, phone, taxId, active, id]
 	);
 
-	// if (catalog != null) {
-	// 	for await (const entry of catalog.entries) {
-	// 		await pool.execute("UPDATE vendor_catalog SET included=? WHERE vendor_id=? AND article_id=?", [
-	// 			id,
-	// 			entry.articleId,
-	// 		]);
-
-	// 		let i = 0;
-	// 		for await (const supply of entry.supplies) {
-	// 			await pool.execute(
-	// 				"UPDATE vendor_supplies SET supply=? WHERE vendor_id=? AND article_id=? AND weekday=?",
-	// 				[supply, id, entry.articleId, i]
-	// 			);
-
-	// 			i++;
-	// 		}
-	// 	}
-	// }
-
 	return {
 		code: 200,
 	};

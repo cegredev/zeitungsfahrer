@@ -55,7 +55,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 				articleRecords.records[index] = record;
 			}
 
-			// @ts-ignore FIXME
+			// @ts-ignore Missing fields are going to be added later
 			includedArticleRecords.set(entry.articleId, articleRecords);
 		}
 	}
@@ -123,13 +123,6 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 	`,
 		[vendorId, weekday, vendorId]
 	);
-
-	// const exitingRecordsRes = await pool.execute(
-	// 	"SELECT article_id as articleId, supply FROM records WHERE vendor_id=? AND date=?",
-	// 	[vendorId, dayjs(today).format(DATE_FORMAT)]
-	// );
-
-	// console.log(exitingRecordsRes[0]);
 
 	const vendorRecords = await getVendorRecords(
 		vendorId,
