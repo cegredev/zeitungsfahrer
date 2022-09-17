@@ -2,11 +2,12 @@ import { Article } from "backend/src/models/articles.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import { GET } from "../api";
-import ArticleComp from "../components/ArticleComp";
-import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../components/stores/article.store";
+import { GET } from "../../api";
+import ArticleComp from "../../components/ArticleComp";
+import Footer from "../../components/Footer";
+import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../../components/stores/article.store";
 
-function Articles() {
+function ArticleSettings() {
 	const [articles] = useAtom(articlesListAtom);
 	const [, setArticles] = useAtom(setArticlesAtom);
 	const [, createArticle] = useAtom(draftArticleAtom);
@@ -52,8 +53,10 @@ function Articles() {
 					</div>
 				)}
 			</div>
+
+			<Footer />
 		</div>
 	);
 }
 
-export default Articles;
+export default ArticleSettings;

@@ -1,23 +1,23 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Popup from "reactjs-popup";
 import { errorMessageAtom } from "./components/stores/utility.store";
 
 import Navbar from "./components/Navbar";
+import SettingsPage from "./components/SettingsPage";
 import Dashboard from "./pages/Dashboard";
 import Error404 from "./pages/Error404";
 import VendorSettings from "./pages/VendorSettings";
-import Footer from "./components/Footer";
-import Vendors from "./pages/Vendors";
-import Articles from "./pages/Articles";
-import Settings from "./pages/Settings";
+import Vendors from "./pages/settings/Vendors";
+import ArticleSettings from "./pages/settings/ArticleSettings";
 import Records from "./pages/Records";
+import Settings from "./pages/settings/Settings";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
 
-	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), []);
+	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
 
 	return (
 		<React.Fragment>
@@ -37,16 +37,43 @@ function AppContentWrapper() {
 				<Navbar />
 
 				<Routes>
-					<Route path="/" element={<Dashboard />} />
-					<Route path="/articles" element={<Articles />} />
-					<Route path="/vendors" element={<Vendors />} />
-					<Route path="/vendors/:id" element={<VendorSettings />} />
+					<Route path="/" element={<Navigate to="/dashboard" />} />
+					<Route path="/dashboard" element={<Dashboard />} />
 					<Route path="/records/:id" element={<Records />} />
-					<Route path="/settings" element={<Settings />} />
+					<Route
+						path="/articles"
+						element={
+							<SettingsPage>
+								<ArticleSettings />
+							</SettingsPage>
+						}
+					/>{" "}
+					<Route
+						path="/vendors"
+						element={
+							<SettingsPage>
+								<Vendors />
+							</SettingsPage>
+						}
+					/>{" "}
+					<Route
+						path="/vendors/:id"
+						element={
+							<SettingsPage>
+								<VendorSettings />
+							</SettingsPage>
+						}
+					/>
+					<Route
+						path="/settings"
+						element={
+							<SettingsPage>
+								<Settings />
+							</SettingsPage>
+						}
+					/>
 					<Route path="*" element={<Error404 />} />
 				</Routes>
-
-				<Footer />
 			</div>
 		</React.Fragment>
 	);

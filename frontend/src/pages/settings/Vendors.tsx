@@ -1,10 +1,10 @@
 import { Vendor } from "backend/src/models/vendors.model";
 import { useAtom } from "jotai";
 import React from "react";
-import { GET, POST } from "../api";
-import { addVendorAtom, setVendorsAtom, vendorsListAtom } from "../components/stores/vendors.store";
-import VendorItem from "../components/VendorItem";
-import VendorSettings from "./VendorSettings";
+import { GET } from "../../api";
+import Footer from "../../components/Footer";
+import { addVendorAtom, setVendorsAtom, vendorsListAtom } from "../../components/stores/vendors.store";
+import VendorItem from "../../components/VendorItem";
 
 function Vendors() {
 	const [vendors] = useAtom(vendorsListAtom);
@@ -28,6 +28,7 @@ function Vendors() {
 	return (
 		<div className="page vendors">
 			{loading ? "Laden..." : vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} vendor={vendor} />)}
+			<Footer />
 		</div>
 	);
 }

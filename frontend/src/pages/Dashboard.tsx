@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { twoDecimalsFormat } from "../consts";
 import dayjs from "dayjs";
 import { DashboardRecords } from "backend/src/models/records.model";
+import AuthorizedPage from "./AuthorizedPage";
 
 function Dashboard() {
 	const navigate = useNavigate();
@@ -33,107 +34,116 @@ function Dashboard() {
 	}, [setVendors]);
 
 	return (
-		<div className="dashboard" style={{ flex: 1 }}>
-			<div>
-				<div style={{ backgroundColor: "lightgray", textAlign: "center", fontWeight: "bold" }}>Händler</div>
-				<div
-					className="vendors-left"
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						border: "solid 3px",
-						height: "100%",
-						backgroundColor: "#EEEEEE",
-					}}
-				>
-					{vendors.map((vendor, i) => {
-						return (
-							<div
-								key={"dashboard-vendor-" + vendor.id}
-								style={{
-									borderTop: i > 0 ? "solid 1px" : "",
-									display: "flex",
-									flexDirection: "row",
-									backgroundColor: selectedIndex === i ? "gray" : i % 2 == 0 ? "white" : "lightgray",
-									cursor: "default",
-								}}
-							>
+		<AuthorizedPage>
+			<div className="dashboard" style={{ flex: 1 }}>
+				<div style={{ display: "flex", flexDirection: "column" }}>
+					<div style={{ backgroundColor: "lightgray", textAlign: "center", fontWeight: "bold" }}>Händler</div>
+					<div
+						className="vendors-left"
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							border: "solid 3px",
+							// height: "100%",
+							flex: 1,
+							backgroundColor: "#EEEEEE",
+						}}
+					>
+						{vendors.map((vendor, i) => {
+							return (
 								<div
-									style={{ flex: 1, userSelect: "none", color: vendor.active ? "inherit" : "gray" }}
-									onClick={async () => {
-										if (!vendor.active) return;
-										setSelectedIndex(i);
-										setArticles({
-											articles: [],
-											totalValueBrutto: 0,
-										});
-
-										const articles = await GET(`/records/${vendors[i].id}/today`);
-										setArticles(await articles.json());
-									}}
-									onDoubleClick={() => {
-										if (!vendor.active) return;
-										navigate("/records/" + vendor.id);
+									key={"dashboard-vendor-" + vendor.id}
+									style={{
+										borderTop: i > 0 ? "solid 1px" : "",
+										display: "flex",
+										flexDirection: "row",
+										backgroundColor:
+											selectedIndex === i ? "gray" : i % 2 == 0 ? "white" : "lightgray",
+										cursor: "default",
 									}}
 								>
-									{vendor.lastName + ", " + vendor.firstName}
+									<div
+										style={{
+											flex: 1,
+											userSelect: "none",
+											color: vendor.active ? "inherit" : "gray",
+										}}
+										onClick={async () => {
+											if (!vendor.active) return;
+											setSelectedIndex(i);
+											setArticles({
+												articles: [],
+												totalValueBrutto: 0,
+											});
+											const articles = await GET(`/records/${vendors[i].id}/today`);
+											setArticles(await articles.json());
+										}}
+										onDoubleClick={() => {
+											if (!vendor.active) return;
+											navigate("/records/" + vendor.id);
+										}}
+									>
+										{vendor.lastName + ", " + vendor.firstName}
+									</div>
+									<input
+										disabled={!vendor.active}
+										checked={
+											dayjs(new Date()).subtract(1, "day").toDate().getTime() <
+											vendor.lastRecordEntry.getTime()
+										}
+										type="checkbox"
+										name="done"
+										readOnly={true}
+									/>
 								</div>
-								<input
-									disabled={!vendor.active}
-									checked={
-										dayjs(new Date()).subtract(1, "day").toDate().getTime() <
-										vendor.lastRecordEntry.getTime()
-									}
-									type="checkbox"
-									name="done"
-									readOnly={true}
-								/>
-							</div>
-						);
-					})}
+							);
+						})}
+					</div>
 				</div>
-			</div>
-			<div>
-				<div style={{ backgroundColor: "lightgray", textAlign: "center", fontWeight: "bold" }}>
-					Summe: {twoDecimalsFormat.format(articles.totalValueBrutto)}
-				</div>
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						border: "solid 3px",
-						height: "100%",
-						backgroundColor: "#EEEEEE",
-					}}
-				>
-					{articles.articles.map((article, i) => {
-						const showSupply = article.supply! > 0;
-						return (
-							<div
-								key={"dashboard-vendor-" + article.name}
-								style={{
-									borderTop: i > 0 ? "solid 1px" : "",
-									display: "flex",
-									flexDirection: "row",
-									backgroundColor: i % 2 == 0 ? "white" : "lightgray",
-									cursor: "default",
-								}}
-							>
-								<div style={{ flex: 1, userSelect: "none", color: showSupply ? "inherit" : "gray" }}>
-									{article.name}
+				<div style={{ display: "flex", flexDirection: "column" }}>
+					<div style={{ backgroundColor: "lightgray", textAlign: "center", fontWeight: "bold" }}>
+						Summe: {twoDecimalsFormat.format(articles.totalValueBrutto)}
+					</div>
+					<div
+						style={{
+							flex: 1,
+							display: "flex",
+							flexDirection: "column",
+							border: "solid 3px",
+							backgroundColor: "#EEEEEE",
+						}}
+					>
+						{articles.articles.map((article, i) => {
+							const showSupply = article.supply! > 0;
+							return (
+								<div
+									key={"dashboard-vendor-" + article.name}
+									style={{
+										borderTop: i > 0 ? "solid 1px" : "",
+										display: "flex",
+										flexDirection: "row",
+										backgroundColor: i % 2 == 0 ? "white" : "lightgray",
+										cursor: "default",
+									}}
+								>
+									<div
+										style={{ flex: 1, userSelect: "none", color: showSupply ? "inherit" : "gray" }}
+									>
+										{article.name}
+									</div>
+									{showSupply && <div>{"" + article.supply}</div>}
 								</div>
-								{showSupply && <div>{"" + article.supply}</div>}
-							</div>
-						);
-					})}
+							);
+						})}
+					</div>
+				</div>
+				<div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+					<div>1</div>
+					<div>2</div>
+					<div>3</div>
 				</div>
 			</div>
-			<div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-				<div>1</div>
-				<div>2</div>
-				<div>3</div>
-			</div>
-		</div>
+		</AuthorizedPage>
 	);
 }
 
