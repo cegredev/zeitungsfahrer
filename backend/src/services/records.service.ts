@@ -112,15 +112,25 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 }
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
+	const today = new Date();
+	const weekday = (6 + today.getDay()) % 7;
+
 	const response = await pool.execute(
 		`
-		SELECT articles.name, vendor_supplies.supply FROM articles
+		SELECT articles.id, articles.name, vendor_supplies.supply, vendor_catalog.included FROM articles
 		LEFT JOIN vendor_supplies ON articles.id=vendor_supplies.article_id AND vendor_supplies.vendor_id=? AND vendor_supplies.weekday=?
+		LEFT JOIN vendor_catalog ON articles.id=vendor_catalog.article_id AND vendor_catalog.vendor_id=?
 	`,
-		[vendorId, (6 + new Date().getDay()) % 7]
+		[vendorId, weekday, vendorId]
 	);
 
-	const today = new Date();
+	// const exitingRecordsRes = await pool.execute(
+	// 	"SELECT article_id as articleId, supply FROM records WHERE vendor_id=? AND date=?",
+	// 	[vendorId, dayjs(today).format(DATE_FORMAT)]
+	// );
+
+	// console.log(exitingRecordsRes[0]);
+
 	const vendorRecords = await getVendorRecords(
 		vendorId,
 		dayjs(today)
@@ -129,11 +139,25 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		today
 	);
 
+	// @ts-ignore
+	let articles: { id: number; name: string; supply: number; included: any }[] = [...response[0]];
+	articles = articles.map((a) => {
+		const article = { ...a, included: a.included === 1 };
+
+		if (!article.included) return article;
+
+		const articleRecords = vendorRecords.articleRecords.find((articleRecords) => articleRecords.id === article.id);
+		if (articleRecords == null) return article;
+
+		return { ...article, supply: articleRecords.records[articleRecords.records.length - 1]!.supply };
+	});
+
+	console.log(articles);
+
 	return {
 		code: 200,
 		body: {
-			// @ts-ignore
-			articles: [...response[0]],
+			articles,
 			// articles: vendorRecords.articleRecords.map((record) => ({
 			// 	name: record.name,
 			// 	supply: record.records[0]!.supply,

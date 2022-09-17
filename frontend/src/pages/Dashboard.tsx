@@ -114,7 +114,8 @@ function Dashboard() {
 						}}
 					>
 						{articles.articles.map((article, i) => {
-							const showSupply = article.supply! > 0;
+							const showSupply = article.included && article.supply! > 0;
+
 							return (
 								<div
 									key={"dashboard-vendor-" + article.name}

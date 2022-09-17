@@ -1,8 +1,5 @@
 - monatlich mit 1.1. anfangen
 - verschiedene bildschirmgrößen
--dashboard summe artikel von tag 1 bis heute, 
 - einstellungen passwort hinzufügen
-- artikel und händler in einstellungen
 - abrechnungssytem
 - record sum doesnt change
-- article supply doesnt change on dashboard on live website
