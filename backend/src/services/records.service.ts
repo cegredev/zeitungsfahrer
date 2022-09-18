@@ -60,7 +60,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 		}
 	}
 
-	const allPrices = await getPrices(end);
+	const allPrices = await getPrices(start, end);
 
 	for (const [articleId, prices] of allPrices.entries()) {
 		const articleRecords = includedArticleRecords.get(articleId);
@@ -151,9 +151,24 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 }
 
 export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
-	const start = dayjs(end)
-		.subtract(7 - 1, "days")
-		.toDate();
+	let start = end;
+
+	switch (settings.invoiceSystem) {
+		case 0:
+			start = dayjs(end).toDate();
+			break;
+		case 1:
+			start = dayjs(end)
+				.subtract((6 + end.getDay()) % 7, "days")
+				.toDate();
+			break;
+		case 2:
+			start = dayjs(end).set("date", 1).toDate();
+			break;
+		case 3:
+			start = dayjs(end).set("month", 0).set("date", 1).toDate();
+			break;
+	}
 
 	return {
 		code: 200,

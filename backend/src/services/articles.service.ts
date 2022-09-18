@@ -3,9 +3,7 @@ import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
 
-export async function getPrices(end: Date): Promise<Map<number, Price[][]>> {
-	const start = dayjs(end).subtract(6, "days").toDate();
-
+export async function getPrices(start: Date, end: Date): Promise<Map<number, Price[][]>> {
 	const response = await pool.execute(
 		`SELECT start_date as startDate, weekday, article_id as articleId, mwst, purchase, sell, market_sell as marketSell, end_date as endDate
 		FROM prices
