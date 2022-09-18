@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthorizedPage from "../pages/AuthorizedPage";
 
 interface Props {
@@ -7,14 +7,16 @@ interface Props {
 	children: JSX.Element;
 }
 
+const links = [
+	["/settings", "Allgemein"],
+	["/articles", "Artikel"],
+	["/vendors", "Händler"],
+];
+
 function SettingsNav({ route: activeRoute, children }: Props) {
 	const leftNavWidth = 120;
 
-	const links = [
-		["/settings", "Allgemein"],
-		["/articles", "Artikel"],
-		["/vendors", "Händler"],
-	];
+	const navigate = useNavigate();
 
 	return (
 		<AuthorizedPage>
@@ -25,7 +27,9 @@ function SettingsNav({ route: activeRoute, children }: Props) {
 							key={"link-" + route + " " + name}
 							style={{ backgroundColor: route === activeRoute ? "#999999" : "inherit" }}
 						>
-							<Link to={route}>{name}</Link>
+							<div onClick={() => navigate(route)}>
+								<div>{name}</div>
+							</div>
 						</div>
 					))}
 				</div>

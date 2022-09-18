@@ -87,7 +87,7 @@ body {
 	user-select: none;
 }
 
-.settings-nav > div {
+.settings-nav > div > div {
 	padding: 10px 15px;
 }
 
