@@ -2,8 +2,9 @@ import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
 import cors from "cors";
-import logger from "./logger.js";
 import pool from "./database.js";
+import settings from "./services/settings.service.js"; // Initialize variables
+import logger from "./logger.js";
 
 const app = express();
 app.use(helmet());

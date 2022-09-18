@@ -11,6 +11,7 @@ import {
 	getVendorRecordsController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
+import { getSettingsController } from "./controllers/settings.controller.js";
 import {
 	createOrUpdateVendorController,
 	deleteVendorController,
@@ -44,6 +45,8 @@ function routes(app: Express) {
 	app.route("/records/:vendorId/today").get(getTodaysRecordsController);
 
 	app.route("/accounts").get(getAccountsController);
+
+	app.route("/settings").get(getSettingsController);
 }
 
 export default routes;

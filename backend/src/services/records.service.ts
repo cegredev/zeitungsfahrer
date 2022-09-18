@@ -5,6 +5,8 @@ import { DATE_FORMAT } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
 import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
+import { getConvertedWeekday } from "../util.js";
+import settings from "./settings.service.js";
 
 export async function getVendorRecords(vendorId: number, start: Date, end: Date): Promise<VendorRecords> {
 	const vendor = await getVendorFull(vendorId);
@@ -111,7 +113,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
 	const today = new Date();
-	const weekday = (6 + today.getDay()) % 7;
+	const weekday = getConvertedWeekday(today);
 
 	const response = await pool.execute(
 		`
@@ -122,13 +124,7 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		[vendorId, weekday, vendorId]
 	);
 
-	const vendorRecords = await getVendorRecords(
-		vendorId,
-		dayjs(today)
-			.subtract((6 + today.getDay()) % 7, "days")
-			.toDate(),
-		today
-	);
+	const vendorRecords = await getVendorRecords(vendorId, dayjs(today).subtract(weekday, "days").toDate(), today);
 
 	// @ts-ignore
 	let articles: { id: number; name: string; supply: number; included: any }[] = [...response[0]];
@@ -147,10 +143,6 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		code: 200,
 		body: {
 			articles,
-			// articles: vendorRecords.articleRecords.map((record) => ({
-			// 	name: record.name,
-			// 	supply: record.records[0]!.supply,
-			// })),
 			totalValueBrutto: vendorRecords.articleRecords
 				.map((records) => records.totalValueBrutto)
 				.reduce((prev, current) => prev + current, 0),
