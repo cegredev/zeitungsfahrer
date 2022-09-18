@@ -3,6 +3,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Popup from "reactjs-popup";
 import { errorMessageAtom } from "./components/stores/utility.store";
+import { settingsAtom } from "./components/stores/settings.store";
 
 import Navbar from "./components/Navbar";
 import SettingsPage from "./components/SettingsPage";
@@ -13,11 +14,23 @@ import Vendors from "./pages/settings/Vendors";
 import ArticleSettings from "./pages/settings/ArticleSettings";
 import Records from "./pages/Records";
 import Settings from "./pages/settings/Settings";
+import { GET } from "./api";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
+	const [, setSettings] = useAtom(settingsAtom);
 
 	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
+
+	React.useEffect(() => {
+		async function fetchSettings() {
+			const response = await GET("/settings");
+			const data = await response.json();
+			setSettings(data);
+		}
+
+		fetchSettings();
+	}, [setSettings]);
 
 	return (
 		<React.Fragment>

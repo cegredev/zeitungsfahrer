@@ -13,6 +13,8 @@ export const months = [
 	"Dezember",
 ];
 
+export const invoiceSystems = ["Tag", "Woche", "Monat", "Jahr"];
+
 export const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
 export const weekdaysShort = ["Mon", "Die", "Mitt", "Don", "Fre", "Sam", "Son"];

@@ -9,10 +9,18 @@ const settings: Settings = {
 	invoiceSystem: initialSettings.invoice_system,
 };
 
-export async function updateInvoiceSystem(invoiceSystem: 0 | 1 | 2 | 3): Promise<void> {
-	await pool.execute("UPDATE settings invoice_system=? WHERE id=?", [invoiceSystem, settings.id]);
+export async function updateSettings(newSettings: Settings): Promise<void> {
+	await pool.execute("UPDATE settings SET invoice_system=? WHERE id=?", [newSettings.invoiceSystem, settings.id]);
 
-	settings.invoiceSystem = invoiceSystem;
+	settings.invoiceSystem = newSettings.invoiceSystem;
+}
+
+export async function updateSettingsRoute(newSettings: Settings): Promise<RouteReport> {
+	await updateSettings(newSettings);
+
+	return {
+		code: 200,
+	};
 }
 
 export async function getSettings(): Promise<RouteReport> {
