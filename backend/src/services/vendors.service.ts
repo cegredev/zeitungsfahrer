@@ -3,8 +3,6 @@ import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
 
 export async function getVendors(includeInactive: boolean): Promise<RouteReport> {
-	console.log(includeInactive);
-
 	const result = await pool.execute(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
 				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry

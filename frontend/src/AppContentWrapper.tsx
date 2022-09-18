@@ -43,7 +43,7 @@ function AppContentWrapper() {
 					<Route
 						path="/articles"
 						element={
-							<SettingsPage>
+							<SettingsPage route="/articles">
 								<ArticleSettings />
 							</SettingsPage>
 						}
@@ -51,7 +51,7 @@ function AppContentWrapper() {
 					<Route
 						path="/vendors"
 						element={
-							<SettingsPage>
+							<SettingsPage route="/vendors">
 								<Vendors />
 							</SettingsPage>
 						}
@@ -59,7 +59,7 @@ function AppContentWrapper() {
 					<Route
 						path="/vendors/:id"
 						element={
-							<SettingsPage>
+							<SettingsPage route="/vendors">
 								<VendorSettings />
 							</SettingsPage>
 						}
@@ -67,7 +67,7 @@ function AppContentWrapper() {
 					<Route
 						path="/settings"
 						element={
-							<SettingsPage>
+							<SettingsPage route="/settings">
 								<Settings />
 							</SettingsPage>
 						}

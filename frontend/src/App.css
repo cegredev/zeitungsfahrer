@@ -31,15 +31,6 @@ body > #root > div {
 	margin: 0 10px;
 }
 
-.settings-nav {
-	display: flex;
-	flex-direction: column;
-	font-size: larger;
-	gap: 10px;
-	padding: 10px;
-	background-color: #cfcece;
-}
-
 a {
 	color: black;
 }
@@ -79,17 +70,28 @@ body {
 	width: 100%; /* Full width */
 	z-index: 2;
 	left: 0;
+	user-select: none;
 }
 
 .settings-nav {
+	display: flex;
+	flex-direction: column;
+	font-size: larger;
+	/* padding: 10px; */
+	background-color: #cfcece;
 	height: 100%;
 	z-index: 1;
 	/* width: 160px; Set the width of the sidebar */
 	position: fixed; /* Fixed Sidebar (stay in place on scroll) */
 	left: 0;
-	padding-top: 20px;
+	user-select: none;
 }
 
+.settings-nav > div {
+	padding: 10px 15px;
+}
+
+.settings-nav a,
 .top-navbar a {
 	text-decoration: none;
 }
@@ -123,8 +125,7 @@ a:visited {
 	margin: 10px 0px;
 }
 
-.vendor-item > h2,
-a {
+.vendor-item > h2 {
 	margin-left: 10px;
 }
 

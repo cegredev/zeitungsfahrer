@@ -1,4 +1,5 @@
 import { Express } from "express";
+import { getAccountsController } from "./controllers/accounts.controller.js";
 import {
 	getArticlesController,
 	postArticleController,
@@ -41,6 +42,8 @@ function routes(app: Express) {
 	app.route("/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
 	app.route("/records/:vendorId/today").get(getTodaysRecordsController);
+
+	app.route("/accounts").get(getAccountsController);
 }
 
 export default routes;
