@@ -12,7 +12,7 @@ import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
-import { errorMessageAtom } from "./stores/utility.store";
+import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
@@ -40,6 +40,7 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 	const [, finishArticle] = useAtom(finishArticleAtom);
 	const [, cancelDraft] = useAtom(cancelArticleDraftAtom);
 	const [, setErrorMessage] = useAtom(errorMessageAtom);
+	const [token] = useAtom(authTokenAtom);
 
 	const isDraft = article.id == null;
 	const cancelText = isDraft ? "Verwerfen" : "Löschen";
@@ -159,7 +160,7 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 					if (article.id == null) {
 						cancelDraft();
 					} else {
-						await DELETE("/articles", { id: article.id });
+						await DELETE("/auth/articles", { id: article.id }, token!);
 						removeArticle(article.id!);
 					}
 				}}
@@ -173,7 +174,7 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 					let info = { ...article, prices };
 
 					if (isDraft) {
-						const res = await POST("/articles", { ...info, startDate: new Date() });
+						const res = await POST("/auth/articles", { ...info, startDate: new Date() }, token!);
 						const body = await res.json();
 
 						if (res.ok) {
@@ -187,10 +188,14 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 							setErrorMessage(body.userMessage);
 						}
 					} else {
-						await PUT("/articles", {
-							startDate: dayjs(new Date()).format("YYYY-MM-DD"),
-							article: info,
-						});
+						await PUT(
+							"/auth/articles",
+							{
+								startDate: dayjs(new Date()).format("YYYY-MM-DD"),
+								article: info,
+							},
+							token!
+						);
 					}
 
 					updateArticle(info);

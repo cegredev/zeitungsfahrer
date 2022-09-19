@@ -9,6 +9,7 @@ import { vendorRecordsAtom } from "../components/stores/records.store";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
 import { twoDecimalsFormat } from "../consts";
 import { VendorRecords } from "backend/src/models/records.model";
+import { authTokenAtom } from "../components/stores/utility.store";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -19,15 +20,16 @@ function Records() {
 	const vendorId = parseInt(useParams().id!);
 
 	const [vendorRecords, setVendorRecords] = React.useState<VendorRecords | undefined>(undefined);
+	const [token] = useAtom(authTokenAtom);
 
 	const fetchData = React.useCallback(
 		async (end: Date): Promise<void> => {
-			const response = await GET(`/records/${vendorId}?end=${dayjs(end).format("YYYY-MM-DD")}`);
+			const response = await GET(`/auth/records/${vendorId}?end=${dayjs(end).format("YYYY-MM-DD")}`, token!);
 			const data = await response.json();
 
 			setVendorRecords(data);
 		},
-		[vendorId, setVendorRecords]
+		[vendorId, setVendorRecords, token]
 	);
 
 	React.useEffect(() => {

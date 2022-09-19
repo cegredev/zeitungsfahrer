@@ -6,17 +6,19 @@ import { GET } from "../../api";
 import ArticleComp from "../../components/ArticleComp";
 import Footer from "../../components/Footer";
 import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../../components/stores/article.store";
+import { authTokenAtom } from "../../components/stores/utility.store";
 
 function ArticleSettings() {
 	const [articles] = useAtom(articlesListAtom);
 	const [, setArticles] = useAtom(setArticlesAtom);
 	const [, createArticle] = useAtom(draftArticleAtom);
+	const [token] = useAtom(authTokenAtom);
 
 	const [loading, setLoading] = React.useState(true);
 
 	React.useEffect(() => {
 		async function fetchArticles() {
-			const response = await GET("/articles?atDate=" + dayjs(new Date()).format("YYYY-MM-DD"));
+			const response = await GET("/auth/articles?atDate=" + dayjs(new Date()).format("YYYY-MM-DD"), token!);
 			const articles: Article[] = await response.json();
 
 			setArticles(
@@ -35,7 +37,7 @@ function ArticleSettings() {
 		}
 
 		fetchArticles();
-	}, [setArticles]);
+	}, [setArticles, token]);
 
 	return (
 		<div className="page">

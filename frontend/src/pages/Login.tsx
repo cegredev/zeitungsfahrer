@@ -1,6 +1,11 @@
+import { useAtom } from "jotai";
 import React from "react";
+import { GET } from "../api";
+import { authTokenAtom } from "../components/stores/utility.store";
 
 function Login() {
+	const [, setToken] = useAtom(authTokenAtom);
+
 	const [password, setPassword] = React.useState("");
 	const [rememberMe, setRememberMe] = React.useState(true);
 
@@ -8,9 +13,17 @@ function Login() {
 
 	const login = React.useCallback(async () => {
 		setWaiting(true);
-		console.log("Loggin in with", password, rememberMe);
+
+		const response = await GET("/login?name=root&password=" + password + "&rememberMe=" + rememberMe);
+		const token: string = (await response.json()).token;
+
+		if (token != null) {
+			setToken(token);
+			localStorage.setItem("token", token);
+		}
+
 		setWaiting(false);
-	}, []);
+	}, [password, rememberMe, setToken]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

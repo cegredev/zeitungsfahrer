@@ -7,7 +7,7 @@ import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
 import { removeVendorAtom } from "../components/stores/vendors.store";
-import { errorMessageAtom } from "../components/stores/utility.store";
+import { authTokenAtom, errorMessageAtom } from "../components/stores/utility.store";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -30,6 +30,8 @@ function VendorSettings() {
 
 	const [, setErrorMessage] = useAtom(errorMessageAtom);
 
+	const [token] = useAtom(authTokenAtom);
+
 	React.useEffect(() => {
 		async function fetchData() {
 			let data: Vendor | null = null;
@@ -48,10 +50,10 @@ function VendorSettings() {
 					active: true,
 				};
 
-				const response = await GET("/vendors/" + id + "?catalogOnly=true");
+				const response = await GET("/auth/vendors/" + id + "?catalogOnly=true", token!);
 				data = { ...template, catalog: await response.json() };
 			} else {
-				const response = await GET("/vendors/" + id);
+				const response = await GET("/auth/vendors/" + id, token!);
 				data = await response.json();
 			}
 
@@ -59,7 +61,7 @@ function VendorSettings() {
 		}
 
 		fetchData();
-	}, [setVendor, isDraft, id]);
+	}, [setVendor, isDraft, id, token]);
 
 	return (
 		<div className="page vendor-settings" style={{ padding: 20 }}>
@@ -168,12 +170,12 @@ function VendorSettings() {
 						content={`Wollen Sie die Änderungen wirklich speichern?`}
 						onYes={async () => {
 							if (isDraft) {
-								const response = await POST("/vendors", vendor);
+								const response = await POST("/auth/vendors", vendor, token!);
 								const data = await response.json();
 								navigate(`/vendors/${data.id}`);
 								navigate(0);
 							} else {
-								await PUT("/vendors", vendor);
+								await PUT("/auth/vendors", vendor, token!);
 							}
 						}}
 					/>
@@ -206,7 +208,7 @@ function VendorSettings() {
 									return;
 								}
 
-								await DELETE("/vendors", { id: vendor.id! });
+								await DELETE("/auth/vendors", { id: vendor.id! }, token!);
 								removeVendor(vendor.id!);
 								navigate("/vendors");
 							}}

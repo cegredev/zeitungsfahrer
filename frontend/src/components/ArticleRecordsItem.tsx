@@ -1,8 +1,10 @@
 import { ArticleRecords } from "backend/src/models/records.model";
 import dayjs from "dayjs";
+import { useAtom } from "jotai";
 import React from "react";
 import { POST } from "../api";
 import { twoDecimalsFormat, weekdays } from "../consts";
+import { authTokenAtom } from "./stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {
@@ -12,6 +14,7 @@ interface Props {
 
 function ArticleRecordsItem({ vendorId, _records }: Props) {
 	const [records, setRecords] = React.useState(_records);
+	const [token] = useAtom(authTokenAtom);
 
 	const startDate = React.useMemo(() => new Date(records.start), [records.start]);
 	const weekdayOffset = (6 + startDate.getUTCDay()) % 7; // Sunday is 0 instead of Monday
@@ -91,7 +94,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 					header="Speichern"
 					content={`Wollen Sie das gewählte Element wirklich speichern?`}
 					onYes={() => {
-						POST(`/records/${vendorId}`, records);
+						POST(`/auth/records/${vendorId}`, records, token!);
 					}}
 				/>
 

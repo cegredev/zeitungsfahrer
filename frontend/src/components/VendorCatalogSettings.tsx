@@ -1,11 +1,14 @@
 import { VendorCatalog } from "backend/src/models/vendors.model";
+import { useAtom } from "jotai";
 import React from "react";
 import { POST } from "../api";
 import { weekdaysShort } from "../consts";
+import { authTokenAtom } from "./stores/utility.store";
 import LabeledCheckbox from "./util/LabeledCheckbox";
 
 function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }) {
 	const [catalog, setCatalog] = React.useState<VendorCatalog>(_catalog);
+	const [token] = useAtom(authTokenAtom);
 
 	return (
 		<div style={{ maxWidth: 600 }}>
@@ -26,10 +29,14 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 										entries: newEntries,
 									});
 
-									POST("/vendors/" + catalog.vendorId, {
-										vendorId: catalog.vendorId,
-										entries: newEntries,
-									});
+									POST(
+										"/auth/vendors/" + catalog.vendorId,
+										{
+											vendorId: catalog.vendorId,
+											entries: newEntries,
+										},
+										token!
+									);
 								}}
 							/>
 
@@ -64,7 +71,8 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 														entries: newEntries,
 													});
 
-													if (isValid) POST("/vendors/" + catalog.vendorId, catalog);
+													if (isValid)
+														POST("/auth/vendors/" + catalog.vendorId, catalog, token!);
 												}}
 											/>
 										</div>

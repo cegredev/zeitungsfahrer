@@ -3,10 +3,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { PUT } from "../../api";
 import { settingsAtom } from "../../components/stores/settings.store";
+import { authTokenAtom } from "../../components/stores/utility.store";
 import { invoiceSystems } from "../../consts";
 
 function Settings() {
 	const [settings, setSettings] = useAtom(settingsAtom);
+	const [token] = useAtom(authTokenAtom);
 
 	return (
 		<div className="page">
@@ -20,7 +22,7 @@ function Settings() {
 						onChange={async (evt) => {
 							const newSettings = { ...settings!, invoiceSystem: parseInt(evt.target.value) };
 
-							await PUT("/settings", newSettings);
+							await PUT("/auth/settings", newSettings, token!);
 
 							setSettings(newSettings);
 						}}

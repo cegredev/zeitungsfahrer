@@ -6,6 +6,8 @@ import { twoDecimalsFormat } from "../consts";
 import dayjs from "dayjs";
 import { DashboardRecords } from "backend/src/models/records.model";
 import AuthorizedPage from "./AuthorizedPage";
+import { useAtom } from "jotai";
+import { authTokenAtom } from "../components/stores/utility.store";
 
 function Dashboard() {
 	const navigate = useNavigate();
@@ -14,9 +16,11 @@ function Dashboard() {
 	const [vendors, setVendors] = React.useState<Vendor[]>([]);
 	const [articles, setArticles] = React.useState<DashboardRecords>({ articles: [], totalValueBrutto: 0 });
 
+	const [token] = useAtom(authTokenAtom);
+
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET("/vendors?includeInactive=false");
+			const res = await GET("/auth/vendors?includeInactive=false", token!);
 			const newVendors: Vendor[] = (await res.json()).map((vendor: Vendor) => ({
 				...vendor,
 				lastRecordEntry: new Date(vendor.lastRecordEntry),
@@ -26,12 +30,12 @@ function Dashboard() {
 			const newIndex = newVendors.findIndex((vendor) => vendor.active);
 			setSelectedIndex(newIndex);
 
-			const res2 = await GET(`/records/${newVendors[newIndex].id}/today`);
+			const res2 = await GET(`/auth/records/${newVendors[newIndex].id}/today`, token!);
 			setArticles(await res2.json());
 		}
 
 		fetchData();
-	}, [setVendors]);
+	}, [setVendors, token]);
 
 	return (
 		<AuthorizedPage>
@@ -75,7 +79,7 @@ function Dashboard() {
 												articles: [],
 												totalValueBrutto: 0,
 											});
-											const articles = await GET(`/records/${vendors[i].id}/today`);
+											const articles = await GET(`/auth/records/${vendors[i].id}/today`, token!);
 											setArticles(await articles.json());
 										}}
 										onDoubleClick={() => {

@@ -3,6 +3,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import Footer from "../../components/Footer";
+import { authTokenAtom } from "../../components/stores/utility.store";
 import { addVendorAtom, setVendorsAtom, vendorsListAtom } from "../../components/stores/vendors.store";
 import VendorItem from "../../components/VendorItem";
 
@@ -10,12 +11,13 @@ function Vendors() {
 	const [vendors] = useAtom(vendorsListAtom);
 	const [, setVendors] = useAtom(setVendorsAtom);
 	const [, addVendor] = useAtom(addVendorAtom);
+	const [token] = useAtom(authTokenAtom);
 
 	const [loading, setLoading] = React.useState(true);
 
 	React.useEffect(() => {
 		async function fetchVendors() {
-			const response = await GET("/vendors");
+			const response = await GET("/auth/vendors", token!);
 			const vendors: Vendor[] = await response.json();
 
 			setVendors(vendors);
@@ -23,7 +25,7 @@ function Vendors() {
 		}
 
 		fetchVendors();
-	}, [setVendors]);
+	}, [setVendors, token]);
 
 	return (
 		<div className="page vendors">

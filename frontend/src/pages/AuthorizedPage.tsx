@@ -1,4 +1,6 @@
+import { useAtom } from "jotai";
 import React from "react";
+import { authTokenAtom } from "../components/stores/utility.store";
 import Login from "./Login";
 
 interface Props {
@@ -6,7 +8,9 @@ interface Props {
 }
 
 function AuthorizedPage({ children }: Props) {
-	const loggedIn = true;
+	const [token] = useAtom(authTokenAtom);
+
+	const loggedIn = token !== undefined;
 
 	return loggedIn ? children : <Login />;
 }

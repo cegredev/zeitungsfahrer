@@ -1,5 +1,5 @@
 import { Express } from "express";
-import { getAccountsController } from "./controllers/accounts.controller.js";
+import { getAccountsController, loginController } from "./controllers/accounts.controller.js";
 import {
 	getArticlesController,
 	postArticleController,
@@ -26,27 +26,29 @@ import logger from "./logger.js";
 function routes(app: Express) {
 	logger.info("Creating routes");
 
-	app.route("/articles")
+	app.route("/auth/articles")
 		.get(getArticlesController)
 		.post(postArticleController)
 		.put(putArticleController)
 		.delete(deleteArticleController);
 
-	app.route("/vendors")
+	app.route("/auth/vendors")
 		.get(getVendorsController)
 		.post(postVendorController)
 		.put(putVendorController)
 		.delete(deleteVendorController);
 
-	app.route("/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
+	app.route("/auth/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
 
-	app.route("/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
+	app.route("/auth/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
-	app.route("/records/:vendorId/today").get(getTodaysRecordsController);
+	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
 
-	app.route("/accounts").get(getAccountsController);
+	app.route("/auth/accounts").get(getAccountsController);
 
-	app.route("/settings").get(getSettingsController).put(updateSettingsController);
+	app.route("/auth/settings").get(getSettingsController).put(updateSettingsController);
+
+	app.route("/login").get(loginController);
 }
 
 export default routes;
