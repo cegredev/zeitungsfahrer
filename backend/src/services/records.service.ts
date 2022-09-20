@@ -46,6 +46,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 						date: dayjs(start).add(index, "days").toDate(),
 						supply: catalogEntry.supplies[(startWeekday + index) % 7],
 						remissions: 0,
+						missing: true,
 					})),
 			};
 
@@ -53,7 +54,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 			const records: Record[] = response[0];
 			for (const record of records) {
 				const index = Math.round((record.date.getTime() - startMillis) / millisInDay);
-				articleRecords.records[index] = record;
+				articleRecords.records[index] = { ...record, missing: false };
 			}
 
 			// @ts-ignore Missing fields are going to be added later
@@ -79,14 +80,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 
 			const price = possiblePrices.find((p) => p.startDate <= date && (p.endDate == null || p.endDate > date))!;
 
-			return record == null
-				? {
-						date,
-						supply: 10,
-						remissions: 0,
-						price,
-				  }
-				: { ...record, price };
+			return { ...record, price };
 		});
 	}
 

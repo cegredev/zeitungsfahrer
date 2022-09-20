@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 export const months = [
 	"Januar",
 	"Februar",
@@ -24,3 +26,7 @@ export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	currency: "EUR",
 	maximumFractionDigits: 2,
 });
+
+export function normalizeDate(date: Date): Date {
+	return new Date(dayjs(date).format("YYYY-MM-DD"));
+}

@@ -6,6 +6,7 @@ export interface Record {
 	supply: number;
 	remissions: number;
 	price: Price;
+	missing: boolean;
 }
 
 export interface ArticleRecords {

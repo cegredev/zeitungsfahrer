@@ -161,10 +161,23 @@ a:visited {
 	margin: 10px 0;
 }
 
-.vendor-week-entry .vendor-table {
+/* .vendor-week-entry .vendor-table {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
 	gap: 0.5rem;
+} */
+
+.vendor-table {
+	border-spacing: 0;
+}
+
+.vendor-table th {
+	font-weight: normal;
+}
+
+.vendor-table th,
+.vendor-table td {
+	padding: 2px 6px;
 }
 
 .article-list {
