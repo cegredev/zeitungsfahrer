@@ -5,7 +5,7 @@ import logger from "../logger.js";
 import jwt from "jsonwebtoken";
 import { getEnvToken } from "../util.js";
 
-export async function validateToken(req: Request, res: Response, next: NextFunction) {
+export async function validateTokenHandler(req: Request, res: Response, next: NextFunction) {
 	const token = req.headers["authorization"];
 
 	if (token == null) return res.sendStatus(401);

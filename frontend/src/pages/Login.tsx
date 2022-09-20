@@ -7,23 +7,22 @@ function Login() {
 	const [, setToken] = useAtom(authTokenAtom);
 
 	const [password, setPassword] = React.useState("");
-	const [rememberMe, setRememberMe] = React.useState(true);
 
 	const [waiting, setWaiting] = React.useState(false);
 
 	const login = React.useCallback(async () => {
 		setWaiting(true);
 
-		const response = await GET("/login?name=root&password=" + password + "&rememberMe=" + rememberMe);
+		const response = await GET("/login?name=root&password=" + password);
 		const token: string = (await response.json()).token;
 
 		if (token != null) {
 			setToken(token);
-			localStorage.setItem("token", token);
+			// localStorage.setItem("token", token);
 		}
 
 		setWaiting(false);
-	}, [password, rememberMe, setToken]);
+	}, [password, setToken]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -43,7 +42,7 @@ function Login() {
 					onChange={(evt) => setPassword(evt.target.value)}
 				/>
 
-				<div>
+				{/* <div>
 					<input
 						type="checkbox"
 						disabled={waiting}
@@ -52,7 +51,7 @@ function Login() {
 						onChange={() => setRememberMe(!rememberMe)}
 					/>
 					<label htmlFor="rememberMe">Angemeldet bleiben</label>
-				</div>
+				</div> */}
 			</form>
 
 			<button disabled={password.length === 0 || waiting} onClick={login}>

@@ -5,7 +5,7 @@ import cors from "cors";
 import pool from "./database.js";
 import settings from "./services/settings.service.js"; // Initialize variables
 import logger from "./logger.js";
-import { validateToken } from "./controllers/controllers.js";
+import { validateTokenHandler } from "./controllers/controllers.js";
 
 const app = express();
 app.use(helmet());
@@ -16,7 +16,7 @@ app.use((req, _res, next) => {
 	next();
 });
 
-app.use("/auth/*", validateToken);
+app.use("/auth/*", validateTokenHandler);
 
 const PORT = process.env.PORT || 3001;
 

@@ -2,9 +2,10 @@ import pool, { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken } from "../util.js";
+import { Response } from "express";
 
 function generateAccessToken(name: string) {
-	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "1800s" });
+	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "12h" });
 }
 
 async function validatePassword(name: string, password: string): Promise<boolean> {
@@ -17,17 +18,16 @@ async function validatePassword(name: string, password: string): Promise<boolean
 	return account.password === password;
 }
 
-async function login(name: string, password: string, rememberMe: boolean) {
+async function login(name: string, password: string) {
 	if (!(await validatePassword(name, password))) return;
 
 	const token = generateAccessToken(name);
 
-	// TODO Something with remember me
 	return token;
 }
 
-export async function loginRoute(name: string, password: string, rememberMe: boolean): Promise<RouteReport> {
-	const token = await login(name, password, rememberMe);
+export async function loginRoute(name: string, password: string): Promise<RouteReport> {
+	const token = await login(name, password);
 
 	return token === undefined
 		? {
