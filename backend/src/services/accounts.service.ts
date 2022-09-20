@@ -2,7 +2,6 @@ import pool, { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken } from "../util.js";
-import { Response } from "express";
 
 function generateAccessToken(name: string) {
 	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "12h" });

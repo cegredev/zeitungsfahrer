@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { Link } from "react-router-dom";
-import { PUT } from "../../api";
+import { GET, PUT } from "../../api";
 import { settingsAtom } from "../../components/stores/settings.store";
 import { authTokenAtom } from "../../components/stores/utility.store";
 import { invoiceSystems } from "../../consts";
@@ -9,6 +9,16 @@ import { invoiceSystems } from "../../consts";
 function Settings() {
 	const [settings, setSettings] = useAtom(settingsAtom);
 	const [token] = useAtom(authTokenAtom);
+
+	React.useEffect(() => {
+		async function fetchSettings() {
+			const response = await GET("/auth/settings", token!);
+			const data = await response.json();
+			setSettings(data);
+		}
+
+		fetchSettings();
+	}, [setSettings]);
 
 	return (
 		<div className="page">

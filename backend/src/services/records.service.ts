@@ -7,6 +7,7 @@ import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
 import { getConvertedWeekday } from "../util.js";
 import settings from "./settings.service.js";
+import logger from "../logger.js";
 
 export async function getVendorRecords(vendorId: number, start: Date, end: Date): Promise<VendorRecords> {
 	const vendor = await getVendorFull(vendorId);
@@ -18,7 +19,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 
 	const millisInDay = 24 * 60 * 60 * 1_000,
 		startMillis = start.getTime(),
-		startWeekday = (6 + start.getUTCDay()) % 7;
+		startWeekday = getConvertedWeekday(start);
 
 	const includedArticleRecords: Map<number, ArticleRecords> = new Map();
 	for (const entry of vendor.catalog!.entries) {
@@ -111,6 +112,31 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 	};
 }
 
+export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
+	let start = end;
+
+	switch (settings.invoiceSystem) {
+		case 0:
+			start = dayjs(end).toDate();
+			break;
+		case 1:
+			start = dayjs(end).subtract(getConvertedWeekday(end), "days").toDate();
+			break;
+		case 2:
+			start = dayjs(end).set("date", 1).toDate();
+			break;
+		case 3:
+			start = dayjs(end).set("date", 1).toDate();
+			end = dayjs(start).add(1, "month").subtract(1, "day").toDate();
+			break;
+	}
+
+	return {
+		code: 200,
+		body: await getVendorRecords(vendorId, start, end),
+	};
+}
+
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
 	const today = new Date();
 	const weekday = getConvertedWeekday(today);
@@ -147,32 +173,6 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 				.map((records) => records.totalValueBrutto)
 				.reduce((prev, current) => prev + current, 0),
 		},
-	};
-}
-
-export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
-	let start = end;
-
-	switch (settings.invoiceSystem) {
-		case 0:
-			start = dayjs(end).toDate();
-			break;
-		case 1:
-			start = dayjs(end)
-				.subtract((6 + end.getDay()) % 7, "days")
-				.toDate();
-			break;
-		case 2:
-			start = dayjs(end).set("date", 1).toDate();
-			break;
-		case 3:
-			start = dayjs(end).set("month", 0).set("date", 1).toDate();
-			break;
-	}
-
-	return {
-		code: 200,
-		body: await getVendorRecords(vendorId, start, end),
 	};
 }
 

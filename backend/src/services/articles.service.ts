@@ -2,6 +2,7 @@ import { Article, Price, validatePrices } from "../models/articles.model.js";
 import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
+import { getConvertedWeekday } from "../util.js";
 
 export async function getPrices(start: Date, end: Date): Promise<Map<number, Price[][]>> {
 	const response = await pool.execute(
@@ -28,7 +29,7 @@ export async function getPrices(start: Date, end: Date): Promise<Map<number, Pri
 		byWeekday[price.weekday].push(price);
 	}
 
-	const startWeekday = (6 + start.getUTCDay()) % 7;
+	const startWeekday = getConvertedWeekday(start);
 
 	for (const [key, week] of byArticleByWeekday.entries()) {
 		byArticleByWeekday.set(
