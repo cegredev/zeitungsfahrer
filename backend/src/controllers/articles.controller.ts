@@ -1,10 +1,20 @@
 import { Request, Response } from "express";
 import { Article } from "../models/articles.model.js";
-import { getArticles, createArticle, deleteArticle, updateArticle } from "../services/articles.service.js";
+import {
+	getArticles,
+	createArticle,
+	deleteArticle,
+	updateArticle,
+	getArticleInfos,
+} from "../services/articles.service.js";
 import { handler } from "./controllers.js";
 
 export async function getArticlesController(req: Request<any, any, any, { atDate: Date }>, res: Response) {
 	await handler(() => getArticles(req.query.atDate), res);
+}
+
+export async function getArticleInfoController(req: Request, res: Response) {
+	await handler(getArticleInfos, res);
 }
 
 export async function postArticleController(req: Request<any, any, Article>, res: Response) {

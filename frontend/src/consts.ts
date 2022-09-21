@@ -30,3 +30,18 @@ export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 export function normalizeDate(date: Date): Date {
 	return new Date(dayjs(date).format("YYYY-MM-DD"));
 }
+
+export function dateAsTextWithSystem(date: Date, system: number): string {
+	switch (system) {
+		case 0:
+			return dayjs(date).format("DD.MM.YYYY");
+		case 1:
+			return "" + dayjs(date).week();
+		case 2:
+			return months[date.getMonth()];
+		case 3:
+			return dayjs(date).format("YYYY");
+		default:
+			return dayjs(date).format("YYYY-MM-DD");
+	}
+}

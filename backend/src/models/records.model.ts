@@ -31,3 +31,12 @@ export interface DashboardRecords {
 	articles: { id: number; name: string; supply?: Number; included: boolean }[];
 	totalValueBrutto: number;
 }
+
+export interface Sales {
+	supply: number;
+	remissions: number;
+}
+
+export interface ArticleSales {
+	sales: Sales[];
+}

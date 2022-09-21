@@ -1,3 +1,8 @@
+export interface ArticleInfo {
+	id: number;
+	name: string;
+}
+
 export interface Article {
 	id?: number;
 	name: string;

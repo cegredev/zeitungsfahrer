@@ -92,6 +92,13 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	};
 }
 
+export async function getArticleInfos(): Promise<RouteReport> {
+	const reponse = await pool.execute("SELECT id, name FROM articles");
+
+	// @ts-ignore
+	return { code: 200, body: reponse[0] };
+}
+
 export async function createPrices(startDate: Date, articleId: number, prices: Price[]): Promise<void> {
 	await pool.query(
 		"INSERT INTO prices (start_date, weekday, article_id, mwst, purchase, sell, market_sell) VALUES " +

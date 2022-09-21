@@ -1,5 +1,5 @@
 import pool, { RouteReport } from "../database.js";
-import { Record, ArticleRecords, VendorRecords } from "../models/records.model.js";
+import { Record, ArticleRecords, VendorRecords, Sales, ArticleSales } from "../models/records.model.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
@@ -106,10 +106,11 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 	};
 }
 
-export async function getVendorRecordsAdjusted(vendorId: number, end: Date): Promise<VendorRecords> {
+export function getDateRange(end: Date, system: number): [Date, Date] {
+	end = normalizeDate(end);
 	let start = end;
 
-	switch (settings.invoiceSystem) {
+	switch (system) {
 		case 0:
 			start = dayjs(end).toDate();
 			break;
@@ -117,11 +118,20 @@ export async function getVendorRecordsAdjusted(vendorId: number, end: Date): Pro
 			start = dayjs(end).subtract(getConvertedWeekday(end), "days").toDate();
 			break;
 		case 2:
-		case 3:
 			start = dayjs(end).set("date", 1).toDate();
 			end = dayjs(start).add(1, "month").subtract(1, "day").toDate();
 			break;
+		case 3:
+			start = new Date(end.getUTCFullYear() + "-01-01");
+			end = dayjs(start).add(1, "year").subtract(1, "day").toDate();
+			break;
 	}
+
+	return [start, end];
+}
+
+export async function getVendorRecordsAdjusted(vendorId: number, initialEnd: Date): Promise<VendorRecords> {
+	const [start, end] = getDateRange(initialEnd, Math.min(2, settings.invoiceSystem)); // Records cant be shown as year
 
 	return await getVendorRecords(vendorId, start, end);
 }
@@ -171,6 +181,34 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 				.map((records) => records.totalValueBrutto)
 				.reduce((prev, current) => prev + current, 0),
 		},
+	};
+}
+
+export async function getArticleSales(articleId: number, end: Date): Promise<ArticleSales> {
+	async function makeRequest(start: Date, end: Date): Promise<Sales> {
+		const response = await pool.execute(
+			"SELECT SUM(supply) as totalSupply, SUM(remissions) as totalRemissions FROM records WHERE article_id=? AND date BETWEEN ? AND ?",
+			[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+		);
+
+		// @ts-ignore
+		const sales: any = response[0][0];
+
+		console.log(sales);
+
+		return { remissions: parseInt("" + sales.totalRemissions), supply: parseInt("" + sales.totalSupply) };
+	}
+
+	const sales = [];
+	for (let i = 3; i >= 0; i--) sales.push(await makeRequest(...getDateRange(end, i)));
+
+	return { sales };
+}
+
+export async function getArticleSalesRoute(articleId: number, end: Date): Promise<RouteReport> {
+	return {
+		code: 200,
+		body: await getArticleSales(articleId, end),
 	};
 }
 

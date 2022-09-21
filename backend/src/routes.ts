@@ -5,8 +5,10 @@ import {
 	postArticleController,
 	deleteArticleController,
 	putArticleController,
+	getArticleInfoController,
 } from "./controllers/articles.controller.js";
 import {
+	getArticleSalesController,
 	getTodaysRecordsController,
 	getVendorRecordsController,
 	postArticleRecordsController,
@@ -31,6 +33,10 @@ function routes(app: Express) {
 		.post(postArticleController)
 		.put(putArticleController)
 		.delete(deleteArticleController);
+
+	app.route("/auth/articles/sales").get(getArticleSalesController);
+
+	app.route("/auth/articles/info").get(getArticleInfoController);
 
 	app.route("/auth/vendors")
 		.get(getVendorsController)
