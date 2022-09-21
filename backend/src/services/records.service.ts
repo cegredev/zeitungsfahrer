@@ -86,7 +86,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 
 	const articleRecords = [...includedArticleRecords.values()].map((records) => {
 		const prices = records.records.map((record) => [
-			(record.supply - record.remissions) * record.price.sell,
+			record.missing ? 0 : (record.supply - record.remissions) * record.price.sell,
 			record.price.mwst,
 		]);
 
@@ -106,7 +106,7 @@ export async function getVendorRecords(vendorId: number, start: Date, end: Date)
 	};
 }
 
-export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
+export async function getVendorRecordsAdjusted(vendorId: number, end: Date): Promise<VendorRecords> {
 	let start = end;
 
 	switch (settings.invoiceSystem) {
@@ -117,22 +117,24 @@ export async function getVendorRecordsRoute(vendorId: number, end: Date): Promis
 			start = dayjs(end).subtract(getConvertedWeekday(end), "days").toDate();
 			break;
 		case 2:
-			start = dayjs(end).set("date", 1).toDate();
-			break;
 		case 3:
 			start = dayjs(end).set("date", 1).toDate();
 			end = dayjs(start).add(1, "month").subtract(1, "day").toDate();
 			break;
 	}
 
+	return await getVendorRecords(vendorId, start, end);
+}
+
+export async function getVendorRecordsRoute(vendorId: number, end: Date): Promise<RouteReport> {
 	return {
 		code: 200,
-		body: await getVendorRecords(vendorId, start, end),
+		body: await getVendorRecordsAdjusted(vendorId, end),
 	};
 }
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
-	const today = new Date();
+	const today = normalizeDate(new Date());
 	const weekday = getConvertedWeekday(today);
 
 	const response = await pool.execute(
@@ -144,7 +146,9 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		[vendorId, weekday, vendorId]
 	);
 
-	const vendorRecords = await getVendorRecords(vendorId, dayjs(today).subtract(weekday, "days").toDate(), today);
+	console.log(dayjs(today).subtract(weekday, "days").toDate());
+
+	const vendorRecords = await getVendorRecordsAdjusted(vendorId, today);
 
 	// @ts-ignore
 	let articles: { id: number; name: string; supply: number; included: any }[] = [...response[0]];

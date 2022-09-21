@@ -30,7 +30,7 @@ function Records() {
 
 			const data = await response.json();
 
-			setVendorRecords(data);
+			setVendorRecords({ ...data });
 		},
 		[vendorId, setVendorRecords, token]
 	);
@@ -48,40 +48,6 @@ function Records() {
 					<div style={{ maxWidth: 800, display: "flex", flexDirection: "column", alignItems: "center" }}>
 						<h1>{vendorRecords.name}</h1>
 						<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
-						<div style={{ display: "flex", flexDirection: "row", justifyContent: "flex-end" }}>
-							<div style={{ flex: 1 }}></div>
-							<div
-								style={{
-									display: "flex",
-									flexDirection: "row",
-									fontWeight: "bold",
-									justifyContent: "flex-end",
-									gap: 20,
-									backgroundColor: "lightgray",
-									padding: 5,
-									margin: 5,
-									borderRadius: 5,
-								}}
-							>
-								<div style={{ gridColumnStart: 5 }}>Gesamt:</div>
-								<div>
-									{twoDecimalsFormat.format(
-										vendorRecords.articleRecords
-											.map((records) => records.totalValueNetto)
-											.reduce((prev, current) => prev + current)
-									)}{" "}
-									(Netto)
-								</div>
-								<div>
-									{twoDecimalsFormat.format(
-										vendorRecords.articleRecords
-											.map((records) => records.totalValueBrutto)
-											.reduce((prev, current) => prev + current)
-									)}{" "}
-									(Brutto)
-								</div>
-							</div>
-						</div>
 						{vendorRecords.articleRecords.map((articleRecords) => (
 							<ArticleRecordsItem
 								key={"vendor-week-" + vendorId + "-" + articleRecords.id + "-" + articleRecords.start}

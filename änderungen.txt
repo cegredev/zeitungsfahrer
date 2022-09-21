@@ -1,5 +1,3 @@
-- monatlich mit 1.1. anfangen
 - verschiedene bildschirmgrößen
 - einstellungen passwort hinzufügen
 - abrechnungssytem
-- record sum doesnt change

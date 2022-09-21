@@ -51,11 +51,12 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 			records: _records.records.map((r) => {
 				const time = normalizeDate(r.date).getTime();
 				const inFuture = time > todayNormalized.getTime();
+				const isToday = time === todayNormalized.getTime();
 
 				return {
 					...r,
-					editable: time === todayNormalized.getTime() || (r.missing && !inFuture),
-					edited: false,
+					editable: isToday || (r.missing && !inFuture),
+					edited: r.missing && isToday,
 					inFuture,
 				};
 			}),
@@ -110,7 +111,8 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 								<td>
 									<input
 										type="checkbox"
-										checked={!record.editable}
+										style={{ accentColor: "gray" }}
+										checked={record.editable}
 										onChange={() => {
 											const newRecords = [...records.records];
 											newRecords[i] = {
@@ -184,18 +186,20 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 								header="Speichern"
 								content={`Wollen Sie das gewählte Element wirklich speichern?`}
 								onYes={async () => {
-									setRecords({
-										...records,
-										records: records.records.map((r) => ({
-											...r,
-											missing: !(r.edited || !r.missing),
-										})),
-									});
 									await POST(
 										`/auth/records/${vendorId}`,
 										{ ...records, records: records.records.filter((r) => r.edited) },
 										token!
 									);
+									setRecords({
+										...records,
+										records: records.records.map((r) => ({
+											...r,
+											missing: !(r.edited || !r.missing),
+											edited: false,
+											editable: r.edited ? false : r.editable,
+										})),
+									});
 								}}
 							/>
 						</td>
@@ -203,7 +207,9 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 						<td style={{ fontWeight: "bold" }}>
 							{twoDecimalsFormat.format(
 								records.records
-									.map((r) => r.price.sell * (r.supply - r.remissions))
+									.map((r) =>
+										!r.missing || r.editable ? r.price.sell * (r.supply - r.remissions) : 0
+									)
 									.reduce((a, b) => a + b, 0)
 							)}
 						</td>
@@ -211,7 +217,11 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 							{" "}
 							{twoDecimalsFormat.format(
 								records.records
-									.map((r) => r.price.sell * (r.supply - r.remissions) * ((100 + r.price.mwst) / 100))
+									.map((r) =>
+										!r.missing || r.editable
+											? r.price.sell * (r.supply - r.remissions) * ((100 + r.price.mwst) / 100)
+											: 0
+									)
 									.reduce((a, b) => a + b, 0)
 							)}
 						</td>
