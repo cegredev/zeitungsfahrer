@@ -180,15 +180,15 @@ td {
 	padding: 2px 6px;
 }
 
-.dashboard-article-sales,
-.dashboard-article-sales th,
-.dashboard-article-sales td {
+.dashboard-sales,
+.dashboard-sales th,
+.dashboard-sales td {
 	/* border: 1px solid black;
 	border-collapse: collapse;*/
 	border-spacing: 0;
 }
 
-.dashboard-article-sales thead tr th {
+.dashboard-sales thead tr th {
 	border-bottom: 1px solid black;
 	padding-bottom: 5px;
 }

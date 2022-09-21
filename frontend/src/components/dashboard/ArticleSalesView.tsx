@@ -34,7 +34,7 @@ function ArticleSalesView() {
 
 	return (
 		<table
-			className="dashboard-article-sales"
+			className="dashboard-sales"
 			style={{
 				backgroundColor: "lightgray",
 				borderRadius: 5,

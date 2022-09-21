@@ -5,6 +5,7 @@ import {
 	getArticleSalesRoute,
 	getTodaysArticleRecords as getTodaysRecords,
 	getVendorRecordsRoute,
+	getVendorSalesRoute,
 } from "../services/records.service.js";
 import { getVendorCatalogRoute, getVendorFullRoute } from "../services/vendors.service.js";
 import { handler } from "./controllers.js";
@@ -21,6 +22,13 @@ export async function getArticleSalesController(
 	res: Response<VendorRecords>
 ) {
 	await handler(async () => await getArticleSalesRoute(parseInt(req.query.id), new Date(req.query.end)), res);
+}
+
+export async function getVendorSalesController(
+	req: Request<{ id: string }, any, any, { date: Date }>,
+	res: Response<VendorRecords>
+) {
+	await handler(async () => await getVendorSalesRoute(parseInt(req.params.id), new Date(req.query.date)), res);
 }
 
 export async function getTodaysRecordsController(req: Request<{ vendorId: number }>, res: Response) {

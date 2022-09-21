@@ -40,3 +40,7 @@ export interface Sales {
 export interface ArticleSales {
 	sales: Sales[];
 }
+
+export interface VendorSales {
+	sales: number[];
+}

@@ -1,6 +1,7 @@
 import AuthorizedPage from "./AuthorizedPage";
 import LeftPanel from "../components/dashboard/LeftPanel";
 import ArticleSalesView from "../components/dashboard/ArticleSalesView";
+import VendorSalesView from "../components/dashboard/VendorSalesView";
 
 function Dashboard() {
 	return (
@@ -11,7 +12,9 @@ function Dashboard() {
 					<div>
 						<ArticleSalesView />
 					</div>
-					<div>2</div>
+					<div>
+						<VendorSalesView />
+					</div>
 					<div>3</div>
 				</div>
 			</div>

@@ -1,5 +1,5 @@
 import pool, { RouteReport } from "../database.js";
-import { Record, ArticleRecords, VendorRecords, Sales, ArticleSales } from "../models/records.model.js";
+import { Record, ArticleRecords, VendorRecords, Sales, ArticleSales, VendorSales } from "../models/records.model.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
@@ -194,8 +194,6 @@ export async function getArticleSales(articleId: number, end: Date): Promise<Art
 		// @ts-ignore
 		const sales: any = response[0][0];
 
-		console.log(sales);
-
 		return { remissions: parseInt("" + sales.totalRemissions), supply: parseInt("" + sales.totalSupply) };
 	}
 
@@ -209,6 +207,25 @@ export async function getArticleSalesRoute(articleId: number, end: Date): Promis
 	return {
 		code: 200,
 		body: await getArticleSales(articleId, end),
+	};
+}
+
+export async function getVendorSales(vendorId: number, date: Date): Promise<VendorSales> {
+	async function makeRequest(start: Date, end: Date): Promise<number> {
+		const records = await getVendorRecords(vendorId, start, end);
+		return records.articleRecords.map((r) => r.totalValueBrutto).reduce((a, b) => a + b, 0);
+	}
+
+	const sales = [];
+	for (let i = 3; i >= 0; i--) sales.push(await makeRequest(...getDateRange(date, i)));
+
+	return { sales };
+}
+
+export async function getVendorSalesRoute(articleId: number, end: Date): Promise<RouteReport> {
+	return {
+		code: 200,
+		body: await getVendorSales(articleId, end),
 	};
 }
 
