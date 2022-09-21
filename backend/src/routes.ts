@@ -8,6 +8,7 @@ import {
 	getArticleInfoController,
 } from "./controllers/articles.controller.js";
 import {
+	getAllSalesController,
 	getArticleSalesController,
 	getTodaysRecordsController,
 	getVendorRecordsController,
@@ -52,6 +53,8 @@ function routes(app: Express) {
 	app.route("/auth/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
 	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
+
+	app.route("/auth/dashboard/allSales").get(getAllSalesController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

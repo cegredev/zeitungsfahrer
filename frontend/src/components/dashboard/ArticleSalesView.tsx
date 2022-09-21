@@ -4,8 +4,10 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { dateAsTextWithSystem, invoiceSystems, normalizeDate } from "../../consts";
+import { dateAsTextWithSystem, invoiceSystems } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
+
+const today = new Date();
 
 function ArticleSalesView() {
 	const [articleSales, setArticleSales] = React.useState<ArticleSales | undefined>(undefined);
@@ -14,8 +16,6 @@ function ArticleSalesView() {
 	const [articleIndex, setArticleIndex] = React.useState(0);
 
 	const [token] = useAtom(authTokenAtom);
-
-	const today = new Date();
 
 	React.useEffect(() => {
 		async function fetchData() {

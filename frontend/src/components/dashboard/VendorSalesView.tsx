@@ -1,12 +1,13 @@
-import { ArticleInfo } from "backend/src/models/articles.model";
-import { ArticleSales, VendorSales } from "backend/src/models/records.model";
+import { VendorSales } from "backend/src/models/records.model";
 import { Vendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { dateAsTextWithSystem, invoiceSystems, normalizeDate, twoDecimalsFormat } from "../../consts";
+import { dateAsTextWithSystem, twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
+
+const today = new Date();
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
@@ -15,8 +16,6 @@ function VendorSalesView() {
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 
 	const [token] = useAtom(authTokenAtom);
-
-	const today = new Date();
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -76,8 +75,10 @@ function VendorSalesView() {
 				</tr>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Betrag (Brutto)</td>
-					{vendorSales?.sales.map((amount) => (
-						<td style={{ textAlign: "center" }}>{twoDecimalsFormat.format(amount)}</td>
+					{vendorSales?.sales.map((amount, i) => (
+						<td key={"vendor-sales-" + i} style={{ textAlign: "center" }}>
+							{twoDecimalsFormat.format(amount)}
+						</td>
 					))}
 				</tr>
 			</tbody>

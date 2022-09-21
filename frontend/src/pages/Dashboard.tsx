@@ -2,6 +2,7 @@ import AuthorizedPage from "./AuthorizedPage";
 import LeftPanel from "../components/dashboard/LeftPanel";
 import ArticleSalesView from "../components/dashboard/ArticleSalesView";
 import VendorSalesView from "../components/dashboard/VendorSalesView";
+import AllSalesView from "../components/dashboard/AllSalesView";
 
 function Dashboard() {
 	return (
@@ -15,7 +16,9 @@ function Dashboard() {
 					<div>
 						<VendorSalesView />
 					</div>
-					<div>3</div>
+					<div>
+						<AllSalesView />
+					</div>
 				</div>
 			</div>
 		</AuthorizedPage>

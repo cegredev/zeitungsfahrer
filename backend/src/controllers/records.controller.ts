@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { ArticleRecords, VendorRecords } from "../models/records.model.js";
 import {
 	createOrUpdateArticleRecords,
+	getAllSalesRoute,
 	getArticleSalesRoute,
 	getTodaysArticleRecords as getTodaysRecords,
 	getVendorRecordsRoute,
@@ -29,6 +30,10 @@ export async function getVendorSalesController(
 	res: Response<VendorRecords>
 ) {
 	await handler(async () => await getVendorSalesRoute(parseInt(req.params.id), new Date(req.query.date)), res);
+}
+
+export async function getAllSalesController(req: Request<any, any, any, { date: Date }>, res: Response<VendorRecords>) {
+	await handler(async () => await getAllSalesRoute(new Date(req.query.date)), res);
 }
 
 export async function getTodaysRecordsController(req: Request<{ vendorId: number }>, res: Response) {
