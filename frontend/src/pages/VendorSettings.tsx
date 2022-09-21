@@ -22,7 +22,7 @@ const headerCSS: React.CSSProperties = {
 function VendorSettings() {
 	const navigate = useNavigate();
 
-	const id = useParams().id!;
+	const [id, setId] = React.useState(useParams().id!);
 	const isDraft = id === "create";
 
 	const [vendor, setVendor] = React.useState<Vendor | null>(null);
@@ -172,8 +172,10 @@ function VendorSettings() {
 							if (isDraft) {
 								const response = await POST("/auth/vendors", vendor, token!);
 								const data = await response.json();
+								setId(data.id);
+								setVendor({ ...vendor, id: data.id });
 								navigate(`/vendors/${data.id}`);
-								navigate(0);
+								// navigate(0);
 							} else {
 								await PUT("/auth/vendors", vendor, token!);
 							}
@@ -183,7 +185,7 @@ function VendorSettings() {
 						<React.Fragment>
 							<hr className="solid-divider" style={{ marginTop: 30 }} />
 							<h3 style={headerCSS}>Artikel</h3>
-							<VendorCatalogSettings catalog={vendor.catalog!} />
+							<VendorCatalogSettings vendorId={vendor.id!} catalog={vendor.catalog!} />
 						</React.Fragment>
 					)}
 
@@ -197,8 +199,6 @@ function VendorSettings() {
 								vendor.firstName + " " + vendor.lastName
 							}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
 							onYes={async () => {
-								console.log(Object.values(vendor).map((val) => String(val)));
-
 								if (
 									Object.values(vendor)
 										.map((val) => String(val).length)

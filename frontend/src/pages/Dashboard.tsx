@@ -9,16 +9,12 @@ function Dashboard() {
 		<AuthorizedPage>
 			<div className="dashboard" style={{ flex: 1 }}>
 				<LeftPanel />
-				<div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-					<div>
-						<ArticleSalesView />
-					</div>
-					<div>
-						<VendorSalesView />
-					</div>
-					<div>
-						<AllSalesView />
-					</div>
+				<div style={{ display: "flex", flexDirection: "column", gap: "50px" }}>
+					<ArticleSalesView />
+
+					<VendorSalesView />
+
+					<AllSalesView />
 				</div>
 			</div>
 		</AuthorizedPage>

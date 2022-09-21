@@ -32,7 +32,7 @@ function AllSalesView() {
 		>
 			<thead>
 				<tr>
-					<th />
+					<th>Gesamte Abrechnung</th>
 					<th>Jahr</th>
 					<th>Monat</th>
 					<th>KW</th>

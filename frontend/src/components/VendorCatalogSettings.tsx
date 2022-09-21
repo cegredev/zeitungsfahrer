@@ -6,9 +6,13 @@ import { weekdaysShort } from "../consts";
 import { authTokenAtom } from "./stores/utility.store";
 import LabeledCheckbox from "./util/LabeledCheckbox";
 
-function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }) {
+function VendorCatalogSettings({ vendorId, catalog: _catalog }: { vendorId: number; catalog: VendorCatalog }) {
 	const [catalog, setCatalog] = React.useState<VendorCatalog>(_catalog);
 	const [token] = useAtom(authTokenAtom);
+
+	React.useEffect(() => {
+		setCatalog((c) => ({ ...c, vendorId }));
+	}, [vendorId, setCatalog]);
 
 	return (
 		<div style={{ maxWidth: 600 }}>
@@ -30,9 +34,9 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 									});
 
 									POST(
-										"/auth/vendors/" + catalog.vendorId,
+										"/auth/vendors/" + vendorId,
 										{
-											vendorId: catalog.vendorId,
+											vendorId,
 											entries: newEntries,
 										},
 										token!
@@ -71,8 +75,7 @@ function VendorCatalogSettings({ catalog: _catalog }: { catalog: VendorCatalog }
 														entries: newEntries,
 													});
 
-													if (isValid)
-														POST("/auth/vendors/" + catalog.vendorId, catalog, token!);
+													if (isValid) POST("/auth/vendors/" + vendorId, catalog, token!);
 												}}
 											/>
 										</div>

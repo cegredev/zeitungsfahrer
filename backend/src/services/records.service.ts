@@ -117,8 +117,6 @@ export async function getAllSales(date: Date): Promise<number[]> {
 		const map = new Map<number, ArticleRecords>();
 
 		for (const record of records) {
-			console.log(record);
-
 			let articleRecords = map.get(record.articleId!);
 			if (articleRecords === undefined) {
 				// @ts-ignore
