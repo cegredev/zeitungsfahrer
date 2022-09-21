@@ -25,6 +25,9 @@ function Records() {
 	const fetchData = React.useCallback(
 		async (end: Date): Promise<void> => {
 			const response = await GET(`/auth/records/${vendorId}?end=${dayjs(end).format("YYYY-MM-DD")}`, token!);
+
+			if (!response.ok) return;
+
 			const data = await response.json();
 
 			setVendorRecords(data);

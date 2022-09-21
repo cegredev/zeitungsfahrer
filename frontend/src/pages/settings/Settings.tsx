@@ -18,7 +18,7 @@ function Settings() {
 		}
 
 		fetchSettings();
-	}, [setSettings]);
+	}, [setSettings, token]);
 
 	return (
 		<div className="page">

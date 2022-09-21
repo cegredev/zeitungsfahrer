@@ -7,6 +7,18 @@ import { normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
 import { authTokenAtom } from "./stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
+const todayNormalized = normalizeDate(new Date());
+
+interface GUIRecord extends Record {
+	editable: boolean;
+	edited: boolean;
+	inFuture: boolean;
+}
+
+interface GUIArticleRecords extends ArticleRecords {
+	records: GUIRecord[];
+}
+
 interface Props {
 	vendorId: number;
 	_records: ArticleRecords;
@@ -16,10 +28,14 @@ interface Props {
 // 	MISSING, COMPLETE,
 // }
 
-function StateDisplay({ record }: { record: Record }): JSX.Element {
+function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
+	// if (record.edited) {
+	// 	return <span style={{ color: "black" }}>Bearbeitet</span>;
+	// }
+
 	if (record.missing) {
-		if (normalizeDate(new Date()).getTime() < normalizeDate(record.date).getTime()) {
-			return <span style={{ color: "#666666" }}>In Zukunft</span>;
+		if (record.inFuture) {
+			return <span style={{ color: "black" }}>Ausstehend</span>;
 		}
 
 		return <span style={{ color: "red" }}>Fehlt</span>;
@@ -29,7 +45,25 @@ function StateDisplay({ record }: { record: Record }): JSX.Element {
 }
 
 function ArticleRecordsItem({ vendorId, _records }: Props) {
-	const [records, setRecords] = React.useState(_records);
+	const mappedRecords = React.useMemo(
+		() => ({
+			..._records,
+			records: _records.records.map((r) => {
+				const time = normalizeDate(r.date).getTime();
+				const inFuture = time > todayNormalized.getTime();
+
+				return {
+					...r,
+					editable: time === todayNormalized.getTime() || (r.missing && !inFuture),
+					edited: false,
+					inFuture,
+				};
+			}),
+		}),
+		[_records]
+	);
+
+	const [records, setRecords] = React.useState<GUIArticleRecords>(mappedRecords);
 	const [token] = useAtom(authTokenAtom);
 
 	const startDate = React.useMemo(() => new Date(records.start), [records.start]);
@@ -44,6 +78,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 				{/* Headers */}
 				<thead>
 					<tr>
+						<th />
 						<th>Datum</th>
 						<th>Ausgabe</th>
 						<th>Lieferung</th>
@@ -63,8 +98,32 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 						return (
 							<tr
 								key={"sales-" + records.id + "-" + i}
-								style={{ backgroundColor: record.missing ? "inherit" : "darkgray" }}
+								style={{
+									backgroundColor: record.edited
+										? "#8bcc81"
+										: !record.editable && (!record.missing || record.inFuture)
+										? "darkgray"
+										: "inherit",
+									color: record.editable ? "inherit" : "gray",
+								}}
 							>
+								<td>
+									<input
+										type="checkbox"
+										checked={!record.editable}
+										onChange={() => {
+											const newRecords = [...records.records];
+											newRecords[i] = {
+												...record,
+												editable: !record.editable,
+											};
+											setRecords({
+												...records,
+												records: newRecords,
+											});
+										}}
+									/>
+								</td>
 								<td>{date}</td>
 								<td>{weekdays[weekday]}</td>
 								<td>
@@ -73,11 +132,13 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 										className="article-input"
 										min={record.remissions}
 										value={record.supply}
+										disabled={!record.editable}
 										onChange={(evt) => {
 											const newRecords = [...records.records];
 											newRecords[i] = {
 												...record,
 												supply: parseInt(evt.target.value),
+												edited: true,
 											};
 											setRecords({ ...records, records: newRecords });
 										}}
@@ -90,11 +151,13 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 										min={0}
 										max={record.supply}
 										value={record.remissions}
+										disabled={!record.editable}
 										onChange={(evt) => {
 											const newRecords = [...records.records];
 											newRecords[i] = {
 												...record,
 												remissions: parseInt(evt.target.value),
+												edited: true,
 											};
 											setRecords({ ...records, records: newRecords });
 										}}
@@ -114,6 +177,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 						);
 					})}
 					<tr>
+						<td />
 						<td>
 							<YesNoPrompt
 								trigger={<button style={{ color: "green", float: "left" }}>Speichern</button>}
@@ -122,9 +186,16 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 								onYes={async () => {
 									setRecords({
 										...records,
-										records: records.records.map((r) => ({ ...r, missing: false })),
+										records: records.records.map((r) => ({
+											...r,
+											missing: !(r.edited || !r.missing),
+										})),
 									});
-									await POST(`/auth/records/${vendorId}`, records, token!);
+									await POST(
+										`/auth/records/${vendorId}`,
+										{ ...records, records: records.records.filter((r) => r.edited) },
+										token!
+									);
 								}}
 							/>
 						</td>

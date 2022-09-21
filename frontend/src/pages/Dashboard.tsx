@@ -62,7 +62,7 @@ function Dashboard() {
 										display: "flex",
 										flexDirection: "row",
 										backgroundColor:
-											selectedIndex === i ? "gray" : i % 2 == 0 ? "white" : "lightgray",
+											selectedIndex === i ? "gray" : i % 2 === 0 ? "white" : "lightgray",
 										cursor: "default",
 									}}
 								>
@@ -127,7 +127,7 @@ function Dashboard() {
 										borderTop: i > 0 ? "solid 1px" : "",
 										display: "flex",
 										flexDirection: "row",
-										backgroundColor: i % 2 == 0 ? "white" : "lightgray",
+										backgroundColor: i % 2 === 0 ? "white" : "lightgray",
 										cursor: "default",
 									}}
 								>

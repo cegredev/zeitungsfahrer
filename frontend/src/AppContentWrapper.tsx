@@ -25,7 +25,10 @@ function AppContentWrapper() {
 
 	React.useEffect(() => {
 		async function fetchSettings() {
-			const response = await GET("/settings", token!);
+			const response = await GET("/auth/settings", token!);
+
+			if (!response.ok) return;
+
 			const data = await response.json();
 			setSettings(data);
 		}
