@@ -22,7 +22,18 @@ function Settings() {
 
 	return (
 		<div className="page">
-			<div className="settings-left" style={{ padding: 30, backgroundColor: "lightgray", borderRadius: 10 }}>
+			<div
+				className="settings-left"
+				style={{
+					padding: 30,
+					backgroundColor: "lightgray",
+					borderRadius: 10,
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+					gap: 20,
+				}}
+			>
 				<Link to="/vendors/create">Händler hinzufügen</Link>
 				<div>
 					Abrechnungen werden standardmäßig pro{" "}

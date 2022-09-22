@@ -11,7 +11,7 @@ const today = new Date();
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
-	const [vendorId, setVendorId] = React.useState(1);
+	const [vendorId, setVendorId] = React.useState(-1);
 	const [vendors, setVendors] = React.useState<Vendor[]>([]);
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 
@@ -19,14 +19,18 @@ function VendorSalesView() {
 
 	React.useEffect(() => {
 		async function fetchData() {
+			const info = await GET("/auth/vendors", token!);
+			const newVendors = await info.json();
+			setVendors(newVendors);
+
+			const newVendorId = vendorId === -1 ? (newVendors.length > 0 ? newVendors[0].id : -1) : vendorId;
+			setVendorId(newVendorId);
+
 			const response = await GET(
-				"/auth/vendors/" + vendorId + "/sales?date=" + dayjs(today).format("YYYY-MM-DD"),
+				"/auth/vendors/" + newVendorId + "/sales?date=" + dayjs(today).format("YYYY-MM-DD"),
 				token!
 			);
 			setVendorSales(await response.json());
-
-			const info = await GET("/auth/vendors", token!);
-			setVendors(await info.json());
 		}
 
 		fetchData();

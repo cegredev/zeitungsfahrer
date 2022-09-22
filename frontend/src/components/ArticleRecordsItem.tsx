@@ -56,7 +56,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 				return {
 					...r,
 					editable: isToday || (r.missing && !inFuture),
-					edited: r.missing && isToday,
+					edited: isToday,
 					inFuture,
 				};
 			}),

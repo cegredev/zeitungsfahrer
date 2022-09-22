@@ -1,3 +1,4 @@
-- verschiedene bildschirmgrößen
 - einstellungen passwort hinzufügen
 - abrechnungssytem
+- make api calls only once
+ 

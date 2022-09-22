@@ -206,8 +206,6 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 		[vendorId, weekday, vendorId]
 	);
 
-	console.log(dayjs(today).subtract(weekday, "days").toDate());
-
 	const vendorRecords = await getVendorRecordsAdjusted(vendorId, today);
 
 	// @ts-ignore
@@ -237,7 +235,7 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 export async function getArticleSales(articleId: number, end: Date): Promise<ArticleSales> {
 	async function makeRequest(start: Date, end: Date): Promise<Sales> {
 		const response = await pool.execute(
-			"SELECT SUM(supply) as totalSupply, SUM(remissions) as totalRemissions FROM records WHERE article_id=? AND date BETWEEN ? AND ?",
+			"SELECT IFNULL(SUM(supply), 0) as totalSupply, IFNULL(SUM(remissions), 0) as totalRemissions FROM records WHERE article_id=? AND date BETWEEN ? AND ?",
 			[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 		);
 
