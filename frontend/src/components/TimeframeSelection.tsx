@@ -55,6 +55,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							value={date.getFullYear()}
 							onChange={(evt) => {
 								setDate(dayjs(date).set("year", parseInt(evt.target.value)).toDate());
+								onChange(date);
 							}}
 						/>
 					</td>
@@ -62,7 +63,10 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 					<td>
 						<select
 							value={date.getMonth()}
-							onChange={(evt) => setDate(dayjs(date).set("month", parseInt(evt.target.value)).toDate())}
+							onChange={(evt) => {
+								setDate(dayjs(date).set("month", parseInt(evt.target.value)).toDate());
+								onChange(date);
+							}}
 						>
 							{months.map((name, index) => (
 								<option key={"month-option-" + index} value={index}>
@@ -86,6 +90,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 										.add(diff * 7, "day")
 										.toDate()
 								);
+								onChange(date);
 							}}
 						/>
 					</td>
@@ -94,6 +99,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							selected={date}
 							showYearDropdown={true}
 							dateFormat="dd.MM.yyyy"
+							calendarStartDay={1}
 							onChange={(date: Date) => {
 								setDate(date);
 								onChange(date);
