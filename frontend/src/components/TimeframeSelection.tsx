@@ -36,7 +36,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 	const correctedWeek = getCorrectedWeek(date);
 
 	return (
-		<table className="timeframe-selection">
+		<table className="timeframe-selection" style={{ zIndex: 2, position: "sticky", top: 50 }}>
 			<thead>
 				<tr>
 					<th>Jahr</th>
@@ -54,8 +54,9 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							min={1971}
 							value={date.getFullYear()}
 							onChange={(evt) => {
-								setDate(dayjs(date).set("year", parseInt(evt.target.value)).toDate());
-								onChange(date);
+								const newDate = dayjs(date).set("year", parseInt(evt.target.value)).toDate();
+								setDate(newDate);
+								onChange(newDate);
 							}}
 						/>
 					</td>
@@ -64,7 +65,8 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 						<select
 							value={date.getMonth()}
 							onChange={(evt) => {
-								setDate(dayjs(date).set("month", parseInt(evt.target.value)).toDate());
+								const newDate = dayjs(date).set("month", parseInt(evt.target.value)).toDate();
+								setDate(newDate);
 								onChange(date);
 							}}
 						>
@@ -85,12 +87,12 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							onChange={(evt) => {
 								const newWeek = correctWeek(parseInt(evt.target.value) + 1);
 								const diff = newWeek - correctedWeek;
-								setDate(
-									dayjs(date)
-										.add(diff * 7, "day")
-										.toDate()
-								);
-								onChange(date);
+								const newDate = dayjs(date)
+									.add(diff * 7, "day")
+									.toDate();
+
+								setDate(newDate);
+								onChange(newDate);
 							}}
 						/>
 					</td>
@@ -103,6 +105,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							onChange={(date: Date) => {
 								setDate(date);
 								onChange(date);
+								console.log("change");
 							}}
 						/>
 					</td>

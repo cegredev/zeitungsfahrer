@@ -8,7 +8,7 @@ body {
 }
 
 body > #root > div {
-	height: 100vh;
+	min-height: 100vh;
 }
 
 #root {
@@ -18,13 +18,6 @@ body > #root > div {
 	margin: 0 auto -20px;
 
 	display: flex;
-}
-
-.top-navbar {
-	font-size: 25px;
-	padding: 10px 0;
-	background-color: grey;
-	/* width: 100%; */
 }
 
 .top-navbar > * {
@@ -65,10 +58,10 @@ body {
 }
 
 .top-navbar {
-	position: sticky; /* Set the navbar to fixed position */
-	top: 0; /* Position the navbar at the top of the page */
+	font-size: 25px;
+	padding: 10px 0;
+	background-color: grey;
 	width: 100%; /* Full width */
-	z-index: 2;
 	left: 0;
 	user-select: none;
 }
@@ -216,6 +209,8 @@ td {
 
 .timeframe-selection {
 	text-align: center;
+	background-color: gray;
+	border-radius: 5px;
 }
 
 .timeframe-selection td {
