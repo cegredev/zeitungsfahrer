@@ -161,17 +161,18 @@ export function getDateRange(end: Date, system: number): [Date, Date] {
 	let start = end;
 
 	switch (system) {
-		case 0:
+		case 0: // Day
 			start = dayjs(end).toDate();
 			break;
-		case 1:
+		case 1: // Week
 			start = dayjs(end).subtract(getConvertedWeekday(end), "days").toDate();
+			end = dayjs(start).add(7, "days").toDate();
 			break;
-		case 2:
+		case 2: // Month
 			start = dayjs(end).set("date", 1).toDate();
 			end = dayjs(start).add(1, "month").subtract(1, "day").toDate();
 			break;
-		case 3:
+		case 3: // Year
 			start = new Date(end.getUTCFullYear() + "-01-01");
 			end = dayjs(start).add(1, "year").subtract(1, "day").toDate();
 			break;
