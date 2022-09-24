@@ -10,6 +10,18 @@ interface Props {
 	startDate: Date;
 }
 
+function correctWeek(week: number): number {
+	if (week <= 1) return 52;
+
+	// -1 because the client counts these weeks differently
+	return week - 1;
+}
+
+function getCorrectedWeek(date: Date): number {
+	// Subtract because week counts Sunday as the first day
+	return correctWeek(dayjs(date).subtract(1, "day").week());
+}
+
 function TimeframeSelection({ onChange, startDate }: Props) {
 	const [date, _setDate] = React.useState(startDate);
 
@@ -20,6 +32,8 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 		},
 		[onChange]
 	);
+
+	const correctedWeek = getCorrectedWeek(date);
 
 	return (
 		<table className="timeframe-selection">
@@ -63,10 +77,10 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 							style={{ maxWidth: "3rem" }}
 							min={0}
 							max={54}
-							value={dayjs(date).week()}
+							value={correctedWeek}
 							onChange={(evt) => {
-								const newWeek = parseInt(evt.target.value);
-								const diff = newWeek - dayjs(date).week();
+								const newWeek = correctWeek(parseInt(evt.target.value) + 1);
+								const diff = newWeek - correctedWeek;
 								setDate(
 									dayjs(date)
 										.add(diff * 7, "day")
