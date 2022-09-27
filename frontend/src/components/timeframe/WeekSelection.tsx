@@ -25,7 +25,7 @@ function WeekSelection({ date, setDate }: Props) {
 			type="number"
 			style={{ maxWidth: "3rem" }}
 			min={0}
-			max={54}
+			max={52}
 			value={correctedWeek}
 			onChange={(evt) => {
 				const newWeek = correctWeek(parseInt(evt.target.value) + 1);
