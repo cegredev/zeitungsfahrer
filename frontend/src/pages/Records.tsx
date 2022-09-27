@@ -10,17 +10,16 @@ import { VendorRecords } from "backend/src/models/records.model";
 import { authTokenAtom } from "../components/stores/utility.store";
 import AuthorizedPage from "./AuthorizedPage";
 import YesNoPrompt from "../components/util/YesNoPrompt";
+import { calculateTotalValueBrutto, twoDecimalsFormat } from "../consts";
+import { vendorRecordsAtom } from "../components/stores/records.store";
 
-const _today = new Date();
-const initialEndDate = dayjs(_today)
-	.add((7 - _today.getDay()) % 7, "days")
-	.toDate();
+const initialEndDate = new Date();
 
 function Records() {
 	const vendorId = parseInt(useParams().id!);
 	const navigate = useNavigate();
 
-	const [vendorRecords, setVendorRecords] = React.useState<VendorRecords | undefined>(undefined);
+	const [vendorRecords, setVendorRecords] = useAtom(vendorRecordsAtom);
 	const [token] = useAtom(authTokenAtom);
 
 	const fetchData = React.useCallback(
@@ -43,7 +42,7 @@ function Records() {
 	return (
 		<AuthorizedPage>
 			<div className="page">
-				{vendorRecords == null ? (
+				{vendorRecords === undefined ? (
 					"Laden..."
 				) : (
 					<div style={{ maxWidth: 800, display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -67,11 +66,19 @@ function Records() {
 								}}
 							/>
 						</div>
+						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>
+							Gesamt (Brutto):{" "}
+							{twoDecimalsFormat.format(
+								vendorRecords.articleRecords
+									.map((r) => calculateTotalValueBrutto(r.records))
+									.reduce((a, b) => a + b, 0)
+							)}
+						</h3>
 						{vendorRecords.articleRecords.map((articleRecords) => (
 							<ArticleRecordsItem
 								key={"vendor-week-" + vendorId + "-" + articleRecords.id + "-" + articleRecords.start}
 								vendorId={vendorId}
-								_records={articleRecords}
+								articleId={articleRecords.id}
 							/>
 						))}
 					</div>

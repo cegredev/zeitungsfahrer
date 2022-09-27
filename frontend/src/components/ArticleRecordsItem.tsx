@@ -3,13 +3,14 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { POST } from "../api";
-import { normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
+import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
+import { updateArticleRecordsAtom, vendorRecordsAtom } from "./stores/records.store";
 import { authTokenAtom } from "./stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 const todayNormalized = normalizeDate(new Date());
 
-interface GUIRecord extends Record {
+export interface GUIRecord extends Record {
 	editable: boolean;
 	edited: boolean;
 	inFuture: boolean;
@@ -21,7 +22,7 @@ interface GUIArticleRecords extends ArticleRecords {
 
 interface Props {
 	vendorId: number;
-	_records: ArticleRecords;
+	articleId: number;
 }
 
 // enum RecordState {
@@ -44,11 +45,16 @@ function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
 	return <span style={{ color: "green" }}>Vollständig</span>;
 }
 
-function ArticleRecordsItem({ vendorId, _records }: Props) {
-	const mappedRecords = React.useMemo(
-		() => ({
-			..._records,
-			records: _records.records.map((r) => {
+function ArticleRecordsItem({ vendorId, articleId }: Props) {
+	const [vendorRecords] = useAtom(vendorRecordsAtom);
+	const [, updateRecords] = useAtom(updateArticleRecordsAtom);
+
+	const records = React.useMemo(() => {
+		const records = vendorRecords!.articleRecords.find((r) => r.id === articleId)!;
+
+		return {
+			...records,
+			records: records.records.map((r) => {
 				const time = normalizeDate(r.date).getTime();
 				const inFuture = time > todayNormalized.getTime();
 				const isToday = time === todayNormalized.getTime();
@@ -60,16 +66,14 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 					inFuture,
 				};
 			}),
-		}),
-		[_records]
-	);
+		};
+	}, [vendorRecords]);
 
-	const [records, setRecords] = React.useState<GUIArticleRecords>(mappedRecords);
 	const [token] = useAtom(authTokenAtom);
 
 	const startDate = React.useMemo(() => new Date(records.start), [records.start]);
 	const weekdayOffset = (6 + startDate.getUTCDay()) % 7; // Sunday is 0 instead of Monday
-
+	const totalValueBrutto = calculateTotalValueBrutto(records.records);
 	return (
 		<div className="vendor-week-entry">
 			<h3>{records.name}</h3>
@@ -119,7 +123,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 												...record,
 												editable: !record.editable,
 											};
-											setRecords({
+											updateRecords({
 												...records,
 												records: newRecords,
 											});
@@ -142,7 +146,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 												supply: parseInt(evt.target.value),
 												edited: true,
 											};
-											setRecords({ ...records, records: newRecords });
+											updateRecords({ ...records, records: newRecords });
 										}}
 									/>
 								</td>
@@ -161,7 +165,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 												remissions: parseInt(evt.target.value),
 												edited: true,
 											};
-											setRecords({ ...records, records: newRecords });
+											updateRecords({ ...records, records: newRecords });
 										}}
 									/>
 								</td>
@@ -191,7 +195,7 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 										{ ...records, records: records.records.filter((r) => r.edited) },
 										token!
 									);
-									setRecords({
+									updateRecords({
 										...records,
 										records: records.records.map((r) => ({
 											...r,
@@ -207,24 +211,11 @@ function ArticleRecordsItem({ vendorId, _records }: Props) {
 						<td style={{ fontWeight: "bold" }}>
 							{twoDecimalsFormat.format(
 								records.records
-									.map((r) =>
-										!r.missing || r.editable ? r.price.sell * (r.supply - r.remissions) : 0
-									)
+									.map((r) => (!r.missing ? r.price.sell * (r.supply - r.remissions) : 0))
 									.reduce((a, b) => a + b, 0)
 							)}
 						</td>
-						<td style={{ fontWeight: "bold" }}>
-							{" "}
-							{twoDecimalsFormat.format(
-								records.records
-									.map((r) =>
-										!r.missing || r.editable
-											? r.price.sell * (r.supply - r.remissions) * ((100 + r.price.mwst) / 100)
-											: 0
-									)
-									.reduce((a, b) => a + b, 0)
-							)}
-						</td>
+						<td style={{ fontWeight: "bold" }}> {twoDecimalsFormat.format(totalValueBrutto)}</td>
 					</tr>
 				</tbody>
 			</table>
