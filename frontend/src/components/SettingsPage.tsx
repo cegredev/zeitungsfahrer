@@ -14,6 +14,7 @@ const links = [
 	["/settings", "Allgemein"],
 	["/articles", "Artikel"],
 	["/vendors", "Händler"],
+	["/schedule", "Einsatzplan"],
 ];
 
 function SettingsNav({ route: activeRoute, children }: Props) {

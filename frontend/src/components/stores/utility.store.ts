@@ -6,4 +6,4 @@ export const errorMessageAtom = atom("", (_get, set, message: string) => {
 
 export const authTokenAtom = atom<string | undefined>(undefined);
 
-export const settingsLoggedInAtom = atom(false);
+export const settingsLoggedInAtom = atom(true);

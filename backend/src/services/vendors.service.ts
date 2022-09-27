@@ -1,8 +1,8 @@
-import { Vendor } from "../models/vendors.model.js";
+import { SimpleVendor, Vendor } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
 
-export async function getVendors(includeInactive: boolean): Promise<RouteReport> {
+export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	const result = await pool.execute(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
 				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry
@@ -11,10 +11,22 @@ export async function getVendors(includeInactive: boolean): Promise<RouteReport>
 		 ORDER BY last_name`
 	);
 
-	return {
-		code: 200,
-		body: result[0],
-	};
+	// @ts-ignore
+	const vendors: Vendor[] = result[0];
+
+	return vendors;
+}
+
+export async function getVendorsSimple(): Promise<SimpleVendor[]> {
+	const result = await pool.execute(
+		`SELECT id, CONCAT(first_name, " ", last_name) as name, active FROM vendors ORDER BY last_name`
+	);
+
+	// @ts-ignore
+	const vendors: SimpleVendor[] = result[0];
+
+	// @ts-ignore
+	return vendors.map((vendor) => ({ ...vendor, active: vendor.active === 1 }));
 }
 
 export async function getVendor(id: number): Promise<Vendor> {

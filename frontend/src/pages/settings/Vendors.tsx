@@ -10,15 +10,16 @@ import VendorItem from "../../components/VendorItem";
 function Vendors() {
 	const [vendors] = useAtom(vendorsListAtom);
 	const [, setVendors] = useAtom(setVendorsAtom);
-	const [, addVendor] = useAtom(addVendorAtom);
 	const [token] = useAtom(authTokenAtom);
 
 	const [loading, setLoading] = React.useState(true);
 
 	React.useEffect(() => {
 		async function fetchVendors() {
-			const response = await GET("/auth/vendors", token!);
+			const response = await GET("/auth/vendors?includeInactive=true", token!);
 			const vendors: Vendor[] = await response.json();
+
+			console.log(vendors);
 
 			setVendors(vendors);
 			setLoading(false);

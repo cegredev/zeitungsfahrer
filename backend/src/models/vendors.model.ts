@@ -1,3 +1,9 @@
+export interface SimpleVendor {
+	id: number;
+	name: string;
+	active: boolean;
+}
+
 export interface Vendor {
 	id?: number;
 	firstName: string;

@@ -8,12 +8,20 @@ import {
 	getVendorCatalogRoute,
 	getVendorFullRoute,
 	getVendors,
+	getVendorsSimple,
 	updateVendor,
 } from "../services/vendors.service.js";
 import { handler } from "./controllers.js";
 
-export async function getVendorsController(req: Request<any, { includeInactive: boolean }>, res: Response) {
-	await handler(async () => await getVendors(req.query.includeInactive === "true"), res);
+export async function getVendorsController(
+	req: Request<any, any, any, { simple: string; includeInactive: string }>,
+	res: Response
+) {
+	const simple = req.query.simple === "true";
+	if (simple) return await handler(async () => ({ code: 200, body: await getVendorsSimple() }), res);
+
+	const includeInactive = req.query.includeInactive === "true";
+	await handler(async () => ({ code: 200, body: await getVendors(includeInactive) }), res);
 }
 
 export async function postVendorController(req: Request<any, any, Vendor>, res: Response) {

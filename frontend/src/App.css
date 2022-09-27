@@ -89,6 +89,17 @@ body {
 	text-decoration: none;
 }
 
+table.schedule-table {
+	background-color: lightgray;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+.schedule-table th,
+.schedule-table td {
+	text-align: center;
+}
+
 a:visited {
 	color: inherit;
 }

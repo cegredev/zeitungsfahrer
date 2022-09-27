@@ -15,6 +15,7 @@ import ArticleSettings from "./pages/settings/ArticleSettings";
 import Records from "./pages/Records";
 import Settings from "./pages/settings/Settings";
 import { GET } from "./api";
+import Schedule from "./pages/Schedule";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -86,6 +87,14 @@ function AppContentWrapper() {
 						element={
 							<SettingsPage route="/settings">
 								<Settings />
+							</SettingsPage>
+						}
+					/>
+					<Route
+						path="/schedule"
+						element={
+							<SettingsPage route="/schedule">
+								<Schedule />
 							</SettingsPage>
 						}
 					/>

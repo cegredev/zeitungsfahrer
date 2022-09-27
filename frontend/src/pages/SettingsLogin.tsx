@@ -16,7 +16,7 @@ function SettingsLogin() {
 		if (response.ok) setSettingsLoggedIn(true);
 
 		setWaiting(false);
-	}, [password, setSettingsLoggedIn]);
+	}, [password, setSettingsLoggedIn, token]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

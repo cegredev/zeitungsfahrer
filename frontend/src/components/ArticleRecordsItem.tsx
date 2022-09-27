@@ -67,7 +67,7 @@ function ArticleRecordsItem({ vendorId, articleId }: Props) {
 				};
 			}),
 		};
-	}, [vendorRecords]);
+	}, [vendorRecords, articleId]);
 
 	const [token] = useAtom(authTokenAtom);
 
