@@ -1,31 +1,26 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../api";
-import { authTokenAtom } from "../components/stores/utility.store";
+import { authTokenAtom, settingsLoggedInAtom } from "../components/stores/utility.store";
 
-function Login() {
-	const [, setToken] = useAtom(authTokenAtom);
-
+function SettingsLogin() {
 	const [password, setPassword] = React.useState("");
-
 	const [waiting, setWaiting] = React.useState(false);
+	const [, setSettingsLoggedIn] = useAtom(settingsLoggedInAtom);
+	const [token] = useAtom(authTokenAtom);
 
 	const login = React.useCallback(async () => {
 		setWaiting(true);
 
-		const response = await GET("/login?name=root&password=" + password);
-		const token: string = (await response.json()).token;
-
-		if (token != null) {
-			setToken(token);
-		}
+		const response = await GET("/auth/settings/login?password=" + password, token);
+		if (response.ok) setSettingsLoggedIn(true);
 
 		setWaiting(false);
-	}, [password, setToken]);
+	}, [password, setSettingsLoggedIn]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-			<h1>Anmelden</h1>
+			<h1>Einstellungen</h1>
 			<form
 				style={{ display: "flex", flexDirection: "column", gap: 5, margin: 30 }}
 				onSubmit={async (evt) => {
@@ -50,4 +45,4 @@ function Login() {
 	);
 }
 
-export default Login;
+export default SettingsLogin;

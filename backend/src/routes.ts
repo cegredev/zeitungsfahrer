@@ -15,7 +15,11 @@ import {
 	getVendorSalesController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
-import { getSettingsController, updateSettingsController } from "./controllers/settings.controller.js";
+import {
+	getSettingsController,
+	settingsLoginController,
+	updateSettingsController,
+} from "./controllers/settings.controller.js";
 import {
 	createOrUpdateVendorController,
 	deleteVendorController,
@@ -59,6 +63,8 @@ function routes(app: Express) {
 	app.route("/auth/accounts").get(getAccountsController);
 
 	app.route("/auth/settings").get(getSettingsController).put(updateSettingsController);
+
+	app.route("/auth/settings/login").get(settingsLoginController);
 
 	app.route("/login").get(loginController);
 }

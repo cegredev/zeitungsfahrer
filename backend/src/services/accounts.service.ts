@@ -7,7 +7,7 @@ function generateAccessToken(name: string) {
 	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "12h" });
 }
 
-async function validatePassword(name: string, password: string): Promise<boolean> {
+export async function validatePassword(name: string, password: string): Promise<boolean> {
 	const response = await pool.execute("SELECT name, password, role FROM accounts WHERE name=?", [name]);
 
 	// @ts-ignore

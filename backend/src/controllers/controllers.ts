@@ -11,6 +11,8 @@ export async function validateTokenHandler(req: Request, res: Response, next: Ne
 	if (token == null) return res.sendStatus(401);
 
 	jwt.verify(token, getEnvToken(), (err, decoded) => {
+		console.error(err);
+
 		if (err) return res.sendStatus(403);
 
 		// @ts-ignore
