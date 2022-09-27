@@ -166,7 +166,7 @@ export function getDateRange(end: Date, system: number): [Date, Date] {
 			break;
 		case 1: // Week
 			start = dayjs(end).subtract(getConvertedWeekday(end), "days").toDate();
-			end = dayjs(start).add(7, "days").toDate();
+			end = dayjs(start).add(6, "days").toDate();
 			break;
 		case 2: // Month
 			start = dayjs(end).set("date", 1).toDate();

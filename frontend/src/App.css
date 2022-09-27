@@ -217,6 +217,12 @@ td {
 	min-width: 4rem;
 }
 
+.dashboard-sales input,
+.dashboard-sales select {
+	min-width: 90%;
+	text-align: center;
+}
+
 div.react-datepicker-wrapper input {
 	width: 100px;
 	text-align: center;

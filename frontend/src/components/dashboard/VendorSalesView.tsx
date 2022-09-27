@@ -4,16 +4,19 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { dateAsTextWithSystem, twoDecimalsFormat } from "../../consts";
+import { twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
-
-const today = new Date();
+import DateSelection from "../timeframe/DateSelection";
+import MonthSelection from "../timeframe/MonthSelection";
+import WeekSelection from "../timeframe/WeekSelection";
+import YearSelection from "../timeframe/YearSelection";
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
 	const [vendorId, setVendorId] = React.useState(-1);
 	const [vendors, setVendors] = React.useState<Vendor[]>([]);
 	const [vendorIndex, setVendorIndex] = React.useState(0);
+	const [date, setDate] = React.useState(new Date());
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -27,14 +30,14 @@ function VendorSalesView() {
 			setVendorId(newVendorId);
 
 			const response = await GET(
-				"/auth/vendors/" + newVendorId + "/sales?date=" + dayjs(today).format("YYYY-MM-DD"),
+				"/auth/vendors/" + newVendorId + "/sales?date=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 			setVendorSales(await response.json());
 		}
 
 		fetchData();
-	}, [token, vendorId]);
+	}, [token, vendorId, date]);
 
 	return (
 		<table
@@ -72,10 +75,18 @@ function VendorSalesView() {
 			<tbody>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Zeitraum</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 3)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 2)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 1)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 0)}</td>
+					<td style={{ textAlign: "center" }}>
+						<YearSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<MonthSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<WeekSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<DateSelection date={date} setDate={setDate} />
+					</td>
 				</tr>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Betrag (Brutto)</td>

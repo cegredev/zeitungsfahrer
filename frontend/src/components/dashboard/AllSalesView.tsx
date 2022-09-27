@@ -2,24 +2,27 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { dateAsTextWithSystem, twoDecimalsFormat } from "../../consts";
+import { twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
-
-const today = new Date();
+import DateSelection from "../timeframe/DateSelection";
+import MonthSelection from "../timeframe/MonthSelection";
+import WeekSelection from "../timeframe/WeekSelection";
+import YearSelection from "../timeframe/YearSelection";
 
 function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
+	const [date, setDate] = React.useState(new Date());
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const response = await GET("/auth/dashboard/allSales?date=" + dayjs(today).format("YYYY-MM-DD"), token!);
+			const response = await GET("/auth/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"), token!);
 			setAllSales(await response.json());
 		}
 
 		fetchData();
-	}, [token]);
+	}, [token, date]);
 
 	return (
 		<table
@@ -42,10 +45,18 @@ function AllSalesView() {
 			<tbody>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Zeitraum</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 3)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 2)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 1)}</td>
-					<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 0)}</td>
+					<td style={{ textAlign: "center" }}>
+						<YearSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<MonthSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<WeekSelection date={date} setDate={setDate} />
+					</td>
+					<td style={{ textAlign: "center" }}>
+						<DateSelection date={date} setDate={setDate} />
+					</td>
 				</tr>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Betrag (Brutto)</td>

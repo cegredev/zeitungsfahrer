@@ -4,23 +4,26 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { dateAsTextWithSystem, invoiceSystems } from "../../consts";
+import { invoiceSystems } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
-
-const today = new Date();
+import DateSelection from "../timeframe/DateSelection";
+import MonthSelection from "../timeframe/MonthSelection";
+import WeekSelection from "../timeframe/WeekSelection";
+import YearSelection from "../timeframe/YearSelection";
 
 function ArticleSalesView() {
 	const [articleSales, setArticleSales] = React.useState<ArticleSales | undefined>(undefined);
 	const [articleId, setArticleId] = React.useState(1);
 	const [articleInfo, setArticleInfo] = React.useState<ArticleInfo[]>([]);
 	const [articleIndex, setArticleIndex] = React.useState(0);
+	const [date, setDate] = React.useState(new Date());
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			const response = await GET(
-				"/auth/articles/sales?id=" + articleId + "&end=" + dayjs(today).format("YYYY-MM-DD"),
+				"/auth/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 			setArticleSales(await response.json());
@@ -30,7 +33,14 @@ function ArticleSalesView() {
 		}
 
 		fetchData();
-	}, [token, articleId]);
+	}, [token, articleId, date]);
+
+	const dateSelections = [
+		<YearSelection date={date} setDate={setDate} />,
+		<MonthSelection date={date} setDate={setDate} />,
+		<WeekSelection date={date} setDate={setDate} />,
+		<DateSelection date={date} setDate={setDate} />,
+	];
 
 	return (
 		<table
@@ -70,7 +80,7 @@ function ArticleSalesView() {
 					return (
 						<tr key={"article-sales-db-" + index}>
 							<td style={{ fontWeight: "bold" }}>{invoiceSystems[invoiceSystems.length - index - 1]}</td>
-							<td style={{ textAlign: "center" }}>{dateAsTextWithSystem(today, 3 - index)}</td>
+							<td style={{ textAlign: "center" }}>{dateSelections[index]}</td>
 							<td style={{ textAlign: "center" }}>{sales.supply}</td>
 							<td style={{ textAlign: "center" }}>{sales.remissions}</td>
 							<td style={{ textAlign: "center" }}>{sales.supply - sales.remissions}</td>
