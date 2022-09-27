@@ -1,15 +1,15 @@
 import dayjs from "dayjs";
 import React from "react";
 
-import { useParams } from "react-router-dom";
-import { GET } from "../api";
+import { useNavigate, useParams } from "react-router-dom";
+import { GET, POST } from "../api";
 import TimeframeSelection from "../components/TimeframeSelection";
 import { useAtom } from "jotai";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
-import { twoDecimalsFormat } from "../consts";
 import { VendorRecords } from "backend/src/models/records.model";
 import { authTokenAtom } from "../components/stores/utility.store";
 import AuthorizedPage from "./AuthorizedPage";
+import YesNoPrompt from "../components/util/YesNoPrompt";
 
 const _today = new Date();
 const initialEndDate = dayjs(_today)
@@ -18,6 +18,7 @@ const initialEndDate = dayjs(_today)
 
 function Records() {
 	const vendorId = parseInt(useParams().id!);
+	const navigate = useNavigate();
 
 	const [vendorRecords, setVendorRecords] = React.useState<VendorRecords | undefined>(undefined);
 	const [token] = useAtom(authTokenAtom);
@@ -47,7 +48,25 @@ function Records() {
 				) : (
 					<div style={{ maxWidth: 800, display: "flex", flexDirection: "column", alignItems: "center" }}>
 						<h1>{vendorRecords.name}</h1>
-						<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
+						<div className="records-control" style={{ zIndex: 2, position: "sticky", top: 50 }}>
+							<YesNoPrompt
+								trigger={<button style={{ color: "red" }}>Zurück</button>}
+								header="Zurück"
+								content={`Wollen Sie die Seite wirklich verlassen?`}
+								onYes={async () => {
+									navigate(-1);
+								}}
+							/>
+							<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
+							<YesNoPrompt
+								trigger={<button style={{ color: "green" }}>Speichern</button>}
+								header="Speichern"
+								content={`Wollen Sie das gewählte Element wirklich speichern?`}
+								onYes={async () => {
+									console.log("saving");
+								}}
+							/>
+						</div>
 						{vendorRecords.articleRecords.map((articleRecords) => (
 							<ArticleRecordsItem
 								key={"vendor-week-" + vendorId + "-" + articleRecords.id + "-" + articleRecords.start}

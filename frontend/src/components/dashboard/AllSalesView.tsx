@@ -12,13 +12,18 @@ import YearSelection from "../timeframe/YearSelection";
 function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
 	const [date, setDate] = React.useState(new Date());
+	const [loading, setLoading] = React.useState(false);
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
+			setLoading(true);
+
 			const response = await GET("/auth/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"), token!);
 			setAllSales(await response.json());
+
+			setLoading(false);
 		}
 
 		fetchData();
@@ -60,11 +65,17 @@ function AllSalesView() {
 				</tr>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Betrag (Brutto)</td>
-					{allSales?.map((amount, i) => (
-						<td key={"all-sales-" + i} style={{ textAlign: "center" }}>
-							{twoDecimalsFormat.format(amount)}
+					{loading ? (
+						<td colSpan={4} style={{ textAlign: "center" }}>
+							Laden...
 						</td>
-					))}
+					) : (
+						allSales?.map((amount, i) => (
+							<td key={"all-sales-" + i} style={{ textAlign: "center" }}>
+								{twoDecimalsFormat.format(amount)}
+							</td>
+						))
+					)}
 				</tr>
 			</tbody>
 		</table>

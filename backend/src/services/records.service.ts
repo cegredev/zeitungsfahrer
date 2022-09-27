@@ -7,6 +7,7 @@ import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
 import { getConvertedWeekday } from "../util.js";
 import settings from "./settings.service.js";
+import { Article, ArticleInfo } from "../models/articles.model.js";
 
 async function mapRecordsToPrices(start: Date, end: Date, articlesRecords: Map<number, ArticleRecords>): Promise<void> {
 	const allPrices = await getPrices(start, end);
@@ -196,36 +197,28 @@ export async function getVendorRecordsRoute(vendorId: number, end: Date): Promis
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
 	const today = normalizeDate(new Date());
-	const weekday = getConvertedWeekday(today);
-
-	const response = await pool.execute(
-		`
-		SELECT articles.id, articles.name, vendor_supplies.supply, vendor_catalog.included FROM articles
-		LEFT JOIN vendor_supplies ON articles.id=vendor_supplies.article_id AND vendor_supplies.vendor_id=? AND vendor_supplies.weekday=?
-		LEFT JOIN vendor_catalog ON articles.id=vendor_catalog.article_id AND vendor_catalog.vendor_id=?
-	`,
-		[vendorId, weekday, vendorId]
-	);
 
 	const vendorRecords = await getVendorRecordsAdjusted(vendorId, today);
 
-	// @ts-ignore
-	let articles: { id: number; name: string; supply: number; included: any }[] = [...response[0]];
-	articles = articles.map((a) => {
-		const article = { ...a, included: a.included === 1 };
+	const articleCounts = new Map<number, ArticleInfo & { sales: number }>();
+	for (const articleRecords of vendorRecords.articleRecords) {
+		let article = articleCounts.get(articleRecords.id);
+		if (article === undefined) {
+			article = { id: articleRecords.id, name: articleRecords.name, sales: 0 };
+			articleCounts.set(articleRecords.id, article);
+		}
 
-		if (!article.included) return article;
+		for (const record of articleRecords.records) {
+			if (record.missing) continue;
 
-		const articleRecords = vendorRecords.articleRecords.find((articleRecords) => articleRecords.id === article.id);
-		if (articleRecords == null) return article;
-
-		return { ...article, supply: articleRecords.records[articleRecords.records.length - 1]!.supply };
-	});
+			article.sales += record.supply - record.remissions;
+		}
+	}
 
 	return {
 		code: 200,
 		body: {
-			articles,
+			articles: [...articleCounts.values()],
 			totalValueBrutto: vendorRecords.articleRecords
 				.map((records) => records.totalValueBrutto)
 				.reduce((prev, current) => prev + current, 0),

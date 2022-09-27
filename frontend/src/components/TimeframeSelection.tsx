@@ -23,7 +23,7 @@ function TimeframeSelection({ onChange, startDate }: Props) {
 	);
 
 	return (
-		<table className="timeframe-selection" style={{ zIndex: 2, position: "sticky", top: 50 }}>
+		<table className="timeframe-selection">
 			<thead>
 				<tr>
 					<th>Jahr</th>

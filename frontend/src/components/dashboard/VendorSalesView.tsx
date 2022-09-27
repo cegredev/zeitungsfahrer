@@ -17,23 +17,28 @@ function VendorSalesView() {
 	const [vendors, setVendors] = React.useState<Vendor[]>([]);
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
+	const [loading, setLoading] = React.useState(false);
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
+			setLoading(true);
 			const info = await GET("/auth/vendors", token!);
 			const newVendors = await info.json();
-			setVendors(newVendors);
 
 			const newVendorId = vendorId === -1 ? (newVendors.length > 0 ? newVendors[0].id : -1) : vendorId;
-			setVendorId(newVendorId);
 
 			const response = await GET(
 				"/auth/vendors/" + newVendorId + "/sales?date=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
+
+			setVendors(newVendors);
+			setVendorId(newVendorId);
 			setVendorSales(await response.json());
+
+			setLoading(false);
 		}
 
 		fetchData();
@@ -90,11 +95,17 @@ function VendorSalesView() {
 				</tr>
 				<tr>
 					<td style={{ fontWeight: "bold" }}>Betrag (Brutto)</td>
-					{vendorSales?.sales.map((amount, i) => (
-						<td key={"vendor-sales-" + i} style={{ textAlign: "center" }}>
-							{twoDecimalsFormat.format(amount)}
+					{loading ? (
+						<td colSpan={4} style={{ textAlign: "center" }}>
+							Laden...
 						</td>
-					))}
+					) : (
+						vendorSales?.sales.map((amount, i) => (
+							<td key={"vendor-sales-" + i} style={{ textAlign: "center" }}>
+								{twoDecimalsFormat.format(amount)}
+							</td>
+						))
+					)}
 				</tr>
 			</tbody>
 		</table>

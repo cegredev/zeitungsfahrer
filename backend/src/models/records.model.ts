@@ -1,4 +1,4 @@
-import { Price } from "./articles.model.js";
+import { ArticleInfo, Price } from "./articles.model.js";
 
 export interface Record {
 	articleId?: number;
@@ -27,8 +27,12 @@ export interface VendorRecords {
 	articleRecords: ArticleRecords[];
 }
 
+export interface DashboardRecord extends ArticleInfo {
+	sales: number;
+}
+
 export interface DashboardRecords {
-	articles: { id: number; name: string; supply?: Number; included: boolean }[];
+	articles: DashboardRecord[];
 	totalValueBrutto: number;
 }
 

@@ -115,8 +115,6 @@ function LeftPanel() {
 					}}
 				>
 					{articles.articles.map((article, i) => {
-						const showSupply = article.included && article.supply! > 0;
-
 						return (
 							<div
 								key={"dashboard-vendor-" + article.name}
@@ -128,10 +126,8 @@ function LeftPanel() {
 									cursor: "default",
 								}}
 							>
-								<div style={{ flex: 1, userSelect: "none", color: showSupply ? "inherit" : "gray" }}>
-									{article.name}
-								</div>
-								{showSupply && <div>{"" + article.supply}</div>}
+								<div style={{ flex: 1, userSelect: "none" }}>{article.name}</div>
+								{<div>{"" + article.sales}</div>}
 							</div>
 						);
 					})}
