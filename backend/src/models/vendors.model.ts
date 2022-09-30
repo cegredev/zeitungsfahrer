@@ -2,6 +2,7 @@ export interface SimpleVendor {
 	id: number;
 	name: string;
 	active: boolean;
+	represents: number | null;
 }
 
 export interface Vendor {

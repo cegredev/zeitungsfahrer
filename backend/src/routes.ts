@@ -15,6 +15,7 @@ import {
 	getVendorSalesController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
+import { getCalendarController } from "./controllers/schedule.controller.js";
 import {
 	getSettingsController,
 	settingsLoginController,
@@ -59,6 +60,8 @@ function routes(app: Express) {
 	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
 
 	app.route("/auth/dashboard/allSales").get(getAllSalesController);
+
+	app.route("/auth/calendar").get(getCalendarController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

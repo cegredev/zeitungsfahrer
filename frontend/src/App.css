@@ -93,11 +93,17 @@ table.schedule-table {
 	background-color: lightgray;
 	padding: 10px;
 	border-radius: 5px;
+	table-layout: fixed;
+	border-spacing: 0;
 }
 
 .schedule-table th,
 .schedule-table td {
 	text-align: center;
+}
+
+table.schedule-table tr {
+	/* line-height: 30px; */
 }
 
 a:visited {
@@ -177,6 +183,12 @@ a:visited {
 
 .vendor-table th {
 	font-weight: normal;
+}
+
+.panel {
+	background-color: lightgray;
+	padding: 10px;
+	border-radius: 5px;
 }
 
 th,
