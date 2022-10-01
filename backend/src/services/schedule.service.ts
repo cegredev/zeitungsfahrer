@@ -4,8 +4,8 @@ import { DistrictWeek, ScheduleInfo } from "../models/schedule.model.js";
 import { dayOfYear } from "../util.js";
 
 export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo> {
-	const startDay = dayOfYear(start);
-	const endDay = dayOfYear(end);
+	const startDay = dayOfYear(start) - 1;
+	const endDay = dayOfYear(end) - 1;
 	const numDays = endDay - startDay + 1;
 
 	const districtsRes = await pool.execute("SELECT id FROM districts");
@@ -85,9 +85,7 @@ export async function updateSchedule(date: Date, schedule: ScheduleInfo) {
 		}
 	}
 
-	console.log(query.substring(query.length - 10));
 	query = query.substring(0, query.length - 1);
-	console.log(query.substring(query.length - 10));
 
 	await pool.execute(query);
 

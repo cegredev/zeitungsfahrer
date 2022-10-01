@@ -57,14 +57,14 @@ function Records() {
 								}}
 							/>
 							<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
-							<YesNoPrompt
+							{/* <YesNoPrompt
 								trigger={<button style={{ color: "green" }}>Speichern</button>}
 								header="Speichern"
 								content={`Wollen Sie das gewählte Element wirklich speichern?`}
 								onYes={async () => {
 									console.log("saving");
 								}}
-							/>
+							/> */}
 						</div>
 						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>
 							Gesamt (Brutto):{" "}

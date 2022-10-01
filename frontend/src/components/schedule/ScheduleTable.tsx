@@ -106,6 +106,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 														);
 														console.log("free", freeIndex);
 														if (freeIndex !== -1) newFree[day].splice(freeIndex, 1);
+														newFree[day].push(vendorId);
 
 														setSchedule({
 															districts: newDistrictWeeks,
