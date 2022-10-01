@@ -90,9 +90,6 @@ body {
 }
 
 table.schedule-table {
-	background-color: lightgray;
-	padding: 10px;
-	border-radius: 5px;
 	table-layout: fixed;
 	border-spacing: 0;
 }
