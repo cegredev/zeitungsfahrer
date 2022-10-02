@@ -1,24 +1,16 @@
-import dayjs from "dayjs";
 import pool, { RouteReport } from "../database.js";
 import { DistrictWeek, ScheduleInfo } from "../models/schedule.model.js";
-import { dayOfYear } from "../util.js";
+import { dayOfYear, poolExecute } from "../util.js";
 
 export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo> {
 	const startDay = dayOfYear(start) - 1;
 	const endDay = dayOfYear(end) - 1;
 	const numDays = endDay - startDay + 1;
 
-	const districtsRes = await pool.execute("SELECT id FROM districts");
+	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
+	const vendors = (await poolExecute<{ id: number }>("SELECT id FROM vendors")).map((v) => v.id);
 
-	// @ts-ignore
-	const districts: number[] = districtsRes[0].map((d) => d.id);
-
-	const vendorsRes = await pool.execute("SELECT id FROM vendors");
-
-	// @ts-ignore
-	const vendors = vendorsRes[0].map((v) => v.id);
-
-	const calendar = await pool.execute(
+	const calendarEntries = await poolExecute<{ district: number; vendorId: number; dayOfYear: number }>(
 		`
 		SELECT vendor_id as vendorId, day_of_year as dayOfYear, district
 		FROM calendar
@@ -26,8 +18,6 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo>
 		[startDay, endDay, start.getFullYear()]
 	);
 
-	// @ts-ignore
-	const rows: { district: number; vendorId: number; dayOfYear: number }[] = calendar[0];
 	const districtMap = new Map<number, DistrictWeek>();
 	const vacations: number[][] = Array(numDays)
 		.fill(null)
@@ -45,7 +35,7 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo>
 		});
 	}
 
-	for (const { district, dayOfYear, vendorId } of rows) {
+	for (const { district, dayOfYear, vendorId } of calendarEntries) {
 		if (district === null) {
 			vacations[dayOfYear].push(vendorId);
 		} else {
@@ -62,9 +52,7 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo>
 	};
 }
 
-export async function updateSchedule(date: Date, schedule: ScheduleInfo) {
-	// schedule.districts[0].
-
+export async function updateSchedule(date: Date, schedule: ScheduleInfo): Promise<RouteReport> {
 	let query = "REPLACE INTO calendar (vendor_id, day_of_year, year, district) VALUES ";
 
 	for (const district of schedule.districts) {

@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET, POST } from "../../api";
+import { weekdays } from "../../consts";
 import { authTokenAtom } from "../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
 import YesNoPrompt from "../util/YesNoPrompt";
@@ -70,6 +71,18 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 									);
 								})}
 						</tr>
+						<tr>
+							<th>Bezirk</th>
+							{Array(365)
+								.fill(null)
+								.map((_, index) => {
+									return (
+										<th key={"schedule-header-weekday-" + index}>
+											{weekdays[(6 + date.getDay() + index) % 7]}
+										</th>
+									);
+								})}
+						</tr>
 					</thead>
 					<tbody>
 						{schedule.districts.map((week, districtIndex) => {
@@ -106,7 +119,8 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 														);
 														console.log("free", freeIndex);
 														if (freeIndex !== -1) newFree[day].splice(freeIndex, 1);
-														newFree[day].push(vendorId);
+
+														if (vendorId !== -1) newFree[day].push(vendorId);
 
 														setSchedule({
 															districts: newDistrictWeeks,

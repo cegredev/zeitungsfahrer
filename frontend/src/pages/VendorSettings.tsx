@@ -6,7 +6,6 @@ import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
-import { removeVendorAtom } from "../components/stores/vendors.store";
 import { authTokenAtom, errorMessageAtom } from "../components/stores/utility.store";
 
 const spanWhole: React.CSSProperties = {
@@ -26,7 +25,6 @@ function VendorSettings() {
 	const isDraft = id === "create";
 
 	const [vendor, setVendor] = React.useState<Vendor | null>(null);
-	const [, removeVendor] = useAtom(removeVendorAtom);
 
 	const [, setErrorMessage] = useAtom(errorMessageAtom);
 
@@ -209,7 +207,6 @@ function VendorSettings() {
 								}
 
 								await DELETE("/auth/vendors", { id: vendor.id! }, token!);
-								removeVendor(vendor.id!);
 								navigate("/vendors");
 							}}
 						/>

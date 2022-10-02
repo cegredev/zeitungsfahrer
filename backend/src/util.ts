@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import pool from "./database.js";
 
 const proto = dayjs.prototype;
 proto.dayOfYear = function (input: Date) {
@@ -11,6 +12,11 @@ proto.dayOfYear = function (input: Date) {
 export function dayOfYear(date: Date): number {
 	// @ts-ignore
 	return dayjs(date).dayOfYear();
+}
+
+export async function poolExecute<T = any>(query: string, values?: any[], mapper?: (e: any) => T): Promise<T[]> {
+	// @ts-ignore
+	return (await pool.execute(query, values))[0];
 }
 
 export function getConvertedWeekday(date: Date): number {
