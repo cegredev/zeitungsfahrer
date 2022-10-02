@@ -16,6 +16,7 @@
 		"@types/react-dom": "^18.0.6",
 		"backend": "file:../backend",
 		"dayjs": "^1.11.5",
+		"immer": "^9.0.15",
 		"jotai": "^1.8.0",
 		"react": "^18.2.0",
 		"react-datepicker": "^4.8.0",
@@ -23,6 +24,7 @@
 		"react-router-dom": "^6.3.0",
 		"reactjs-popup": "^2.0.5",
 		"typescript": "^4.7.4",
+		"use-immer": "^0.7.0",
 		"web-vitals": "^2.1.4"
 	},
 	"scripts": {

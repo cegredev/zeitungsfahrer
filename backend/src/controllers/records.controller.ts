@@ -12,10 +12,20 @@ import { getVendorCatalogRoute, getVendorFullRoute } from "../services/vendors.s
 import { handler } from "./controllers.js";
 
 export async function getVendorRecordsController(
-	req: Request<{ id: number }, any, any, { end: Date }>,
+	req: Request<{ id: string }, any, any, { articleId?: string; end: Date }>,
 	res: Response<VendorRecords>
 ) {
-	await handler(async () => await getVendorRecordsRoute(req.params.id, new Date(req.query.end)), res);
+	const articleId = req.query.articleId;
+
+	await handler(
+		async () =>
+			await getVendorRecordsRoute(
+				parseInt(req.params.id),
+				new Date(req.query.end),
+				articleId ? parseInt(articleId) : undefined
+			),
+		res
+	);
 }
 
 export async function getArticleSalesController(

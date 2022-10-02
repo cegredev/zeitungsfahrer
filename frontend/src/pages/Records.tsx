@@ -18,6 +18,7 @@ const initialEndDate = new Date();
 function Records() {
 	const vendorId = parseInt(useParams().id!);
 	const navigate = useNavigate();
+	const [date, setDate] = React.useState(initialEndDate);
 
 	const [vendorRecords, setVendorRecords] = useAtom(vendorRecordsAtom);
 	const [token] = useAtom(authTokenAtom);
@@ -56,7 +57,7 @@ function Records() {
 									navigate(-1);
 								}}
 							/>
-							<TimeframeSelection onChange={fetchData} startDate={initialEndDate} />
+							<TimeframeSelection onChange={(date) => setDate(date)} startDate={initialEndDate} />
 							{/* <YesNoPrompt
 								trigger={<button style={{ color: "green" }}>Speichern</button>}
 								header="Speichern"
@@ -79,6 +80,7 @@ function Records() {
 								key={"vendor-week-" + vendorId + "-" + articleRecords.id + "-" + articleRecords.start}
 								vendorId={vendorId}
 								articleId={articleRecords.id}
+								date={date}
 							/>
 						))}
 					</div>
