@@ -11,7 +11,6 @@ const settings: Settings = {
 };
 
 export async function loginSettings(password: string): Promise<RouteReport> {
-	console.log(password);
 	return (await validatePassword("settings", password)) ? { code: 200 } : { code: 403 };
 }
 
