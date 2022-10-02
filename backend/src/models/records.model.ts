@@ -9,6 +9,13 @@ export interface Record {
 	missing: boolean;
 }
 
+export interface ChangedRecord {
+	date: Date;
+	articleId: number;
+	supply: number;
+	remissions: number;
+}
+
 export interface ArticleRecords {
 	id: number;
 	name: string;

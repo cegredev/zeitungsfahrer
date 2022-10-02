@@ -5,6 +5,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import dayjs from "dayjs";
 import weekofyear from "dayjs/plugin/weekOfYear";
 import AppContentWrapper from "./AppContentWrapper";
+import { enableMapSet } from "immer";
+
+enableMapSet();
 
 // @ts-ignore
 dayjs.extend(window.dayjs_plugin_weekOfYear);

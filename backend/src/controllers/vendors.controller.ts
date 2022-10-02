@@ -5,6 +5,7 @@ import {
 	createOrUpdateVendorCatalog,
 	createVendor,
 	deleteVendor,
+	getIncludedArticles,
 	getVendorCatalogRoute,
 	getVendorFullRoute,
 	getVendors,
@@ -22,6 +23,10 @@ export async function getVendorsController(
 
 	const includeInactive = req.query.includeInactive === "true";
 	await handler(async () => ({ code: 200, body: await getVendors(includeInactive) }), res);
+}
+
+export async function getIncludedArticlesController(req: Request<{ id: string }>, res: Response) {
+	await handler(async () => ({ code: 200, body: await getIncludedArticles(parseInt(req.params.id)) }), res);
 }
 
 export async function postVendorController(req: Request<any, any, Vendor>, res: Response) {

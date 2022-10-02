@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ArticleRecords, VendorRecords } from "../models/records.model.js";
+import { ArticleRecords, ChangedRecord, VendorRecords } from "../models/records.model.js";
 import {
 	createOrUpdateArticleRecords,
 	getAllSalesRoute,
@@ -50,6 +50,6 @@ export async function getTodaysRecordsController(req: Request<{ vendorId: number
 	await handler(async () => await getTodaysRecords(req.params.vendorId), res);
 }
 
-export async function postArticleRecordsController(req: Request<{ id: number }, any, ArticleRecords>, res: Response) {
+export async function postArticleRecordsController(req: Request<{ id: number }, any, ChangedRecord[]>, res: Response) {
 	await handler(async () => await createOrUpdateArticleRecords(req.params.id, req.body), res);
 }

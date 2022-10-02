@@ -1,5 +1,13 @@
 import pool, { RouteReport } from "../database.js";
-import { Record, ArticleRecords, VendorRecords, Sales, ArticleSales, VendorSales } from "../models/records.model.js";
+import {
+	Record,
+	ArticleRecords,
+	VendorRecords,
+	Sales,
+	ArticleSales,
+	VendorSales,
+	ChangedRecord,
+} from "../models/records.model.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
 import { getVendorFull } from "./vendors.service.js";
@@ -350,20 +358,20 @@ export async function getVendorSalesRoute(articleId: number, end: Date): Promise
 	};
 }
 
-export async function createOrUpdateArticleRecords(vendorId: number, records: ArticleRecords): Promise<RouteReport> {
+export async function createOrUpdateArticleRecords(vendorId: number, records: ChangedRecord[]): Promise<RouteReport> {
 	await pool.execute("UPDATE vendors SET last_record_entry=? WHERE id=?", [
 		dayjs(new Date()).format(DATE_FORMAT),
 		vendorId,
 	]);
 
-	for (const record of records.records) {
+	for (const record of records) {
 		pool.execute(
 			`INSERT INTO records (date, article_id, vendor_id, supply, remissions) VALUES (?, ?, ?, ?, ?)
 			ON DUPLICATE KEY
 			UPDATE supply=?, remissions=?`,
 			[
 				dayjs(record.date).format("YYYY-MM-DD"),
-				records.id,
+				record.articleId,
 				vendorId,
 				record.supply,
 				record.remissions,
@@ -372,7 +380,6 @@ export async function createOrUpdateArticleRecords(vendorId: number, records: Ar
 			]
 		);
 	}
-
 	return {
 		code: 200,
 	};

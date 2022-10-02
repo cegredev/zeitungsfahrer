@@ -2,10 +2,10 @@ import { ArticleRecords, Record, VendorRecords } from "backend/src/models/record
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import { useImmer } from "use-immer";
+import { Updater, useImmer } from "use-immer";
 import { GET, POST } from "../api";
 import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
-import { updateArticleRecordsAtom, vendorRecordsAtom } from "../stores/records.store";
+import { ChangedRecord } from "backend/src/models/records.model";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "./util/LoadingPlaceholder";
 import YesNoPrompt from "./util/YesNoPrompt";
@@ -18,7 +18,7 @@ export interface GUIRecord extends Record {
 	inFuture: boolean;
 }
 
-interface GUIArticleRecords extends ArticleRecords {
+export interface GUIArticleRecords extends ArticleRecords {
 	records: GUIRecord[];
 }
 
@@ -26,6 +26,9 @@ interface Props {
 	vendorId: number;
 	articleId: number;
 	date: Date;
+	recordsMap: Map<number, GUIArticleRecords>;
+	setRecords: Updater<Map<number, GUIArticleRecords>>;
+	addChangedRecord: (r: ChangedRecord) => void;
 }
 
 // enum RecordState {
@@ -48,13 +51,10 @@ function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
 	return <span style={{ color: "green" }}>Vollständig</span>;
 }
 
-function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
-	const [vendorRecords] = useAtom(vendorRecordsAtom);
-	const [, updateRecords] = useAtom(updateArticleRecordsAtom);
-
+function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords, addChangedRecord }: Props) {
 	const [token] = useAtom(authTokenAtom);
 
-	const [records, setRecords] = useImmer<GUIArticleRecords | undefined>(undefined);
+	const records = recordsMap.get(articleId);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -64,18 +64,20 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 			);
 			const data: ArticleRecords = await response.json();
 
-			console.log(data);
-
 			const articleRecords = {
 				...data,
 				start: new Date(data.start),
 				records: data.records.map((r) => {
-					const time = normalizeDate(r.date).getTime();
+					const date = new Date(r.date);
+					const time = normalizeDate(date).getTime();
 					const inFuture = time > todayNormalized.getTime();
 					const isToday = time === todayNormalized.getTime();
 
+					if (isToday) addChangedRecord({ ...r, date, articleId });
+
 					return {
 						...r,
+						date,
 						editable: isToday || (r.missing && !inFuture),
 						edited: isToday,
 						inFuture,
@@ -83,11 +85,24 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 				}),
 			};
 
-			setRecords(articleRecords);
+			setRecords((draft) => draft.set(articleId, articleRecords));
 		}
 
 		fetchData();
-	}, [setRecords, token]);
+	}, [setRecords, date, articleId, vendorId, token]);
+
+	const updateField = React.useCallback(
+		(recordIndex: number, update: (r: GUIRecord) => void) => {
+			setRecords((draft) => {
+				const record = draft!.get(articleId)!.records[recordIndex];
+				update(record);
+				record.edited = true;
+			});
+
+			addChangedRecord({ ...recordsMap!.get(articleId)!.records[recordIndex], articleId });
+		},
+		[setRecords, addChangedRecord, articleId, recordsMap]
+	);
 
 	const startDate = records?.start;
 	const weekdayOffset = startDate ? (6 + startDate.getUTCDay()) % 7 : 0; // Sunday is 0 instead of Monday
@@ -117,13 +132,13 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 						</thead>
 						{/* Data */}
 						<tbody>
-							{records.records.map((record, i) => {
-								const weekday = (i + weekdayOffset) % 7;
-								const date = dayjs(startDate).add(i, "day").format("DD.MM.YYYY");
+							{records.records.map((record, recordIndex) => {
+								const weekday = (recordIndex + weekdayOffset) % 7;
+								const date = dayjs(startDate).add(recordIndex, "day").format("DD.MM.YYYY");
 								const soldAmount = record.supply - record.remissions;
 								return (
 									<tr
-										key={"sales-" + records.id + "-" + i}
+										key={"sales-" + records.id + "-" + recordIndex}
 										style={{
 											backgroundColor: record.edited
 												? "#8bcc81"
@@ -138,17 +153,12 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 												type="checkbox"
 												style={{ accentColor: "gray" }}
 												checked={record.editable}
-												onChange={() => {
-													const newRecords = [...records.records];
-													newRecords[i] = {
-														...record,
-														editable: !record.editable,
-													};
-													updateRecords({
-														...records,
-														records: newRecords,
-													});
-												}}
+												onChange={() =>
+													setRecords((draft) => {
+														draft!.get(articleId)!.records[recordIndex].editable =
+															!record.editable || record.edited;
+													})
+												}
 											/>
 										</td>
 										<td>{date}</td>
@@ -161,13 +171,10 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 												value={record.supply}
 												disabled={!record.editable}
 												onChange={(evt) => {
-													const newRecords = [...records.records];
-													newRecords[i] = {
-														...record,
-														supply: parseInt(evt.target.value),
-														edited: true,
-													};
-													updateRecords({ ...records, records: newRecords });
+													updateField(
+														recordIndex,
+														(r) => (r.supply = parseInt(evt.target.value))
+													);
 												}}
 											/>
 										</td>
@@ -179,15 +186,12 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 												max={record.supply}
 												value={record.remissions}
 												disabled={!record.editable}
-												onChange={(evt) => {
-													const newRecords = [...records.records];
-													newRecords[i] = {
-														...record,
-														remissions: parseInt(evt.target.value),
-														edited: true,
-													};
-													updateRecords({ ...records, records: newRecords });
-												}}
+												onChange={(evt) =>
+													updateField(
+														recordIndex,
+														(r) => (r.remissions = parseInt(evt.target.value))
+													)
+												}
 											/>
 										</td>
 										<td>{soldAmount}</td>
@@ -204,31 +208,7 @@ function ArticleRecordsItem({ vendorId, articleId, date }: Props) {
 								);
 							})}
 							<tr>
-								<td />
-								<td>
-									<YesNoPrompt
-										trigger={<button style={{ color: "green", float: "left" }}>Speichern</button>}
-										header="Speichern"
-										content={`Wollen Sie das gewählte Element wirklich speichern?`}
-										onYes={async () => {
-											await POST(
-												`/auth/records/${vendorId}`,
-												{ ...records, records: records.records.filter((r) => r.edited) },
-												token!
-											);
-											updateRecords({
-												...records,
-												records: records.records.map((r) => ({
-													...r,
-													missing: !(r.edited || !r.missing),
-													edited: false,
-													editable: r.edited ? false : r.editable,
-												})),
-											});
-										}}
-									/>
-								</td>
-								<td colSpan={4} />
+								<td colSpan={6} />
 								<td style={{ fontWeight: "bold" }}>
 									{twoDecimalsFormat.format(
 										records.records

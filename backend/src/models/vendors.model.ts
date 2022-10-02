@@ -31,3 +31,8 @@ export interface VendorCatalog {
 	vendorId?: number;
 	entries: VendorCatalogEntry[];
 }
+
+export interface VendorIncludedArticles {
+	name: string;
+	articleIds: number[];
+}

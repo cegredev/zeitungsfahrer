@@ -1,6 +1,7 @@
-import { SimpleVendor, Vendor } from "../models/vendors.model.js";
+import { SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
+import { poolExecute } from "../util.js";
 
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	const result = await pool.execute(
@@ -27,6 +28,24 @@ export async function getVendorsSimple(): Promise<SimpleVendor[]> {
 
 	// @ts-ignore
 	return vendors.map((vendor) => ({ ...vendor, active: vendor.active === 1 }));
+}
+
+export async function getIncludedArticles(vendorId: number): Promise<VendorIncludedArticles> {
+	const articleIds = (
+		await poolExecute<{ id: number }>(
+			"SELECT article_id as id FROM vendor_catalog WHERE vendor_id=? AND included=1",
+			[vendorId]
+		)
+	).map((e) => e.id);
+
+	const name = (
+		await poolExecute<{ name: string }>(
+			"SELECT CONCAT(first_name, ' ', last_name) as name FROM vendors WHERE id=?",
+			[vendorId]
+		)
+	)[0].name;
+
+	return { name, articleIds };
 }
 
 export async function getVendor(id: number): Promise<Vendor> {

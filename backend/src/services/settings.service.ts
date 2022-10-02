@@ -1,9 +1,9 @@
 import pool, { RouteReport } from "../database.js";
 import { Settings } from "../models/settings.model.js";
+import { poolExecute } from "../util.js";
 import { validatePassword } from "./accounts.service.js";
 
-// @ts-ignore
-const initialSettings: any = (await pool.execute("SELECT * FROM settings LIMIT 1"))[0][0];
+const initialSettings = (await poolExecute("SELECT * FROM settings LIMIT 1"))[0];
 
 const settings: Settings = {
 	id: initialSettings.id,

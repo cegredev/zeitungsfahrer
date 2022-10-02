@@ -24,6 +24,7 @@ import {
 import {
 	createOrUpdateVendorController,
 	deleteVendorController,
+	getIncludedArticlesController,
 	getVendorFullController,
 	getVendorsController,
 	postVendorController,
@@ -54,6 +55,8 @@ function routes(app: Express) {
 	app.route("/auth/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
 
 	app.route("/auth/vendors/:id/sales").get(getVendorSalesController);
+
+	app.route("/auth/vendors/:id/includedArticles").get(getIncludedArticlesController);
 
 	app.route("/auth/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
 
