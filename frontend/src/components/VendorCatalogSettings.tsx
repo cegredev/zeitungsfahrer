@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { POST } from "../api";
 import { weekdaysShort } from "../consts";
-import { authTokenAtom } from "./stores/utility.store";
+import { authTokenAtom } from "../stores/utility.store";
 import LabeledCheckbox from "./util/LabeledCheckbox";
 
 function VendorCatalogSettings({ vendorId, catalog: _catalog }: { vendorId: number; catalog: VendorCatalog }) {

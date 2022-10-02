@@ -2,8 +2,8 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Popup from "reactjs-popup";
-import { authTokenAtom, errorMessageAtom } from "./components/stores/utility.store";
-import { settingsAtom } from "./components/stores/settings.store";
+import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
+import { settingsAtom } from "./stores/settings.store";
 
 import Navbar from "./components/Navbar";
 import SettingsPage from "./components/SettingsPage";

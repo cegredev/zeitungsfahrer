@@ -6,7 +6,7 @@ import { ScheduleInfo } from "backend/src/models/schedule.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import { GET, POST } from "../api";
 import { useAtom } from "jotai";
-import { authTokenAtom } from "../components/stores/utility.store";
+import { authTokenAtom } from "../stores/utility.store";
 import YearSelection from "../components/timeframe/YearSelection";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import ScheduleTable from "../components/schedule/ScheduleTable";

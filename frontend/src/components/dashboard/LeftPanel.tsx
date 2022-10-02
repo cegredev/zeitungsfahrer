@@ -6,7 +6,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GET } from "../../api";
 import { twoDecimalsFormat } from "../../consts";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom } from "../../stores/utility.store";
 
 function LeftPanel() {
 	const navigate = useNavigate();

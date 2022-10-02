@@ -6,7 +6,7 @@ import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
-import { authTokenAtom, errorMessageAtom } from "../components/stores/utility.store";
+import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",

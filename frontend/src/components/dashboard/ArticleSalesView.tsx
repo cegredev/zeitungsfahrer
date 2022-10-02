@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import { invoiceSystems } from "../../consts";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom } from "../../stores/utility.store";
 import DateSelection from "../timeframe/DateSelection";
 import MonthSelection from "../timeframe/MonthSelection";
 import WeekSelection from "../timeframe/WeekSelection";

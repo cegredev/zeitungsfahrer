@@ -2,8 +2,8 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Link } from "react-router-dom";
 import { GET, PUT } from "../../api";
-import { settingsAtom } from "../../components/stores/settings.store";
-import { authTokenAtom } from "../../components/stores/utility.store";
+import { settingsAtom } from "../../stores/settings.store";
+import { authTokenAtom } from "../../stores/utility.store";
 import { invoiceSystems } from "../../consts";
 
 function Settings() {

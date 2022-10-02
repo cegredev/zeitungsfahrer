@@ -6,13 +6,13 @@ import {
 	removeArticleAtom,
 	updateArticleAtom,
 	cancelArticleDraftAtom,
-} from "./stores/article.store";
+} from "../stores/article.store";
 import { DELETE, POST, PUT } from "../api";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
-import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
+import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",

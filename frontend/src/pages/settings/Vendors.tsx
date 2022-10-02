@@ -3,7 +3,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import Footer from "../../components/Footer";
-import { authTokenAtom } from "../../components/stores/utility.store";
+import { authTokenAtom } from "../../stores/utility.store";
 import LoadingPlaceholder from "../../components/util/LoadingPlaceholder";
 import VendorItem from "../../components/VendorItem";
 

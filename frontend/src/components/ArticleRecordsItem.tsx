@@ -4,8 +4,8 @@ import { useAtom } from "jotai";
 import React from "react";
 import { POST } from "../api";
 import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
-import { updateArticleRecordsAtom, vendorRecordsAtom } from "./stores/records.store";
-import { authTokenAtom } from "./stores/utility.store";
+import { updateArticleRecordsAtom, vendorRecordsAtom } from "../stores/records.store";
+import { authTokenAtom } from "../stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 const todayNormalized = normalizeDate(new Date());

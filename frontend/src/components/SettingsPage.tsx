@@ -3,7 +3,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthorizedPage from "../pages/AuthorizedPage";
 import SettingsLogin from "../pages/SettingsLogin";
-import { settingsLoggedInAtom } from "./stores/utility.store";
+import { settingsLoggedInAtom } from "../stores/utility.store";
 
 interface Props {
 	route: string;

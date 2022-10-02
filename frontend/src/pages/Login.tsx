@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../api";
-import { authTokenAtom } from "../components/stores/utility.store";
+import { authTokenAtom } from "../stores/utility.store";
 
 function Login() {
 	const [, setToken] = useAtom(authTokenAtom);

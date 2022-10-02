@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../api";
-import { authTokenAtom, settingsLoggedInAtom } from "../components/stores/utility.store";
+import { authTokenAtom, settingsLoggedInAtom } from "../stores/utility.store";
 
 function SettingsLogin() {
 	const [password, setPassword] = React.useState("");

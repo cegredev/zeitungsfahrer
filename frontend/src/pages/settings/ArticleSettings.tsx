@@ -5,8 +5,8 @@ import React from "react";
 import { GET } from "../../api";
 import ArticleComp from "../../components/ArticleComp";
 import Footer from "../../components/Footer";
-import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../../components/stores/article.store";
-import { authTokenAtom } from "../../components/stores/utility.store";
+import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../../stores/article.store";
+import { authTokenAtom } from "../../stores/utility.store";
 
 function ArticleSettings() {
 	const [articles] = useAtom(articlesListAtom);

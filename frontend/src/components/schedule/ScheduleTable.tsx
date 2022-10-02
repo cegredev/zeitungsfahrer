@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET, POST } from "../../api";
 import { weekdays } from "../../consts";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
 import YesNoPrompt from "../util/YesNoPrompt";
 import SelectAdd from "./SelectAdd";

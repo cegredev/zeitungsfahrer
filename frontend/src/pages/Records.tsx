@@ -7,11 +7,11 @@ import TimeframeSelection from "../components/TimeframeSelection";
 import { useAtom } from "jotai";
 import ArticleRecordsItem from "../components/ArticleRecordsItem";
 import { VendorRecords } from "backend/src/models/records.model";
-import { authTokenAtom } from "../components/stores/utility.store";
+import { authTokenAtom } from "../stores/utility.store";
 import AuthorizedPage from "./AuthorizedPage";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import { calculateTotalValueBrutto, twoDecimalsFormat } from "../consts";
-import { vendorRecordsAtom } from "../components/stores/records.store";
+import { vendorRecordsAtom } from "../stores/records.store";
 
 const initialEndDate = new Date();
 
