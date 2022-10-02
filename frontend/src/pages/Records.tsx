@@ -112,11 +112,11 @@ function Records() {
 						</div>
 						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>
 							Gesamt (Brutto):{" "}
-							{/* {twoDecimalsFormat.format(
-								vendorRecords.articleRecords
+							{twoDecimalsFormat.format(
+								[...recordsMap.values()]
 									.map((r) => calculateTotalValueBrutto(r.records))
 									.reduce((a, b) => a + b, 0)
-							)} */}
+							)}
 						</h3>
 						{info.articleIds.map((id) => (
 							<ArticleRecordsItem
