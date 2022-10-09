@@ -28,12 +28,6 @@ export interface ArticleRecords {
 	records: Record[];
 }
 
-export interface VendorRecords {
-	id: number;
-	name: string;
-	articleRecords: ArticleRecords[];
-}
-
 export interface DashboardRecord extends ArticleInfo {
 	sales: number;
 }

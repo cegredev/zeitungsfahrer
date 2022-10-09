@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { VendorRecords } from "../models/records.model.js";
 import { Vendor } from "../models/vendors.model.js";
 import {
 	createOrUpdateVendorCatalog,
@@ -43,7 +42,7 @@ export async function deleteVendorController(req: Request<any, any, { id: number
 
 export async function getVendorFullController(
 	req: Request<{ id: number }, any, any, { catalogOnly: "false" | "true" }>,
-	res: Response<VendorRecords>
+	res: Response
 ) {
 	if (req.query.catalogOnly === "true") {
 		await handler(async () => await getVendorCatalogRoute(req.params.id), res);

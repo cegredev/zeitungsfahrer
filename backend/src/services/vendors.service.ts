@@ -5,29 +5,20 @@ import { poolExecute } from "../util.js";
 import { ArticleInfo } from "../models/articles.model.js";
 
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
-	const result = await pool.execute(
+	return await poolExecute<Vendor>(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
 				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry
 		 FROM vendors 
 		 ${!includeInactive ? "WHERE active=1" : ""}
 		 ORDER BY last_name`
 	);
-
-	// @ts-ignore
-	const vendors: Vendor[] = result[0];
-
-	return vendors;
 }
 
 export async function getVendorsSimple(): Promise<SimpleVendor[]> {
-	const result = await pool.execute(
+	const vendors = await poolExecute<{ id: number; name: string; active: number }>(
 		`SELECT id, CONCAT(first_name, " ", last_name) as name, active FROM vendors ORDER BY last_name`
 	);
 
-	// @ts-ignore
-	const vendors: SimpleVendor[] = result[0];
-
-	// @ts-ignore
 	return vendors.map((vendor) => ({ ...vendor, active: vendor.active === 1 }));
 }
 
@@ -57,13 +48,12 @@ export async function getIncludedArticleIds(vendorId: number): Promise<VendorInc
 }
 
 export async function getVendor(id: number): Promise<Vendor> {
-	const result = await pool.execute(
-		"SELECT first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors WHERE id=?",
+	const result = await poolExecute<Vendor>(
+		"SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors WHERE id=?",
 		[id]
 	);
 
-	// @ts-ignore
-	return { id, ...result[0][0] };
+	return result[0];
 }
 
 export async function getVendorFull(id: number): Promise<Vendor> {
@@ -73,11 +63,11 @@ export async function getVendorFull(id: number): Promise<Vendor> {
 }
 
 export async function getVendorFullRoute(id: number): Promise<RouteReport> {
-	const vendor = await getVendor(id);
-	const catalog = await getVendorCatalog(id);
+	console.log("full");
+
 	return {
 		code: 200,
-		body: { ...vendor, catalog },
+		body: await getVendorFull(id),
 	};
 }
 
@@ -105,22 +95,21 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 	};
 }
 
-export async function updateVendor({
-	id,
-	firstName,
-	lastName,
-	address,
-	zipCode,
-	city,
-	email,
-	phone,
-	active,
-	taxId,
-}: // catalog,
-Vendor): Promise<RouteReport> {
+export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
 	await pool.execute(
 		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=?, active=? WHERE id=?",
-		[firstName, lastName, address, zipCode, city, email, phone, taxId, active, id]
+		[
+			vendor.firstName,
+			vendor.lastName,
+			vendor.address,
+			vendor.zipCode,
+			vendor.city,
+			vendor.email,
+			vendor.phone,
+			vendor.taxId,
+			vendor.active,
+			vendor.id,
+		]
 	);
 
 	return {
