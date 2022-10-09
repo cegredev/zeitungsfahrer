@@ -1,39 +1,64 @@
 import pool, { RouteReport } from "../database.js";
-import {
-	Record,
-	ArticleRecords,
-	VendorRecords,
-	Sales,
-	ArticleSales,
-	VendorSales,
-	ChangedRecord,
-} from "../models/records.model.js";
+import { Record, ArticleRecords, Sales, ArticleSales, VendorSales, ChangedRecord } from "../models/records.model.js";
 import dayjs from "dayjs";
-import { DATE_FORMAT } from "../consts.js";
-import { getVendorFull } from "./vendors.service.js";
+import { DATE_FORMAT, MILlIS_IN_DAY } from "../consts.js";
+import { getIncludedArticles, getVendorCatalog } from "./vendors.service.js";
 import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
-import { getConvertedWeekday } from "../util.js";
+import { getConvertedWeekday, poolExecute } from "../util.js";
 import settings from "./settings.service.js";
-import { Article, ArticleInfo } from "../models/articles.model.js";
+import { ArticleInfo } from "../models/articles.model.js";
 
-async function mapRecordsToPrices(start: Date, end: Date, articlesRecords: Map<number, ArticleRecords>): Promise<void> {
-	const allPrices = await getPrices(start, end);
+async function applyPrices(
+	start: Date,
+	end: Date,
+	articlesRecords: { id: number; records: Record[] }[]
+): Promise<void> {
+	for (const article of articlesRecords) {
+		const prices = await getPrices(start, end, article.id);
 
-	for (const [articleId, prices] of allPrices.entries()) {
-		const articleRecords = articlesRecords.get(articleId);
-		if (articleRecords == null) continue;
-
-		articleRecords.records = articleRecords.records.map((record) => {
+		article.records.forEach((record, i) => {
 			const possiblePrices = prices[getConvertedWeekday(record.date)];
 
 			const price = possiblePrices.find(
 				(p) => p.startDate <= record.date && (p.endDate == null || p.endDate > record.date)
 			)!;
 
-			return { ...record, price };
+			article.records[i] = { ...record, price };
 		});
 	}
+}
+
+async function getExistingRecords(
+	vendorId: number,
+	articleId: number,
+	start: Date,
+	end: Date
+): Promise<{ date: Date; supply: number; remissions: number; missing: boolean }[]> {
+	return (
+		await poolExecute(
+			`
+				SELECT date, supply, remissions FROM records
+				WHERE vendor_id=? AND article_id=? AND date BETWEEN ? AND ?
+				ORDER BY article_id
+			`,
+			[vendorId, articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+		)
+	).map((r: any) => ({ ...r, missing: false }));
+}
+
+export function calculateSalesValues(records: Record[]): { totalValueNetto: number; totalValueBrutto: number } {
+	const values = records.map((record) => [
+		record.missing ? 0 : (record.supply - record.remissions) * record.price!.sell,
+		record.price!.mwst,
+	]);
+
+	return {
+		totalValueNetto: values.map(([price, _mwst]) => price).reduce((prev, current) => prev + current),
+		totalValueBrutto: values
+			.map(([price, mwst]) => price * (1.0 + mwst / 100))
+			.reduce((prev, current) => prev + current),
+	};
 }
 
 export async function getArticleRecords(
@@ -42,158 +67,47 @@ export async function getArticleRecords(
 	start: Date,
 	end: Date
 ): Promise<ArticleRecords> {
-	const vendor = await getVendorFull(vendorId);
-
 	start = normalizeDate(start);
 	end = normalizeDate(end);
 
-	const numOfDays = daysBetween(start, end) + 1;
-
-	const millisInDay = 24 * 60 * 60 * 1_000,
-		startMillis = start.getTime(),
-		startWeekday = getConvertedWeekday(start);
-
-	const response = await pool.execute(
-		`
-				SELECT records.date, supply, remissions
-				FROM records
-				WHERE records.vendor_id=? AND records.article_id=? AND records.date BETWEEN ? AND ?
-				ORDER BY records.article_id
-			`,
-		[vendorId, articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
-	);
-
-	const catalogEntry = vendor.catalog!.entries.find((e) => e.articleId === articleId)!;
+	const catalogEntry = (await getVendorCatalog(vendorId, articleId)).entries[0];
 
 	let articleRecords = {
 		id: articleId,
 		name: catalogEntry.articleName,
 		start,
-		records: Array(numOfDays)
-			.fill(null)
-			.map((_, index) => ({
-				date: dayjs(start).add(index, "days").toDate(),
-				supply: catalogEntry.supplies[(startWeekday + index) % 7],
-				remissions: 0,
-				missing: true,
-			})),
+		records: Array(daysBetween(start, end) + 1).fill(null),
 	};
 
-	// @ts-ignore
-	const records: Record[] = response[0];
+	const records = await getExistingRecords(vendorId, articleId, start, end),
+		startMillis = start.getTime();
 	for (const record of records) {
-		const index = Math.round((record.date.getTime() - startMillis) / millisInDay);
-		articleRecords.records[index] = { ...record, missing: false };
+		articleRecords.records[Math.round((record.date.getTime() - startMillis) / MILlIS_IN_DAY)] = record;
 	}
 
-	const tempMap = new Map<number, ArticleRecords>();
-	// @ts-ignore
-	tempMap.set(articleId, articleRecords);
-	await mapRecordsToPrices(start, end, tempMap);
-	const newArticleRecords = tempMap.get(articleId)!;
-
-	const prices = newArticleRecords.records.map((record) => [
-		record.missing ? 0 : (record.supply - record.remissions) * record.price.sell,
-		record.price.mwst,
-	]);
-
-	const finalArticleRecords = {
-		...newArticleRecords,
-		totalValueNetto: prices.map(([price, _mwst]) => price).reduce((prev, current) => prev + current),
-		totalValueBrutto: prices
-			.map(([price, mwst]) => price * (1.0 + mwst / 100))
-			.reduce((prev, current) => prev + current),
-	};
-
-	return finalArticleRecords;
-}
-
-export async function getVendorRecords(vendorId: number, start: Date, end: Date): Promise<VendorRecords> {
-	const vendor = await getVendorFull(vendorId);
-
-	start = normalizeDate(start);
-	end = normalizeDate(end);
-
-	const numOfDays = daysBetween(start, end) + 1;
-
-	const millisInDay = 24 * 60 * 60 * 1_000,
-		startMillis = start.getTime(),
-		startWeekday = getConvertedWeekday(start);
-
-	const includedArticleRecords: Map<number, ArticleRecords> = new Map();
-	for (const entry of vendor.catalog!.entries) {
-		if (!entry.included) continue;
-
-		const response = await pool.execute(
-			`
-				SELECT records.date, supply, remissions
-				FROM records
-				WHERE records.vendor_id=? AND records.article_id=? AND records.date BETWEEN ? AND ?
-				ORDER BY records.article_id
-			`,
-			[vendorId, entry.articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
-		);
-
-		const catalogEntry = vendor.catalog!.entries.find((e) => e.articleId === entry.articleId)!;
-
-		const articleRecords = {
-			id: entry.articleId,
-			name: entry.articleName,
-			start,
-			records: Array(numOfDays)
-				.fill(null)
-				.map((_, index) => ({
-					date: dayjs(start).add(index, "days").toDate(),
-					supply: catalogEntry.supplies[(startWeekday + index) % 7],
-					remissions: 0,
-					missing: true,
-				})),
-		};
-
-		// @ts-ignore
-		const records: Record[] = response[0];
-		for (const record of records) {
-			const index = Math.round((record.date.getTime() - startMillis) / millisInDay);
-			articleRecords.records[index] = { ...record, missing: false };
-		}
-
-		// @ts-ignore Missing fields are going to be added later
-		includedArticleRecords.set(entry.articleId, articleRecords);
-	}
-
-	await mapRecordsToPrices(start, end, includedArticleRecords);
-
-	const articleRecords = [...includedArticleRecords.values()].map((records) => {
-		const prices = records.records.map((record) => [
-			record.missing ? 0 : (record.supply - record.remissions) * record.price.sell,
-			record.price.mwst,
-		]);
+	const startWeekday = getConvertedWeekday(start);
+	articleRecords.records = articleRecords.records.map((record, index) => {
+		if (record !== null) return record;
 
 		return {
-			...records,
-			totalValueNetto: prices.map(([price, _mwst]) => price).reduce((prev, current) => prev + current),
-			totalValueBrutto: prices
-				.map(([price, mwst]) => price * (1.0 + mwst / 100))
-				.reduce((prev, current) => prev + current),
+			date: dayjs(start).add(index, "days").toDate(),
+			supply: catalogEntry.supplies[(startWeekday + index) % 7],
+			remissions: 0,
+			missing: true,
 		};
 	});
 
-	return {
-		id: vendorId,
-		name: vendor.firstName + " " + vendor.lastName,
-		articleRecords,
-	};
+	await applyPrices(start, end, [articleRecords]);
+
+	return { ...articleRecords, ...calculateSalesValues(articleRecords.records) };
 }
 
 export async function getAllSales(date: Date): Promise<number[]> {
 	async function makeRequest(start: Date, end: Date) {
-		const response = await pool.execute(
+		const records = await poolExecute<Record>(
 			"SELECT date, article_id AS articleId, (supply - remissions) AS sales FROM records WHERE date BETWEEN ? AND ?",
 			[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 		);
-
-		// @ts-ignore
-		const records: Record[] = response[0];
 
 		const map = new Map<number, ArticleRecords>();
 
@@ -202,6 +116,7 @@ export async function getAllSales(date: Date): Promise<number[]> {
 			if (articleRecords === undefined) {
 				// @ts-ignore
 				articleRecords = {
+					id: record.articleId!,
 					records: [],
 				};
 				map.set(record.articleId!, articleRecords!);
@@ -210,7 +125,7 @@ export async function getAllSales(date: Date): Promise<number[]> {
 			articleRecords?.records.push(record);
 		}
 
-		await mapRecordsToPrices(start, end, map);
+		await applyPrices(start, end, [...map.values()]);
 
 		const rs = [...map.values()].map((r) => r.records).reduce((a, b) => a.concat(b), []);
 
@@ -219,7 +134,7 @@ export async function getAllSales(date: Date): Promise<number[]> {
 				// @ts-ignore
 				const sales = r.sales;
 
-				return (r.price.sell * sales * (100 + r.price.mwst)) / 100;
+				return (r.price!.sell * sales * (100 + r.price!.mwst)) / 100;
 			})
 			.reduce((a, b) => a + b, 0);
 	}
@@ -262,53 +177,38 @@ export function getDateRange(end: Date, system: number): [Date, Date] {
 	return [start, end];
 }
 
-export async function getVendorRecordsAdjusted(
+export async function getArticleRecordsAdjusted(
 	vendorId: number,
 	initialEnd: Date,
-	articleId?: number
-): Promise<VendorRecords | ArticleRecords> {
+	articleId: number
+): Promise<ArticleRecords[] | ArticleRecords> {
 	const [start, end] = getDateRange(initialEnd, Math.min(2, settings.invoiceSystem)); // Records cant be shown as year
 
-	return articleId
-		? await getArticleRecords(vendorId, articleId, start, end)
-		: await getVendorRecords(vendorId, start, end);
-}
-
-export async function getVendorRecordsRoute(vendorId: number, end: Date, articleId?: number): Promise<RouteReport> {
-	return {
-		code: 200,
-		body: await getVendorRecordsAdjusted(vendorId, end, articleId),
-	};
+	return await getArticleRecords(vendorId, articleId, start, end);
 }
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
-	const today = normalizeDate(new Date());
+	const [start, end] = getDateRange(new Date(), settings.invoiceSystem);
+	const articleSales = new Map<number, ArticleInfo & { sales: number }>();
 
-	// @ts-ignore
-	const vendorRecords: VendorRecords = await getVendorRecordsAdjusted(vendorId, today);
+	let total = 0;
 
-	const articleCounts = new Map<number, ArticleInfo & { sales: number }>();
-	for (const articleRecords of vendorRecords.articleRecords) {
-		let article = articleCounts.get(articleRecords.id);
-		if (article === undefined) {
-			article = { id: articleRecords.id, name: articleRecords.name, sales: 0 };
-			articleCounts.set(articleRecords.id, article);
-		}
+	for (const article of await getIncludedArticles(vendorId)) {
+		const records = await getArticleRecords(vendorId, article.id, start, end);
 
-		for (const record of articleRecords.records) {
-			if (record.missing) continue;
+		articleSales.set(article.id, {
+			...article,
+			sales: records.records.map((r) => (r.missing ? 0 : r.supply - r.remissions)).reduce((a, b) => a + b, 0),
+		});
 
-			article.sales += record.supply - record.remissions;
-		}
+		total += records.totalValueBrutto;
 	}
 
 	return {
 		code: 200,
 		body: {
-			articles: [...articleCounts.values()],
-			totalValueBrutto: vendorRecords.articleRecords
-				.map((records) => records.totalValueBrutto)
-				.reduce((prev, current) => prev + current, 0),
+			articles: [...articleSales.values()],
+			totalValueBrutto: total,
 		},
 	};
 }
@@ -341,9 +241,22 @@ export async function getArticleSalesRoute(articleId: number, end: Date): Promis
 
 export async function getVendorSales(vendorId: number, date: Date): Promise<VendorSales> {
 	async function makeRequest(start: Date, end: Date): Promise<number> {
-		const records = await getVendorRecords(vendorId, start, end);
-		return records.articleRecords.map((r) => r.totalValueBrutto).reduce((a, b) => a + b, 0);
+		let total = 0;
+		for (const entry of catalog.entries) {
+			if (!entry.included) continue;
+
+			const records = await getExistingRecords(vendorId, entry.articleId, start, end);
+			if (records.length === 0) continue;
+
+			await applyPrices(start, end, [{ id: entry.articleId, records }]);
+
+			total += calculateSalesValues(records).totalValueBrutto;
+		}
+
+		return total;
 	}
+
+	const catalog = await getVendorCatalog(vendorId);
 
 	const sales = [];
 	for (let i = 3; i >= 0; i--) sales.push(await makeRequest(...getDateRange(date, i)));

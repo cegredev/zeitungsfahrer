@@ -11,8 +11,6 @@ export async function validateTokenHandler(req: Request, res: Response, next: Ne
 	if (token == null) return res.sendStatus(401);
 
 	jwt.verify(token, getEnvToken(), (err, decoded) => {
-		console.error(err);
-
 		if (err) return res.sendStatus(403);
 
 		// @ts-ignore
@@ -25,7 +23,7 @@ export async function handler(func: () => Promise<RouteReport>, res: Response) {
 	try {
 		const { code, body } = await func();
 		res.status(code).send(JSON.stringify(body));
-		logger.info("Reponse: " + code);
+		logger.info("Response: " + code);
 	} catch (e) {
 		console.error(e);
 		logger.error(e);

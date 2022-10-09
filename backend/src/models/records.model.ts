@@ -5,8 +5,8 @@ export interface Record {
 	date: Date;
 	supply: number;
 	remissions: number;
-	price: Price;
-	missing: boolean;
+	price?: Price;
+	missing?: boolean;
 }
 
 export interface ChangedRecord {

@@ -78,7 +78,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 					return {
 						...r,
 						date,
-						editable: isToday || (r.missing && !inFuture),
+						editable: isToday || (r.missing! && !inFuture),
 						edited: isToday,
 						inFuture,
 					};
@@ -195,10 +195,10 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 											/>
 										</td>
 										<td>{soldAmount}</td>
-										<td>{twoDecimalsFormat.format(soldAmount * record.price.sell)}</td>
+										<td>{twoDecimalsFormat.format(soldAmount * record.price!.sell)}</td>
 										<td>
 											{twoDecimalsFormat.format(
-												(soldAmount * record.price.sell * (100 + record.price.mwst)) / 100
+												(soldAmount * record.price!.sell * (100 + record.price!.mwst)) / 100
 											)}
 										</td>
 										<td>
@@ -212,7 +212,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 								<td style={{ fontWeight: "bold" }}>
 									{twoDecimalsFormat.format(
 										records.records
-											.map((r) => (!r.missing ? r.price.sell * (r.supply - r.remissions) : 0))
+											.map((r) => (!r.missing ? r.price!.sell * (r.supply - r.remissions) : 0))
 											.reduce((a, b) => a + b, 0)
 									)}
 								</td>

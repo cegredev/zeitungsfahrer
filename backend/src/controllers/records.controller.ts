@@ -3,27 +3,26 @@ import { ArticleRecords, ChangedRecord, VendorRecords } from "../models/records.
 import {
 	createOrUpdateArticleRecords,
 	getAllSalesRoute,
+	getArticleRecordsAdjusted,
 	getArticleSalesRoute,
 	getTodaysArticleRecords as getTodaysRecords,
-	getVendorRecordsRoute,
 	getVendorSalesRoute,
 } from "../services/records.service.js";
-import { getVendorCatalogRoute, getVendorFullRoute } from "../services/vendors.service.js";
 import { handler } from "./controllers.js";
 
-export async function getVendorRecordsController(
-	req: Request<{ id: string }, any, any, { articleId?: string; end: Date }>,
+export async function getArticleRecordsController(
+	req: Request<{ id: string }, any, any, { articleId: string; end: Date }>,
 	res: Response<VendorRecords>
 ) {
-	const articleId = req.query.articleId;
-
 	await handler(
-		async () =>
-			await getVendorRecordsRoute(
+		async () => ({
+			code: 200,
+			body: await getArticleRecordsAdjusted(
 				parseInt(req.params.id),
 				new Date(req.query.end),
-				articleId ? parseInt(articleId) : undefined
+				parseInt(req.query.articleId)
 			),
+		}),
 		res
 	);
 }

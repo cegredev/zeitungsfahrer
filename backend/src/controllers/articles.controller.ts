@@ -5,7 +5,7 @@ import {
 	createArticle,
 	deleteArticle,
 	updateArticle,
-	getArticleInfos,
+	getArticleInfosRoute,
 } from "../services/articles.service.js";
 import { handler } from "./controllers.js";
 
@@ -14,7 +14,7 @@ export async function getArticlesController(req: Request<any, any, any, { atDate
 }
 
 export async function getArticleInfoController(req: Request, res: Response) {
-	await handler(getArticleInfos, res);
+	await handler(getArticleInfosRoute, res);
 }
 
 export async function postArticleController(req: Request<any, any, Article>, res: Response) {

@@ -9,9 +9,9 @@ import {
 } from "./controllers/articles.controller.js";
 import {
 	getAllSalesController,
+	getArticleRecordsController,
 	getArticleSalesController,
 	getTodaysRecordsController,
-	getVendorRecordsController,
 	getVendorSalesController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
@@ -58,7 +58,7 @@ function routes(app: Express) {
 
 	app.route("/auth/vendors/:id/includedArticles").get(getIncludedArticlesController);
 
-	app.route("/auth/records/:id").get(getVendorRecordsController).post(postArticleRecordsController);
+	app.route("/auth/records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
 
 	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
 

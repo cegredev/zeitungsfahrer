@@ -1,58 +1,44 @@
-import { Article, Price, validatePrices } from "../models/articles.model.js";
+import { Article, ArticleInfo, Price, validatePrices } from "../models/articles.model.js";
 import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
-import { getConvertedWeekday } from "../util.js";
+import { getConvertedWeekday, poolExecute } from "../util.js";
 
-export async function getPrices(start: Date, end: Date): Promise<Map<number, Price[][]>> {
-	const response = await pool.execute(
+// FIXME: Make this work with all amounts of days
+export async function getPrices(start: Date, end: Date, articleId: number): Promise<Price[][]> {
+	const prices = await poolExecute<Price>(
 		`SELECT start_date as startDate, weekday, article_id as articleId, mwst, purchase, sell, market_sell as marketSell, end_date as endDate
 		FROM prices
-		WHERE start_date <= ? AND (end_date > ? OR end_date IS NULL)
+		WHERE start_date <= ? AND (end_date > ? OR end_date IS NULL) AND article_id=?
 		ORDER BY start_date`,
-		[dayjs(end).format(DATE_FORMAT), dayjs(start).format(DATE_FORMAT)]
+		[dayjs(end).format(DATE_FORMAT), dayjs(start).format(DATE_FORMAT), articleId]
 	);
 
-	const byArticleByWeekday = new Map<number, Price[][]>();
+	const week: Price[][] = Array(7)
+		.fill(null)
+		.map(() => []);
 
-	// @ts-ignore
-	for (const price of response[0]) {
-		let byWeekday = byArticleByWeekday.get(price.articleId);
-
-		if (byWeekday == null) {
-			byWeekday = Array(7)
-				.fill(null)
-				.map(() => []);
-			byArticleByWeekday.set(price.articleId, byWeekday);
-		}
-
-		byWeekday[price.weekday].push(price);
+	for (const price of prices) {
+		week[price.weekday].push(price);
 	}
 
 	const startWeekday = getConvertedWeekday(start);
 
-	for (const [key, week] of byArticleByWeekday.entries()) {
-		byArticleByWeekday.set(
-			key,
-			week.map((prices, index) =>
-				prices.length === 0
-					? [
-							{
-								startDate: end,
-								weekday: (startWeekday + index) % 7,
-								articleId: key,
-								mwst: 0,
-								purchase: 0,
-								sell: 0,
-								marketSell: 0,
-							},
-					  ]
-					: prices
-			)
-		);
-	}
-
-	return byArticleByWeekday;
+	return week.map((prices, index) =>
+		prices.length === 0
+			? [
+					{
+						startDate: end,
+						weekday: (startWeekday + index) % 7,
+						articleId,
+						mwst: 0,
+						purchase: 0,
+						sell: 0,
+						marketSell: 0,
+					},
+			  ]
+			: prices
+	);
 }
 
 export async function getArticles(atDate: Date): Promise<RouteReport> {
@@ -92,11 +78,12 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	};
 }
 
-export async function getArticleInfos(): Promise<RouteReport> {
-	const reponse = await pool.execute("SELECT id, name FROM articles");
+export async function getArticleInfos(): Promise<ArticleInfo[]> {
+	return await poolExecute<{ id: number; name: string }>("SELECT id, name FROM articles");
+}
 
-	// @ts-ignore
-	return { code: 200, body: reponse[0] };
+export async function getArticleInfosRoute(): Promise<RouteReport> {
+	return { code: 200, body: await getArticleInfos() };
 }
 
 export async function createPrices(startDate: Date, articleId: number, prices: Price[]): Promise<void> {

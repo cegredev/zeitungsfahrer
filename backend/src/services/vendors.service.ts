@@ -2,6 +2,7 @@ import { SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
 import { poolExecute } from "../util.js";
+import { ArticleInfo } from "../models/articles.model.js";
 
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	const result = await pool.execute(
@@ -30,7 +31,14 @@ export async function getVendorsSimple(): Promise<SimpleVendor[]> {
 	return vendors.map((vendor) => ({ ...vendor, active: vendor.active === 1 }));
 }
 
-export async function getIncludedArticles(vendorId: number): Promise<VendorIncludedArticles> {
+export async function getIncludedArticles(vendorId: number): Promise<ArticleInfo[]> {
+	return await poolExecute<ArticleInfo>(
+		"SELECT article_id as id, name FROM vendor_catalog INNER JOIN articles ON article_id=id WHERE vendor_id=? AND included=1 ",
+		[vendorId]
+	);
+}
+
+export async function getIncludedArticleIds(vendorId: number): Promise<VendorIncludedArticles> {
 	const articleIds = (
 		await poolExecute<{ id: number }>(
 			"SELECT article_id as id FROM vendor_catalog WHERE vendor_id=? AND included=1",
@@ -128,17 +136,17 @@ export async function deleteVendor(id: number): Promise<RouteReport> {
 	};
 }
 
-export async function getVendorCatalog(vendorId: number): Promise<VendorCatalog> {
-	const response = await pool.execute(
+export async function getVendorCatalog(vendorId: number, articleId?: number): Promise<VendorCatalog> {
+	const response = await poolExecute(
 		`SELECT articles.name, articles.id as articleId, vendor_supplies.weekday, vendor_supplies.supply, vendor_catalog.included FROM articles
         LEFT JOIN vendor_catalog ON articles.id=vendor_catalog.article_id AND vendor_catalog.vendor_id=?
-        LEFT JOIN vendor_supplies ON vendor_supplies.article_id=articles.id AND vendor_supplies.vendor_id=? `,
+        LEFT JOIN vendor_supplies ON vendor_supplies.article_id=articles.id AND vendor_supplies.vendor_id=?
+		${articleId ? "WHERE articles.id=" + articleId : ""}`,
 		[vendorId, vendorId]
 	);
 
 	const map = new Map<number, VendorCatalogEntry>();
-	// @ts-ignore
-	for (const { name, articleId, weekday, supply, included } of response[0]) {
+	for (const { name, articleId, weekday, supply, included } of response) {
 		let article = map.get(articleId);
 		if (article == null) {
 			article = {

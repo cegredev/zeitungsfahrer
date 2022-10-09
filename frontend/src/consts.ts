@@ -49,6 +49,6 @@ export function dateAsTextWithSystem(date: Date, system: number): string {
 
 export function calculateTotalValueBrutto(records: Record[]): number {
 	return records
-		.map((r) => (!r.missing ? r.price.sell * (r.supply - r.remissions) * ((100 + r.price.mwst) / 100) : 0))
+		.map((r) => (!r.missing ? r.price!.sell * (r.supply - r.remissions) * ((100 + r.price!.mwst) / 100) : 0))
 		.reduce((a, b) => a + b, 0);
 }
