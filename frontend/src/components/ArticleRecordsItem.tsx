@@ -1,4 +1,4 @@
-import { ArticleRecords, Record, VendorRecords } from "backend/src/models/records.model";
+import { ArticleRecords, Record } from "backend/src/models/records.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -89,7 +89,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 		}
 
 		fetchData();
-	}, [setRecords, date, articleId, vendorId, token]);
+	}, [setRecords, date, articleId, vendorId, token, addChangedRecord]);
 
 	const updateField = React.useCallback(
 		(recordIndex: number, update: (r: GUIRecord) => void) => {

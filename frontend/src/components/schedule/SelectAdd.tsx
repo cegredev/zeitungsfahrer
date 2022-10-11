@@ -9,6 +9,8 @@ interface Props {
 function SelectAdd({ vendors, onAdd }: Props) {
 	const [selection, setSelection] = React.useState<number | undefined>(vendors[0]?.id);
 
+	// console.log("vendors", vendors);
+
 	return (
 		<div style={{ whiteSpace: "nowrap" }}>
 			<select
@@ -28,6 +30,8 @@ function SelectAdd({ vendors, onAdd }: Props) {
 			<button
 				onClick={async () => {
 					if (selection === undefined) return;
+
+					console.log("selection:", selection);
 
 					await onAdd(vendors.find((v) => v.id === selection)!);
 					setSelection(vendors.find((v) => v.id !== selection)?.id);

@@ -3,6 +3,7 @@ import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
+import { useImmer } from "use-immer";
 import { GET, POST } from "../../api";
 import { weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
@@ -24,7 +25,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 
 	const [token] = useAtom(authTokenAtom);
 
-	const [schedule, setSchedule] = React.useState<ScheduleInfo | undefined>(undefined);
+	const [schedule, setSchedule] = useImmer<ScheduleInfo | undefined>(undefined);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -101,31 +102,31 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 													onChange={(evt) => {
 														const newVendorId = parseInt(evt.target.value);
 
-														const newDistrictWeeks = [...schedule.districts];
-														const newVendorIds = [...week.vendorIds];
-														newVendorIds[day] = newVendorId;
-														newDistrictWeeks[districtIndex].vendorIds = newVendorIds;
+														setSchedule((draft) => {
+															const district = draft!.districts[districtIndex];
+															const oldId = district.vendorIds[day];
+															district.vendorIds[day] = newVendorId;
 
-														const newVacation = [...schedule.vacation];
+															if (
+																oldId !== -1 &&
+																!draft!.districts.find(
+																	(district) => district.vendorIds[day] === oldId
+																)
+															) {
+																draft!.free[day].push(oldId);
+															}
 
-														const vacIndex = newVacation[day].findIndex(
-															(id) => id === newVendorId
-														);
-														if (vacIndex !== -1) newVacation[day].splice(vacIndex, 1);
+															for (const ids of [
+																draft?.free[day],
+																draft?.vacation[day],
+															]) {
+																const index = ids!.findIndex(
+																	(id) => id === newVendorId
+																);
+																if (index === -1) continue;
 
-														const newFree = [...schedule.free];
-														const freeIndex = newFree[day].findIndex(
-															(id) => id === newVendorId
-														);
-														console.log("free", freeIndex);
-														if (freeIndex !== -1) newFree[day].splice(freeIndex, 1);
-
-														if (vendorId !== -1) newFree[day].push(vendorId);
-
-														setSchedule({
-															districts: newDistrictWeeks,
-															vacation: newVacation,
-															free: newFree,
+																ids?.splice(index, 1);
+															}
 														});
 													}}
 												>
@@ -163,7 +164,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 							<td />
 							{schedule.free.map((vendorIds, i) => {
 								return (
-									<td key={"schedule-free-" + i}>
+									<td style={{ verticalAlign: "top" }} key={"schedule-free-" + i}>
 										{vendorIds.map((id, j) => (
 											<div key={"schedule-free-" + i + "-" + j}>{vendorMap.get(id)!.name}</div>
 										))}
@@ -180,7 +181,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 							<td />
 							{schedule.vacation.map((vendorIds, day) => {
 								return (
-									<td key={"schedule-vacation-" + day}>
+									<td style={{ verticalAlign: "top" }} key={"schedule-vacation-" + day}>
 										{vendorIds.map((id, j) => (
 											<div
 												key={"schedule-vacation-" + day + "-" + j}
@@ -189,16 +190,12 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 												{vendorMap.get(id)!.name}
 												<button
 													onClick={() => {
-														const newVacation = [...schedule.vacation];
-														newVacation[day].splice(j, 1);
-
-														const newFree = [...schedule.free];
-														newFree[day].push(id);
-
-														setSchedule({
-															...schedule,
-															vacation: newVacation,
-															free: newFree,
+														setSchedule((draft) => {
+															draft!.vacation[day].splice(
+																draft!.vacation[day].findIndex((_id) => _id === id),
+																1
+															);
+															draft!.free[day].push(id);
 														});
 													}}
 												>
@@ -210,21 +207,12 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 										<SelectAdd
 											vendors={schedule.free[day].map((id) => vendorMap.get(id)!)}
 											onAdd={async (v) => {
-												const newVacation = [...schedule.vacation];
-												newVacation[day].push(v.id);
-
-												const newFree = [...schedule.free];
-												console.log(newFree[day].findIndex((id) => id === v.id));
-
-												newFree[day].splice(
-													newFree[day].findIndex((id) => id === v.id),
-													1
-												);
-
-												setSchedule({
-													...schedule,
-													vacation: newVacation,
-													free: newFree,
+												setSchedule((draft) => {
+													draft!.free[day].splice(
+														draft!.free[day].findIndex((id) => id === v.id),
+														1
+													);
+													draft!.vacation[day].push(v.id);
 												});
 											}}
 										/>
