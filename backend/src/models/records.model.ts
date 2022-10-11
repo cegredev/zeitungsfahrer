@@ -29,7 +29,7 @@ export interface ArticleRecords {
 }
 
 export interface DashboardRecord extends ArticleInfo {
-	sales: number;
+	supply: number;
 }
 
 export interface DashboardRecords {

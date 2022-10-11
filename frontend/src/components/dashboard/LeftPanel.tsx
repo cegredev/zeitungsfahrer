@@ -45,7 +45,7 @@ function LeftPanel() {
 					style={{
 						display: "flex",
 						flexDirection: "column",
-						border: "solid 3px",
+						border: "solid 2px",
 						// height: "100%",
 						flex: 1,
 						backgroundColor: "#EEEEEE",
@@ -110,7 +110,7 @@ function LeftPanel() {
 						flex: 1,
 						display: "flex",
 						flexDirection: "column",
-						border: "solid 3px",
+						border: "solid 2px",
 						backgroundColor: "#EEEEEE",
 					}}
 				>
@@ -127,7 +127,7 @@ function LeftPanel() {
 								}}
 							>
 								<div style={{ flex: 1, userSelect: "none" }}>{article.name}</div>
-								{<div>{"" + article.sales}</div>}
+								{<div>{"" + article.supply}</div>}
 							</div>
 						);
 					})}

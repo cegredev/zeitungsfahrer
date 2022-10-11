@@ -188,26 +188,24 @@ export async function getArticleRecordsAdjusted(
 }
 
 export async function getTodaysArticleRecords(vendorId: number): Promise<RouteReport> {
-	const [start, end] = getDateRange(new Date(), settings.invoiceSystem);
-	const articleSales = new Map<number, ArticleInfo & { sales: number }>();
+	const today = new Date();
+	const [start, end] = getDateRange(today, settings.invoiceSystem);
 
 	let total = 0;
-
 	for (const article of await getIncludedArticles(vendorId)) {
 		const records = await getArticleRecords(vendorId, article.id, start, end);
-
-		articleSales.set(article.id, {
-			...article,
-			sales: records.records.map((r) => (r.missing ? 0 : r.supply - r.remissions)).reduce((a, b) => a + b, 0),
-		});
-
 		total += records.totalValueBrutto;
 	}
+
+	const catalog = await getVendorCatalog(vendorId);
+	const weekday = getConvertedWeekday(today);
 
 	return {
 		code: 200,
 		body: {
-			articles: [...articleSales.values()],
+			articles: catalog.entries
+				.filter((entry) => entry.included)
+				.map((entry) => ({ name: entry.articleName, supply: entry.supplies[weekday] })),
 			totalValueBrutto: total,
 		},
 	};
