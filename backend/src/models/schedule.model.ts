@@ -1,5 +1,6 @@
 export interface District {
 	id: number;
+	defaultVendor: number;
 }
 
 export interface DistrictWeek {
@@ -11,4 +12,5 @@ export interface ScheduleInfo {
 	districts: DistrictWeek[];
 	vacation: number[][];
 	free: number[][];
+	sick: number[][];
 }

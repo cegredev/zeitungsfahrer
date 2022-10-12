@@ -88,6 +88,10 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 					<tbody>
 						{schedule.districts.map((week, districtIndex) => {
 							const districtId = week.district.id;
+							const districtDefault = week.district.defaultVendor;
+
+							console.log(districtDefault);
+
 							return (
 								<tr key={"schedule-district-" + districtId}>
 									<td>{districtId}</td>
@@ -130,7 +134,11 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 														});
 													}}
 												>
+													<option value={-2}>
+														{vendorMap.get(districtDefault)?.name + " (S)"}
+													</option>
 													<option value={-1}>-</option>
+
 													{vendors.map((vendor, k) => {
 														return (
 															<option
@@ -213,6 +221,54 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 														1
 													);
 													draft!.vacation[day].push(v.id);
+												});
+											}}
+										/>
+									</td>
+								);
+							})}
+						</tr>
+
+						<tr style={{ backgroundColor: "red" }}>
+							<td>Krank</td>
+							<td colSpan={365}></td>
+						</tr>
+						<tr>
+							<td />
+							{schedule.sick.map((vendorIds, day) => {
+								return (
+									<td style={{ verticalAlign: "top" }} key={"schedule-sick-" + day}>
+										{vendorIds.map((id, j) => (
+											<div
+												key={"schedule-sick-" + day + "-" + j}
+												style={{ whiteSpace: "nowrap" }}
+											>
+												{vendorMap.get(id)!.name}
+												<button
+													onClick={() => {
+														setSchedule((draft) => {
+															draft!.sick[day].splice(
+																draft!.sick[day].findIndex((_id) => _id === id),
+																1
+															);
+															draft!.free[day].push(id);
+														});
+													}}
+												>
+													-
+												</button>
+											</div>
+										))}
+
+										<SelectAdd
+											vendors={schedule.free[day].map((id) => vendorMap.get(id)!)}
+											onAdd={async (v) => {
+												setSchedule((draft) => {
+													draft!.free[day].splice(
+														draft!.free[day].findIndex((id) => id === v.id),
+														1
+													);
+													draft!.sick[day].push(v.id);
 												});
 											}}
 										/>
