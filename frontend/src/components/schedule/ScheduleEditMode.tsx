@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { useImmer } from "use-immer";
 import { GET, POST } from "../../api";
-import { weekdays } from "../../consts";
+import { activities, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import YesNoPrompt from "../util/YesNoPrompt";
 
@@ -12,12 +12,12 @@ const start = new Date("2022-01-01");
 const end = new Date("2022-12-31");
 
 const activityColors: Map<number, string> = new Map([
-	[0, "inherit"],
-	[1, "yellow"],
-	[2, "green"],
-	[3, "red"],
-	[4, "blue"],
-	[5, "lightgreen"],
+	[activities.working, "#756f75"],
+	[activities.planfrei, "#f0d62b"],
+	[activities.vacation, "#07a812"],
+	[activities.sick, "#bf0404"],
+	[activities.plus, "#2f36a1"],
+	[activities.planfreiAndVacation, "#920794"],
 ]);
 
 function ScheduleEditMode() {
@@ -41,7 +41,7 @@ function ScheduleEditMode() {
 		fetchData();
 	}, [setSchedule, start, token]);
 
-	const numDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+	const numDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
 	return (
 		<React.Fragment>
@@ -73,7 +73,7 @@ function ScheduleEditMode() {
 								})}
 						</tr>
 						<tr>
-							<th>Bezirk</th>
+							<th>Fahrer</th>
 							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
@@ -84,7 +84,7 @@ function ScheduleEditMode() {
 					<tbody>
 						{schedule.calendar.map((row, rowIndex) => (
 							<tr key={rowIndex}>
-								<td>{schedule.vendors[rowIndex].name}</td>
+								<td style={{ whiteSpace: "nowrap" }}>{schedule.drivers[rowIndex].name}</td>
 								{row.map((entry, entryIndex) => (
 									<td
 										key={entryIndex}
@@ -93,15 +93,13 @@ function ScheduleEditMode() {
 										<select
 											value={entry.district ? -entry.district : entry.activity}
 											onChange={(evt) => {
-												console.log(entry.activity, entry.district);
-
 												// @ts-ignore
 												const activity: Activity = parseInt(evt.target.value);
+												if (activity > 5) return;
+
 												let newCell: ScheduleEntry = {
 													activity,
 												};
-
-												if (activity > 5) return;
 
 												if (activity < 0) newCell = { activity: 0, district: -activity };
 

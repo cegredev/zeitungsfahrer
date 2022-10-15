@@ -11,27 +11,28 @@ import YearSelection from "../components/timeframe/YearSelection";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import ScheduleEditMode from "../components/schedule/ScheduleEditMode";
+import { Driver } from "backend/src/models/schedule.model";
 
 const weekStart = new Date("2022-01-01");
 
 function Schedule() {
-	const [vendors, setVendors] = React.useState<SimpleVendor[] | undefined>(undefined);
+	const [drivers, setDrivers] = React.useState<Driver[] | undefined>(undefined);
 	const [token] = useAtom(authTokenAtom);
 	const [date, setDate] = React.useState(weekStart);
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET("/auth/vendors?simple=true", token);
+			const res = await GET("/auth/calendar/drivers", token);
 			const data = await res.json();
-			setVendors(data);
+			setDrivers(data);
 		}
 
 		fetchData();
-	}, [setVendors, token]);
+	}, [setDrivers, token]);
 
 	return (
 		<div className="page">
-			{vendors === undefined ? (
+			{drivers === undefined ? (
 				<div>Laden...</div>
 			) : (
 				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
@@ -51,14 +52,14 @@ function Schedule() {
 								padding: 5,
 							}}
 						>
-							<h3>Händler</h3>
-							{vendors.map((vendor) => {
+							<h3>Fahrer</h3>
+							{drivers.map((driver) => {
 								return (
 									<div
 										style={{ borderBottom: "solid 1px", backgroundColor: "white" }}
-										key={"schedule-vendor-" + vendor.id}
+										key={driver.id}
 									>
-										{vendor.name}
+										{driver.name}
 									</div>
 								);
 							})}

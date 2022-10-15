@@ -52,3 +52,12 @@ export function calculateTotalValueBrutto(records: Record[]): number {
 		.map((r) => (!r.missing ? r.price!.sell * (r.supply - r.remissions) * ((100 + r.price!.mwst) / 100) : 0))
 		.reduce((a, b) => a + b, 0);
 }
+
+export const activities = {
+	working: 0,
+	planfrei: 1,
+	vacation: 2,
+	sick: 3,
+	plus: 4,
+	planfreiAndVacation: 5,
+};

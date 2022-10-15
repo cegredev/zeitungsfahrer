@@ -3,6 +3,7 @@ import {
 	Activity,
 	District,
 	DistrictWeek,
+	Driver,
 	ScheduleEdit,
 	ScheduleEntry,
 	ScheduleView,
@@ -15,30 +16,30 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 		endDay = dayOfYear(end) - 1,
 		numDays = endDay - startDay + 1;
 
-	const vendors = await getVendorsSimple();
+	const drivers = await getDrivers();
 	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
-	const vendorIndexes = new Map<number, number>();
-	vendors.forEach((v, i) => vendorIndexes.set(v.id, i));
+	const driverIndexes = new Map<number, number>();
+	drivers.forEach((v, i) => driverIndexes.set(v.id, i));
 
 	const calendarEntries = await poolExecute<{
 		activity: Activity;
 		district: number;
-		vendorId: number;
+		driverId: number;
 		date: number;
 	}>(
 		`
-		SELECT vendor_id as vendorId, date, activity, district
+		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
 		WHERE (date BETWEEN ? AND ?) AND year=?`,
 		[startDay, endDay, start.getFullYear()]
 	);
 
-	const calendar: ScheduleEntry[][] = Array(vendors.length)
+	const calendar: ScheduleEntry[][] = Array(drivers.length)
 		.fill(null)
 		.map(() => Array(numDays).fill({ activity: 1 }));
 
 	for (const entry of calendarEntries) {
-		calendar[vendorIndexes.get(entry.vendorId)!][entry.date] = {
+		calendar[driverIndexes.get(entry.driverId)!][entry.date] = {
 			activity: entry.activity,
 			district: entry.district,
 		};
@@ -46,7 +47,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 
 	return {
 		calendar,
-		vendors,
+		drivers,
 		districts,
 	};
 }
@@ -151,4 +152,8 @@ export async function updateSchedule(date: Date, schedule: ScheduleView): Promis
 	return {
 		code: 201,
 	};
+}
+
+export async function getDrivers(): Promise<Driver[]> {
+	return await poolExecute<Driver>("SELECT * FROM drivers");
 }

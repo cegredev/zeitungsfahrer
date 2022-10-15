@@ -9,6 +9,12 @@ export interface DistrictWeek {
 	vendorIds: number[];
 }
 
+export interface Driver {
+	id: number;
+	name: string;
+	defaultDistrict: number;
+}
+
 /**
  * 0: Working
  * 1: Planfrei
@@ -26,7 +32,7 @@ export interface ScheduleEntry {
 
 export interface ScheduleEdit {
 	calendar: ScheduleEntry[][];
-	vendors: SimpleVendor[];
+	drivers: Driver[];
 	districts: number[];
 }
 
