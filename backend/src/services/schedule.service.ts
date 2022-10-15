@@ -1,8 +1,57 @@
 import pool, { RouteReport } from "../database.js";
-import { District, DistrictWeek, ScheduleInfo } from "../models/schedule.model.js";
+import {
+	Activity,
+	District,
+	DistrictWeek,
+	ScheduleEdit,
+	ScheduleEntry,
+	ScheduleView,
+} from "../models/schedule.model.js";
 import { dayOfYear, poolExecute } from "../util.js";
+import { getVendorsSimple } from "./vendors.service.js";
 
-export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo> {
+export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleEdit> {
+	const startDay = dayOfYear(start) - 1,
+		endDay = dayOfYear(end) - 1,
+		numDays = endDay - startDay + 1;
+
+	const vendors = await getVendorsSimple();
+	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
+	const vendorIndexes = new Map<number, number>();
+	vendors.forEach((v, i) => vendorIndexes.set(v.id, i));
+
+	const calendarEntries = await poolExecute<{
+		activity: Activity;
+		district: number;
+		vendorId: number;
+		date: number;
+	}>(
+		`
+		SELECT vendor_id as vendorId, date, activity, district
+		FROM calendar
+		WHERE (date BETWEEN ? AND ?) AND year=?`,
+		[startDay, endDay, start.getFullYear()]
+	);
+
+	const calendar: ScheduleEntry[][] = Array(vendors.length)
+		.fill(null)
+		.map(() => Array(numDays).fill({ activity: 1 }));
+
+	for (const entry of calendarEntries) {
+		calendar[vendorIndexes.get(entry.vendorId)!][entry.date] = {
+			activity: entry.activity,
+			district: entry.district,
+		};
+	}
+
+	return {
+		calendar,
+		vendors,
+		districts,
+	};
+}
+
+export async function getCalendarView(start: Date, end: Date): Promise<ScheduleView> {
 	const startDay = dayOfYear(start) - 1;
 	const endDay = dayOfYear(end) - 1;
 	const numDays = endDay - startDay + 1;
@@ -19,9 +68,9 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo>
 		dayOfYear: number;
 	}>(
 		`
-		SELECT vendor_id as vendorId, day_of_year as dayOfYear, activity, district
+		SELECT vendor_id as vendorId, date as dayOfYear, activity, district
 		FROM calendar
-		WHERE (day_of_year BETWEEN ? AND ?) AND year=?`,
+		WHERE (date BETWEEN ? AND ?) AND year=?`,
 		[startDay, endDay, start.getFullYear()]
 	);
 
@@ -74,7 +123,7 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleInfo>
 	};
 }
 
-export async function updateSchedule(date: Date, schedule: ScheduleInfo): Promise<RouteReport> {
+export async function updateSchedule(date: Date, schedule: ScheduleView): Promise<RouteReport> {
 	let query = "REPLACE INTO calendar (vendor_id, day_of_year, year, district) VALUES ";
 
 	for (const district of schedule.districts) {

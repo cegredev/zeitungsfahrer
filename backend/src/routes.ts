@@ -15,7 +15,11 @@ import {
 	getVendorSalesController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
-import { getCalendarController, updateCalendarController } from "./controllers/schedule.controller.js";
+import {
+	getCalendarEditController,
+	getCalendarViewController,
+	updateCalendarController,
+} from "./controllers/schedule.controller.js";
 import {
 	getSettingsController,
 	settingsLoginController,
@@ -64,7 +68,9 @@ function routes(app: Express) {
 
 	app.route("/auth/dashboard/allSales").get(getAllSalesController);
 
-	app.route("/auth/calendar").get(getCalendarController).post(updateCalendarController);
+	app.route("/auth/calendar/view").get(getCalendarViewController);
+
+	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

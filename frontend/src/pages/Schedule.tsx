@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import React from "react";
 import WeekSelection from "../components/timeframe/WeekSelection";
 import { weekdays } from "../consts";
-import { ScheduleInfo } from "backend/src/models/schedule.model";
+// import { Schedule } from "backend/src/models/schedule.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import { GET, POST } from "../api";
 import { useAtom } from "jotai";
@@ -10,6 +10,7 @@ import { authTokenAtom } from "../stores/utility.store";
 import YearSelection from "../components/timeframe/YearSelection";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import ScheduleTable from "../components/schedule/ScheduleTable";
+import ScheduleEditMode from "../components/schedule/ScheduleEditMode";
 
 const weekStart = new Date("2022-01-01");
 
@@ -64,7 +65,7 @@ function Schedule() {
 						</div>
 
 						<div className="panel" style={{ width: "70vw", overflowX: "scroll" }}>
-							<ScheduleTable vendors={vendors} date={date} setDate={setDate} />
+							<ScheduleEditMode />
 						</div>
 					</div>
 				</div>

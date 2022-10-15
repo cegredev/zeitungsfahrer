@@ -1,4 +1,4 @@
-import { ScheduleInfo } from "backend/src/models/schedule.model";
+import { ScheduleView } from "backend/src/models/schedule.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
@@ -25,7 +25,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 
 	const [token] = useAtom(authTokenAtom);
 
-	const [schedule, setSchedule] = useImmer<ScheduleInfo | undefined>(undefined);
+	const [schedule, setSchedule] = useImmer<ScheduleView | undefined>(undefined);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -88,7 +88,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 					<tbody>
 						{schedule.districts.map((week, districtIndex) => {
 							const districtId = week.district.id;
-							const districtDefault = week.district.defaultVendor;
+							const districtDefault = 1; // FIXME !!!
 
 							console.log(districtDefault);
 
