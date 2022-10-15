@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ScheduleEdit, ScheduleView } from "../models/schedule.model.js";
+import { ScheduleEdit, ScheduleEntry, ScheduleView } from "../models/schedule.model.js";
 import { getCalendarEdit, getCalendarView, getDrivers, updateSchedule } from "../services/schedule.service.js";
 import { handler } from "./controllers.js";
 
@@ -27,7 +27,7 @@ export async function getCalendarEditController(
 }
 
 export async function updateCalendarController(
-	req: Request<any, any, ScheduleView, { date: string }>,
+	req: Request<any, any, ScheduleEdit, { date: string }>,
 	res: Response<ScheduleView>
 ) {
 	await handler(async () => await updateSchedule(new Date(req.query.date), req.body), res);

@@ -17,9 +17,9 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 		numDays = endDay - startDay + 1;
 
 	const drivers = await getDrivers();
+	const driverIndexes = new Map<number, number>(drivers.map((d, i) => [d.id, i]));
+
 	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
-	const driverIndexes = new Map<number, number>();
-	drivers.forEach((v, i) => driverIndexes.set(v.id, i));
 
 	const calendarEntries = await poolExecute<{
 		activity: Activity;
@@ -36,7 +36,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 
 	const calendar: ScheduleEntry[][] = Array(drivers.length)
 		.fill(null)
-		.map(() => Array(numDays).fill({ activity: 1 }));
+		.map((_, driverIndex) => Array(numDays).fill({ activity: 0, district: drivers[driverIndex].defaultDistrict }));
 
 	for (const entry of calendarEntries) {
 		calendar[driverIndexes.get(entry.driverId)!][entry.date] = {
@@ -124,26 +124,21 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 	};
 }
 
-export async function updateSchedule(date: Date, schedule: ScheduleView): Promise<RouteReport> {
-	let query = "REPLACE INTO calendar (vendor_id, day_of_year, year, district) VALUES ";
+export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promise<RouteReport> {
+	const year = date.getFullYear(),
+		startDay = date.getDay();
 
-	for (const district of schedule.districts) {
-		let day = dayOfYear(date) - 1;
+	// FIXME: Only works from jan-01
 
-		for (const vendorId of district.vendorIds) {
-			if (vendorId !== -1) query += `(${vendorId}, ${day}, ${date.getFullYear()}, ${district.district.id}),`;
-			day++;
-		}
-	}
+	let query = "REPLACE INTO calendar (driver_id, date, year, activity, district) VALUES ";
 
-	for (const vendorIds of schedule.vacation) {
-		let day = dayOfYear(date) - 1;
+	schedule.calendar.forEach((row, index) => {
+		const driverId = schedule.drivers[index].id;
 
-		for (const vendorId of vendorIds) {
-			if (vendorId !== -1) query += `(${vendorId}, ${day}, ${date.getFullYear()}, NULL),`;
-			day++;
-		}
-	}
+		row.forEach((entry, date) => {
+			query += `(${[driverId, date, year, entry.activity, entry.district || "NULL"].join(",")}),`;
+		});
+	});
 
 	query = query.substring(0, query.length - 1);
 
@@ -155,5 +150,5 @@ export async function updateSchedule(date: Date, schedule: ScheduleView): Promis
 }
 
 export async function getDrivers(): Promise<Driver[]> {
-	return await poolExecute<Driver>("SELECT * FROM drivers");
+	return await poolExecute<Driver>("SELECT id, name, default_district as defaultDistrict FROM drivers");
 }
