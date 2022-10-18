@@ -125,6 +125,26 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 }
 
 export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promise<RouteReport> {
+	for (const driver of schedule.drivers) {
+		if (driver.id === -1) {
+			const response = await pool.execute("INSERT INTO drivers (name, default_district) VALUES (?, ?)", [
+				driver.name,
+				driver.defaultDistrict,
+			]);
+
+			// @ts-ignore
+			driver.id = response[0].insertId;
+		} else {
+			await poolExecute("UPDATE drivers SET name=?, default_district=? WHERE id=?", [
+				driver.name,
+				driver.defaultDistrict,
+				driver.id,
+			]);
+		}
+	}
+
+	console.log(schedule.drivers);
+
 	const year = date.getFullYear(),
 		startDay = date.getDay();
 
@@ -151,4 +171,27 @@ export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promis
 
 export async function getDrivers(): Promise<Driver[]> {
 	return await poolExecute<Driver>("SELECT id, name, default_district as defaultDistrict FROM drivers");
+}
+
+export async function addDriver(name: string, defaultDistrict: number): Promise<RouteReport> {
+	const res = await pool.execute("INSERT INTO drivers (name, default_district) VALUES (?, ?)", [
+		name,
+		defaultDistrict,
+	]);
+
+	return {
+		code: 201,
+		body: {
+			// @ts-ignore
+			id: res[0].insertId,
+		},
+	};
+}
+
+export async function deleteDriver(id: number): Promise<RouteReport> {
+	await poolExecute("DELETE FROM drivers WHERE id=?", [id]);
+
+	return {
+		code: 200,
+	};
 }

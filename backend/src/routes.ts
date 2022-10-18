@@ -16,6 +16,8 @@ import {
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
 import {
+	addDriverController,
+	deleteDriverController,
 	getCalendarEditController,
 	getCalendarViewController,
 	getDriversController,
@@ -73,7 +75,10 @@ function routes(app: Express) {
 
 	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
 
-	app.route("/auth/calendar/drivers").get(getDriversController);
+	app.route("/auth/calendar/drivers")
+		.get(getDriversController)
+		.post(addDriverController)
+		.delete(deleteDriverController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 
