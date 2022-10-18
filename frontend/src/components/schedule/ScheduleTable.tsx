@@ -1,26 +1,57 @@
-import { ScheduleView } from "backend/src/models/schedule.model";
+import { Driver, ScheduleView } from "backend/src/models/schedule.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { useImmer } from "use-immer";
 import { GET, POST } from "../../api";
-import { weekdays } from "../../consts";
+import { activities, activityStyles, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
 import YesNoPrompt from "../util/YesNoPrompt";
 import SelectAdd from "./SelectAdd";
 
+const numDays = 6;
+
+interface SectionProps {
+	drivers: number[][];
+	activity: number;
+	driverMap: Map<number, Driver>;
+}
+
+function Section({ drivers, activity, driverMap }: SectionProps) {
+	const style = activityStyles.get(activity)!;
+
+	return (
+		<>
+			<tr style={{ backgroundColor: style.color }}>
+				<td>{style.displayName}</td>
+				<td colSpan={numDays}></td>
+			</tr>
+			<tr>
+				<td />
+				{drivers.map((row, i) => (
+					<td style={{ verticalAlign: "top" }} key={i}>
+						{row.map((id) => (
+							<div key={id}>{driverMap.get(id)!.name}</div>
+						))}
+					</td>
+				))}
+			</tr>
+		</>
+	);
+}
+
 interface Props {
-	vendors: SimpleVendor[];
+	drivers: Driver[];
 	date: Date;
 	setDate: (date: Date) => void;
 }
 
-function ScheduleTable({ vendors, date, setDate }: Props) {
-	const vendorMap = new Map<number, SimpleVendor>();
-	if (vendors !== undefined) {
-		vendors.forEach((vendor) => vendorMap.set(vendor.id, vendor));
+function ScheduleTable({ drivers, date, setDate }: Props) {
+	const driverMap = new Map<number, Driver>();
+	if (drivers !== undefined) {
+		drivers.forEach((driver) => driverMap.set(driver.id, driver));
 	}
 
 	const [token] = useAtom(authTokenAtom);
@@ -29,8 +60,13 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const year = date.getFullYear();
-			const calendarRes = await GET("/auth/calendar?start=" + year + "-01-01&end=" + year + "-12-31", token);
+			const calendarRes = await GET(
+				"/auth/calendar/view?start=" +
+					dayjs(date).set("day", 1).format("YYYY-MM-DD") +
+					"&end=" +
+					dayjs(date).set("day", 6).format("YYYY-MM-DD"),
+				token
+			);
 			setSchedule(await calendarRes.json());
 		}
 
@@ -48,21 +84,9 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 					<thead>
 						<tr>
 							<th style={{ whiteSpace: "nowrap" }}>
-								{/* KW <WeekSelection date={date} setDate={setDate} /> */}
-								<YesNoPrompt
-									trigger={<button style={{ marginLeft: 10, color: "green" }}>Speichern</button>}
-									header="Speichern"
-									content="Wollen Sie wirklich speichern?"
-									onYes={async () => {
-										await POST(
-											"/auth/calendar?date=" + dayjs(date).format("YYYY-MM-DD"),
-											schedule,
-											token!
-										);
-									}}
-								/>
+								KW <WeekSelection date={date} setDate={setDate} />
 							</th>
-							{Array(365)
+							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
 									return (
@@ -74,7 +98,7 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 						</tr>
 						<tr>
 							<th>Bezirk</th>
-							{Array(365)
+							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
 									return (
@@ -86,77 +110,33 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 						</tr>
 					</thead>
 					<tbody>
-						{schedule.districts.map((week, districtIndex) => {
-							const districtId = week.district.id;
-							const districtDefault = 1; // FIXME !!!
-
-							console.log(districtDefault);
+						{schedule.districts.map((week) => {
+							const districtId = week.district;
 
 							return (
-								<tr key={"schedule-district-" + districtId}>
+								<tr key={districtId}>
 									<td>{districtId}</td>
-									{week.vendorIds.map((vendorId, day) => {
+									{week.drivers.map((driverId, day) => {
+										let color: string, content: string;
+
+										switch (driverId) {
+											case -2:
+												color = activityStyles.get(activities.planfrei)!.color!;
+												content = "-";
+												break;
+											case -1:
+												color = "inherit";
+												content = "-";
+												break;
+											default:
+												color = "inherit";
+												content = driverMap.get(driverId)!.name;
+												break;
+										}
+
 										return (
-											<td
-												style={{ maxHeight: 30 }}
-												key={"vendor-row-schedule-" + districtId + "-" + day}
-											>
-												<select
-													value={vendorId}
-													onChange={(evt) => {
-														const newVendorId = parseInt(evt.target.value);
-
-														setSchedule((draft) => {
-															const district = draft!.districts[districtIndex];
-															const oldId = district.vendorIds[day];
-															district.vendorIds[day] = newVendorId;
-
-															if (
-																oldId !== -1 &&
-																!draft!.districts.find(
-																	(district) => district.vendorIds[day] === oldId
-																)
-															) {
-																draft!.free[day].push(oldId);
-															}
-
-															for (const ids of [
-																draft?.free[day],
-																draft?.vacation[day],
-															]) {
-																const index = ids!.findIndex(
-																	(id) => id === newVendorId
-																);
-																if (index === -1) continue;
-
-																ids?.splice(index, 1);
-															}
-														});
-													}}
-												>
-													<option value={-2}>
-														{vendorMap.get(districtDefault)?.name + " (S)"}
-													</option>
-													<option value={-1}>-</option>
-
-													{vendors.map((vendor, k) => {
-														return (
-															<option
-																value={vendor.id}
-																key={
-																	"vendor-row-schedule-option-" +
-																	districtId +
-																	"-" +
-																	vendorId +
-																	"-" +
-																	k
-																}
-															>
-																{vendor.name}
-															</option>
-														);
-													})}
-												</select>
+											<td style={{ backgroundColor: color, maxHeight: 30 }} key={day}>
+												{content}
 											</td>
 										);
 									})}
@@ -164,118 +144,14 @@ function ScheduleTable({ vendors, date, setDate }: Props) {
 							);
 						})}
 
-						<tr style={{ backgroundColor: "yellow" }}>
-							<td>Planfrei</td>
-							<td colSpan={365}></td>
-						</tr>
-						<tr>
-							<td />
-							{schedule.free.map((vendorIds, i) => {
-								return (
-									<td style={{ verticalAlign: "top" }} key={"schedule-free-" + i}>
-										{vendorIds.map((id, j) => (
-											<div key={"schedule-free-" + i + "-" + j}>{vendorMap.get(id)!.name}</div>
-										))}
-									</td>
-								);
-							})}
-						</tr>
-
-						<tr style={{ backgroundColor: "lightgreen" }}>
-							<td>Urlaub</td>
-							<td colSpan={365}></td>
-						</tr>
-						<tr>
-							<td />
-							{schedule.vacation.map((vendorIds, day) => {
-								return (
-									<td style={{ verticalAlign: "top" }} key={"schedule-vacation-" + day}>
-										{vendorIds.map((id, j) => (
-											<div
-												key={"schedule-vacation-" + day + "-" + j}
-												style={{ whiteSpace: "nowrap" }}
-											>
-												{vendorMap.get(id)!.name}
-												<button
-													onClick={() => {
-														setSchedule((draft) => {
-															draft!.vacation[day].splice(
-																draft!.vacation[day].findIndex((_id) => _id === id),
-																1
-															);
-															draft!.free[day].push(id);
-														});
-													}}
-												>
-													-
-												</button>
-											</div>
-										))}
-
-										<SelectAdd
-											vendors={schedule.free[day].map((id) => vendorMap.get(id)!)}
-											onAdd={async (v) => {
-												setSchedule((draft) => {
-													draft!.free[day].splice(
-														draft!.free[day].findIndex((id) => id === v.id),
-														1
-													);
-													draft!.vacation[day].push(v.id);
-												});
-											}}
-										/>
-									</td>
-								);
-							})}
-						</tr>
-
-						<tr style={{ backgroundColor: "red" }}>
-							<td>Krank</td>
-							<td colSpan={365}></td>
-						</tr>
-						<tr>
-							<td />
-							{schedule.sick.map((vendorIds, day) => {
-								return (
-									<td style={{ verticalAlign: "top" }} key={"schedule-sick-" + day}>
-										{vendorIds.map((id, j) => (
-											<div
-												key={"schedule-sick-" + day + "-" + j}
-												style={{ whiteSpace: "nowrap" }}
-											>
-												{vendorMap.get(id)!.name}
-												<button
-													onClick={() => {
-														setSchedule((draft) => {
-															draft!.sick[day].splice(
-																draft!.sick[day].findIndex((_id) => _id === id),
-																1
-															);
-															draft!.free[day].push(id);
-														});
-													}}
-												>
-													-
-												</button>
-											</div>
-										))}
-
-										<SelectAdd
-											vendors={schedule.free[day].map((id) => vendorMap.get(id)!)}
-											onAdd={async (v) => {
-												setSchedule((draft) => {
-													draft!.free[day].splice(
-														draft!.free[day].findIndex((id) => id === v.id),
-														1
-													);
-													draft!.sick[day].push(v.id);
-												});
-											}}
-										/>
-									</td>
-								);
-							})}
-						</tr>
+						{Array<[number, number[][]]>(
+							[1, schedule.free],
+							[2, schedule.vacation],
+							[3, schedule.sick],
+							[4, schedule.plus]
+						).map(([activity, drivers]) => (
+							<Section key={activity} activity={activity} driverMap={driverMap} drivers={drivers} />
+						))}
 					</tbody>
 				</table>
 			)}

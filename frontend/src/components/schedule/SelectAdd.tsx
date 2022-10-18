@@ -1,13 +1,14 @@
+import { Driver } from "backend/src/models/schedule.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import React from "react";
 
 interface Props {
-	vendors: SimpleVendor[];
-	onAdd: (vendor: SimpleVendor) => Promise<void>;
+	drivers: Driver[];
+	onAdd: (driver: Driver) => Promise<void>;
 }
 
-function SelectAdd({ vendors, onAdd }: Props) {
-	const [selection, setSelection] = React.useState<number | undefined>(vendors[0]?.id);
+function SelectAdd({ drivers, onAdd }: Props) {
+	const [selection, setSelection] = React.useState<number | undefined>(drivers[0]?.id);
 
 	// console.log("vendors", vendors);
 
@@ -19,7 +20,7 @@ function SelectAdd({ vendors, onAdd }: Props) {
 					setSelection(parseInt(evt.target.value));
 				}}
 			>
-				{vendors.map((vendor, k) => {
+				{drivers.map((vendor, k) => {
 					return (
 						<option value={vendor.id} key={"schedule-vacation-add-" + vendor.id}>
 							{vendor.name}
@@ -33,8 +34,8 @@ function SelectAdd({ vendors, onAdd }: Props) {
 
 					console.log("selection:", selection);
 
-					await onAdd(vendors.find((v) => v.id === selection)!);
-					setSelection(vendors.find((v) => v.id !== selection)?.id);
+					await onAdd(drivers.find((v) => v.id === selection)!);
+					setSelection(drivers.find((v) => v.id !== selection)?.id);
 				}}
 			>
 				+

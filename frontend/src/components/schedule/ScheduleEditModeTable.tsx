@@ -4,19 +4,10 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Updater, useImmer } from "use-immer";
 import { GET, POST } from "../../api";
-import { activities, weekdays } from "../../consts";
+import { activities, activityStyles, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import YearSelection from "../timeframe/YearSelection";
 import YesNoPrompt from "../util/YesNoPrompt";
-
-const activityColors: Map<number, string> = new Map([
-	[activities.working, "#756f75"],
-	[activities.planfrei, "#f0d62b"],
-	[activities.vacation, "#07a812"],
-	[activities.sick, "#bf0404"],
-	[activities.plus, "#2f36a1"],
-	[activities.planfreiAndVacation, "#920794"],
-]);
 
 interface Props {
 	date: Date;
@@ -55,9 +46,9 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 					<tr key={rowIndex}>
 						<td style={{ whiteSpace: "nowrap" }}>{schedule.drivers[rowIndex].name}</td>
 						{row.map((entry, entryIndex) => (
-							<td key={entryIndex} style={{ backgroundColor: activityColors.get(entry.activity) }}>
+							<td key={entryIndex} style={{ backgroundColor: activityStyles.get(entry.activity)?.color }}>
 								<select
-									value={entry.district ? -entry.district : entry.activity}
+									value={entry.activity === 0 ? -entry.district! : entry.activity}
 									onChange={(evt) => {
 										// @ts-ignore
 										const activity: Activity = parseInt(evt.target.value);
@@ -68,6 +59,11 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 										};
 
 										if (activity < 0) newCell = { activity: 0, district: -activity };
+										// if (activity === 5)
+										// 	newCell = {
+										// 		activity: 5,
+										// 		district: schedule.drivers[rowIndex].defaultDistrict,
+										// 	};
 
 										setSchedule((draft) => {
 											draft!.calendar[rowIndex][entryIndex] = newCell;

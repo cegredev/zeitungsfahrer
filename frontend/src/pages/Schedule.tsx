@@ -1,9 +1,11 @@
 import ScheduleEditMode from "../components/schedule/ScheduleEditMode";
+import ScheduleViewMode from "../components/schedule/ScheduleViewMode";
 
 function Schedule() {
 	return (
 		<div className="page">
-			<ScheduleEditMode />
+			{/* <ScheduleEditMode /> */}
+			<ScheduleViewMode />
 		</div>
 	);
 }

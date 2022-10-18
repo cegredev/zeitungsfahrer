@@ -5,8 +5,8 @@ export interface District {
 }
 
 export interface DistrictWeek {
-	district: District;
-	vendorIds: number[];
+	district: number;
+	drivers: number[];
 }
 
 export interface Driver {
@@ -41,4 +41,6 @@ export interface ScheduleView {
 	vacation: number[][];
 	free: number[][];
 	sick: number[][];
+	plus: number[][];
+	drivers: Driver[];
 }

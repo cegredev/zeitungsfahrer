@@ -11,6 +11,13 @@ import {
 import { dayOfYear, poolExecute } from "../util.js";
 import { getVendorsSimple } from "./vendors.service.js";
 
+interface FullCalendarEntry {
+	activity: Activity;
+	district: number;
+	driverId: number;
+	date: number;
+}
+
 export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleEdit> {
 	const startDay = dayOfYear(start) - 1,
 		endDay = dayOfYear(end) - 1,
@@ -21,12 +28,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 
 	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
 
-	const calendarEntries = await poolExecute<{
-		activity: Activity;
-		district: number;
-		driverId: number;
-		date: number;
-	}>(
+	const calendarEntries = await poolExecute<FullCalendarEntry>(
 		`
 		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
@@ -53,74 +55,70 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 }
 
 export async function getCalendarView(start: Date, end: Date): Promise<ScheduleView> {
-	const startDay = dayOfYear(start) - 1;
-	const endDay = dayOfYear(end) - 1;
-	const numDays = endDay - startDay + 1;
+	const startDay = dayOfYear(start) - 1,
+		endDay = dayOfYear(end) - 1,
+		numDays = endDay - startDay + 1;
 
-	const districts = await poolExecute<District>("SELECT id, default_vendor as defaultVendor FROM districts");
-	const vendors = await poolExecute<{ id: number; name: string }>("SELECT id, last_name as name FROM vendors");
-	const vendorMap = new Map<number, string>();
-	for (const vendor of vendors) vendorMap.set(vendor.id, vendor.name);
-
-	const calendarEntries = await poolExecute<{
-		activity: number;
-		district: number;
-		vendorId: number;
-		dayOfYear: number;
-	}>(
+	const drivers = await getDrivers();
+	const driverMap = new Map(drivers.map((driver) => [driver.id, driver]));
+	const allDistricts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
+	const calendarEntries = await poolExecute<FullCalendarEntry>(
 		`
-		SELECT vendor_id as vendorId, date as dayOfYear, activity, district
+		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
 		WHERE (date BETWEEN ? AND ?) AND year=?`,
 		[startDay, endDay, start.getFullYear()]
 	);
 
 	const districtMap = new Map<number, DistrictWeek>();
-	for (const district of districts) {
-		districtMap.set(district.id, {
+	for (const district of allDistricts) {
+		districtMap.set(district, {
 			district,
-			vendorIds: Array(numDays).fill(-2),
+			drivers: Array(numDays).fill(-1),
 		});
 	}
 
-	const vacations: number[][] = Array(numDays)
-		.fill(null)
-		.map(() => []);
-	const free: number[][] = Array(numDays)
-		.fill(null)
-		.map(() => []);
-	const sick: number[][] = Array(numDays)
-		.fill(null)
-		.map(() => []);
+	const sections = [1, 2, 3, 4].map(() =>
+		Array(numDays)
+			.fill(null)
+			.map<number[]>(() => [])
+	);
+	const [free, vacation, sick, plus] = sections;
 
-	for (const { activity, district, dayOfYear, vendorId } of calendarEntries) {
+	for (const { activity, district, date, driverId } of calendarEntries) {
+		const index = date - startDay;
+
 		switch (activity) {
 			case 0: // Working in specific (manually set) district
-				districtMap.get(district)!.vendorIds[dayOfYear] = vendorId;
+				districtMap.get(district)!.drivers[index] = driverId;
 				break;
-			case 1: // Free
-				free[dayOfYear].push(vendorId);
+			case 5:
+				vacation[index].push(driverId);
+				districtMap.get(driverMap.get(driverId)!.defaultDistrict)!.drivers[index] = -2;
 				break;
-			case 2: // Vacation
-				vacations[dayOfYear].push(vendorId);
-				break;
-			case 3: // Sick
-				sick[dayOfYear].push(vendorId);
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+				sections[activity - 1][index].push(driverId);
 				break;
 		}
 	}
 
-	for (const arr of [free, vacations, sick]) {
-		for (const day of arr) {
-			day.sort((a, b) => vendorMap.get(a)!.localeCompare(vendorMap.get(b)!));
+	// Sort by name
+	for (const section of sections) {
+		for (const day of section) {
+			day.sort((a, b) => driverMap.get(a)!.name.localeCompare(driverMap.get(b)!.name));
 		}
 	}
 
 	return {
-		districts: [...districtMap.values()],
-		vacation: vacations,
+		districts: [...districtMap.values()].sort((a, b) => a.district - b.district),
 		free,
+		vacation,
 		sick,
+		plus,
+		drivers,
 	};
 }
 
