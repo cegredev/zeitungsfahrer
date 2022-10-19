@@ -1,16 +1,12 @@
 import { Driver, ScheduleView } from "backend/src/models/schedule.model";
-import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { useImmer } from "use-immer";
-import { GET, POST } from "../../api";
+import { GET } from "../../api";
 import { activities, activityStyles, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
-import YesNoPrompt from "../util/YesNoPrompt";
-import SelectAdd from "./SelectAdd";
-
 const numDays = 6;
 
 interface SectionProps {

@@ -4,7 +4,6 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Updater, useImmer } from "use-immer";
 import { GET, POST } from "../../api";
-import { activities } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import LoadingPlaceholder from "../util/LoadingPlaceholder";
 import YesNoPrompt from "../util/YesNoPrompt";
@@ -40,7 +39,7 @@ function DriverEditSection({
 	const isDraft = selectedDriver.id === -1;
 
 	return (
-		<div>
+		<div className="page">
 			<input
 				type="text"
 				value={driverDraft.name}
@@ -136,7 +135,7 @@ function ScheduleEditMode() {
 		}
 
 		fetchData();
-	}, [setSchedule, date, token]);
+	}, [setSchedule, date, setSelectedDriver, token]);
 
 	return (
 		<>

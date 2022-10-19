@@ -15,7 +15,8 @@ import ArticleSettings from "./pages/settings/ArticleSettings";
 import Records from "./pages/Records";
 import Settings from "./pages/settings/Settings";
 import { GET } from "./api";
-import Schedule from "./pages/Schedule";
+import ScheduleViewMode from "./components/schedule/ScheduleViewMode";
+import ScheduleEditMode from "./components/schedule/ScheduleEditMode";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -94,7 +95,15 @@ function AppContentWrapper() {
 						path="/schedule"
 						element={
 							<SettingsPage route="/schedule">
-								<Schedule />
+								<ScheduleEditMode />
+							</SettingsPage>
+						}
+					/>
+					<Route
+						path="/week"
+						element={
+							<SettingsPage route="/week">
+								<ScheduleViewMode />
 							</SettingsPage>
 						}
 					/>

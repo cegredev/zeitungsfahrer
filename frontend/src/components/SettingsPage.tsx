@@ -1,6 +1,5 @@
 import { useAtom } from "jotai";
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AuthorizedPage from "../pages/AuthorizedPage";
 import SettingsLogin from "../pages/SettingsLogin";
 import { settingsLoggedInAtom } from "../stores/utility.store";
@@ -14,7 +13,8 @@ const links = [
 	["/settings", "Allgemein"],
 	["/articles", "Artikel"],
 	["/vendors", "Händler"],
-	["/schedule", "Einsatzplan"],
+	["/schedule", "Kalender"],
+	["/week", "Einsatzplan"],
 ];
 
 function SettingsNav({ route: activeRoute, children }: Props) {

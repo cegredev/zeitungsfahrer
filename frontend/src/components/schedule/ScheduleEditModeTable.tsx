@@ -1,13 +1,8 @@
 import { Activity, ScheduleEdit, ScheduleEntry } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
-import { useAtom } from "jotai";
-import React from "react";
-import { Updater, useImmer } from "use-immer";
-import { GET, POST } from "../../api";
-import { activities, activityStyles, weekdays } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
+import { Updater } from "use-immer";
+import { activityStyles, weekdays } from "../../consts";
 import YearSelection from "../timeframe/YearSelection";
-import YesNoPrompt from "../util/YesNoPrompt";
 
 interface Props {
 	date: Date;

@@ -1,4 +1,4 @@
-import { Driver, ScheduleView } from "backend/src/models/schedule.model";
+import { Driver } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -26,7 +26,7 @@ function ScheduleViewMode() {
 	}, [setDrivers, token]);
 
 	return (
-		<div>
+		<div className="page">
 			{drivers ? (
 				<div>
 					<div className="panel">
