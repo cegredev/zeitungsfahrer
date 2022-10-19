@@ -50,7 +50,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 	return {
 		calendar,
 		drivers,
-		districts,
+		districts: districts.sort((a, b) => a - b),
 	};
 }
 
@@ -94,7 +94,9 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 				break;
 			case 5:
 				vacation[index].push(driverId);
-				districtMap.get(driverMap.get(driverId)!.defaultDistrict)!.drivers[index] = -2;
+
+				const drivers = districtMap.get(driverMap.get(driverId)!.defaultDistrict)!.drivers!;
+				if (drivers[index] === -1) drivers[index] = -2;
 				break;
 			case 1:
 			case 2:
