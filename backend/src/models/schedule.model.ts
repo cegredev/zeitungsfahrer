@@ -23,7 +23,7 @@ export interface Driver {
  * 4: Plus
  * 5: Planfrei & Urlaub
  */
-export type Activity = 0 | 1 | 2 | 3 | 4 | 5;
+export type Activity = number;
 
 export interface ScheduleEntry {
 	activity: Activity;

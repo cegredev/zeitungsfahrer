@@ -186,6 +186,18 @@ export async function addDriver(name: string, defaultDistrict: number): Promise<
 	};
 }
 
+export async function updateDriver(driver: Driver): Promise<RouteReport> {
+	await poolExecute("UPDATE drivers SET name=?, default_district=? WHERE id=?", [
+		driver.name,
+		driver.defaultDistrict,
+		driver.id,
+	]);
+
+	return {
+		code: 200,
+	};
+}
+
 export async function deleteDriver(id: number): Promise<RouteReport> {
 	await poolExecute("DELETE FROM drivers WHERE id=?", [id]);
 

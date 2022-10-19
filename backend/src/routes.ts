@@ -22,6 +22,7 @@ import {
 	getCalendarViewController,
 	getDriversController,
 	updateCalendarController,
+	updateDriverController,
 } from "./controllers/schedule.controller.js";
 import {
 	getSettingsController,
@@ -78,6 +79,7 @@ function routes(app: Express) {
 	app.route("/auth/calendar/drivers")
 		.get(getDriversController)
 		.post(addDriverController)
+		.put(updateDriverController)
 		.delete(deleteDriverController);
 
 	app.route("/auth/accounts").get(getAccountsController);
