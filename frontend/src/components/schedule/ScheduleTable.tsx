@@ -2,11 +2,13 @@ import { Driver, ScheduleView } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
+import SelectSearch, { SelectSearchOption } from "react-select-search";
 import { useImmer } from "use-immer";
 import { GET } from "../../api";
 import { activities, activityStyles, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
+import "../util/select_search.css";
 const numDays = 6;
 
 interface SectionProps {
@@ -85,11 +87,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
-									return (
-										<th key={"schedule-header-" + index}>
-											{dateCounter.add(index, "days").format("DD.MM.YYYY")}
-										</th>
-									);
+									return <th key={index}>{dateCounter.add(index, "days").format("DD.MM.YYYY")}</th>;
 								})}
 						</tr>
 						<tr>
@@ -97,11 +95,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
-									return (
-										<th key={"schedule-header-weekday-" + index}>
-											{weekdays[(6 + date.getDay() + index) % 7]}
-										</th>
-									);
+									return <th key={index}>{weekdays[(6 + date.getDay() + index) % 7]}</th>;
 								})}
 						</tr>
 					</thead>
@@ -110,28 +104,45 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 							const districtId = week.district;
 
 							return (
-								<tr key={districtId}>
+								<tr key={districtId + Math.random()}>
 									<td>{districtId}</td>
 									{week.drivers.map((driverId, day) => {
-										let color: string, content: string;
+										let content: JSX.Element;
 
-										switch (driverId) {
-											case -2:
-												color = activityStyles.get(activities.planfrei)!.color!;
-												content = "-";
-												break;
-											case -1:
-												color = "inherit";
-												content = "-";
-												break;
-											default:
-												color = "inherit";
-												content = driverMap.get(driverId)!.name;
-												break;
+										if (driverId === -1) {
+											const options: SelectSearchOption[] = [
+												{
+													type: "group",
+													name: "Plus",
+													items: schedule.plus[day].map((driverIdOption) => ({
+														name: driverMap.get(driverIdOption)!.name,
+														value: driverIdOption,
+													})),
+												},
+												{
+													type: "group",
+													name: "Planfrei",
+													items: schedule.free[day].map((driverIdOption) => ({
+														name: driverMap.get(driverIdOption)!.name,
+														value: driverIdOption,
+													})),
+												},
+											];
+
+											content = (
+												<SelectSearch
+													options={options}
+													placeholder="Ersatz wählen"
+													search={true}
+												/>
+											);
+										} else {
+											const driver = driverMap.get(driverId)!;
+											content = <div>{driver.name}</div>;
 										}
 
 										return (
-											<td style={{ backgroundColor: color, maxHeight: 30 }} key={day}>
+											<td style={{ maxHeight: 30 }} key={day}>
 												{content}
 											</td>
 										);
