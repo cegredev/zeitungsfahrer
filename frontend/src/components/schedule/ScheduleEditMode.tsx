@@ -13,175 +13,6 @@ import ScheduleEditModeTable from "./ScheduleEditModeTable";
 
 const start = new Date("2022-01-01");
 
-function DriverEditSection({
-	schedule,
-	setSchedule,
-	selectedDriver,
-	driverMap,
-	setSelectedDriver,
-	numDays,
-}: {
-	schedule: ScheduleEdit;
-	setSchedule: Updater<ScheduleEdit | undefined>;
-	selectedDriver: Driver;
-	driverMap: Map<number, Driver>;
-	setSelectedDriver: Updater<Driver>;
-	numDays: number;
-}) {
-	const [token] = useAtom(authTokenAtom);
-
-	const [driverDraft, setDriverDraft] = useImmer<Driver>({
-		id: -1,
-		name: " ",
-		defaultDistrict: 1,
-	});
-
-	if (selectedDriver.id !== driverDraft.id) setDriverDraft(selectedDriver);
-
-	const isDraft = selectedDriver.id === -1;
-
-	return (
-		<div className="page">
-			<input
-				type="text"
-				value={driverDraft.name}
-				onChange={async (evt) => {
-					setDriverDraft((draft) => {
-						draft.name = evt.target.value;
-					});
-				}}
-			/>
-
-			<select
-				value={driverDraft.defaultDistrict}
-				onChange={(evt) => {
-					setDriverDraft((draft) => {
-						draft.defaultDistrict = parseInt(evt.target.value);
-					});
-				}}
-			>
-				{schedule.districts.map((district) => (
-					<option key={district} value={district}>
-						{district}
-					</option>
-				))}
-			</select>
-
-			<YesNoPrompt
-				trigger={<button style={{ marginLeft: 10, color: "green" }}>Speichern</button>}
-				header="Hinzufügen"
-				content="Wollen Sie diesen Fahrer hinzufügen?"
-				onYes={async () => {
-					if (isDraft) {
-						const res = await POST("/auth/calendar/drivers", driverDraft, token!);
-
-						const id = (await res.json()).id;
-						setSelectedDriver(id);
-
-						setSchedule((draft) => {
-							draft!.drivers.push({ ...driverDraft, id });
-							draft!.calendar.push(
-								Array(numDays)
-									.fill(null)
-									.map(() => ({
-										activity: 0,
-										district: driverDraft.defaultDistrict,
-									}))
-							);
-						});
-					} else {
-						setSchedule((draft) => {
-							const index = draft!.drivers.findIndex((driver) => driver.id === selectedDriver.id);
-							draft!.drivers[index] = driverDraft;
-						});
-					}
-				}}
-			/>
-		</div>
-	);
-}
-
-function Edit({
-	driver,
-	districts,
-	save,
-}: {
-	driver: Driver;
-	districts: number[];
-	save: (driver: Driver) => Promise<void>;
-}) {
-	const [draft, setDraft] = useImmer(driver);
-
-	return (
-		<Popup
-			modal
-			nested
-			trigger={
-				<div
-					style={{
-						borderBottom: "solid 1px",
-						backgroundColor: "white",
-						cursor: "default",
-					}}
-				>
-					{draft.name}
-				</div>
-			}
-		>
-			{/* @ts-ignore */}
-			{(close: () => void) => (
-				<div className="modal">
-					<div className="header">Fahrer bearbeiten</div>
-					<div className="content">
-						<input
-							type="text"
-							value={draft.name}
-							onChange={(evt) => {
-								setDraft((draft) => {
-									if (evt.target.value.length < 1) return;
-
-									draft.name = evt.target.value;
-								});
-							}}
-						/>
-						<select
-							value={draft.defaultDistrict}
-							onChange={(evt) => {
-								setDraft((draft) => {
-									draft.defaultDistrict = parseInt(evt.target.value);
-								});
-							}}
-						>
-							{districts.map((district) => (
-								<option key={district} value={district}>
-									{district}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="actions">
-						<button
-							onClick={async () => {
-								close();
-							}}
-						>
-							Abbrechen
-						</button>
-						<button
-							onClick={async () => {
-								await save(draft);
-								close();
-							}}
-						>
-							Speichern
-						</button>
-					</div>
-				</div>
-			)}
-		</Popup>
-	);
-}
-
 function ScheduleEditMode() {
 	const numDays = 365;
 
@@ -191,16 +22,6 @@ function ScheduleEditMode() {
 	const [date, setDate] = React.useState(start);
 
 	const [selectedDriver, setSelectedDriver] = useImmer<Driver>({ id: -1, name: "", defaultDistrict: 1 });
-
-	const driverMap: Map<number, Driver> = React.useMemo(
-		() =>
-			new Map(
-				(schedule?.drivers || [])
-					.concat({ id: -1, name: "Neu", defaultDistrict: schedule?.districts[0] || -1 })
-					.map((driver) => [driver.id, driver])
-			),
-		[schedule]
-	);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -243,7 +64,7 @@ function ScheduleEditMode() {
 					</div>
 
 					<div style={{ display: "flex", gap: 10 }}>
-						<div
+						{/* <div
 							style={{
 								display: "flex",
 								flexDirection: "column",
@@ -254,8 +75,8 @@ function ScheduleEditMode() {
 								padding: 5,
 							}}
 						>
-							<h3>Fahrer</h3>
-							{[...driverMap.values()].map((driver) => (
+							<h3>Fahrer</h3> */}
+						{/* {schedule.drivers.map((driver) => (
 								<Edit
 									key={driver.id}
 									driver={driver}
@@ -292,8 +113,8 @@ function ScheduleEditMode() {
 										}
 									}}
 								/>
-							))}
-						</div>
+							))} */}
+						{/* </div> */}
 
 						<div className="panel" style={{ width: "70vw", overflowX: "scroll" }}>
 							<ScheduleEditModeTable
