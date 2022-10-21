@@ -25,6 +25,14 @@ export interface Driver {
  */
 export type Activity = number;
 
+export interface FullCalendarEntry {
+	year: number;
+	date: number;
+	driverId: number;
+	activity: number;
+	district?: number;
+}
+
 export interface ScheduleEntry {
 	activity: Activity;
 	district?: number;

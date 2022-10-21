@@ -4,6 +4,7 @@ import {
 	District,
 	DistrictWeek,
 	Driver,
+	FullCalendarEntry,
 	ScheduleEdit,
 	ScheduleEntry,
 	ScheduleView,
@@ -11,7 +12,7 @@ import {
 import { dayOfYear, poolExecute } from "../util.js";
 import { getVendorsSimple } from "./vendors.service.js";
 
-interface FullCalendarEntry {
+interface CalendarEntry {
 	activity: Activity;
 	district: number;
 	driverId: number;
@@ -28,7 +29,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 
 	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
 
-	const calendarEntries = await poolExecute<FullCalendarEntry>(
+	const calendarEntries = await poolExecute<CalendarEntry>(
 		`
 		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
@@ -62,7 +63,7 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 	const drivers = await getDrivers();
 	const driverMap = new Map(drivers.map((driver) => [driver.id, driver]));
 	const allDistricts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
-	const calendarEntries = await poolExecute<FullCalendarEntry>(
+	const calendarEntries = await poolExecute<CalendarEntry>(
 		`
 		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
@@ -166,6 +167,20 @@ export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promis
 
 	return {
 		code: 201,
+	};
+}
+
+export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<RouteReport> {
+	const sqlDistrict = entry.district || null;
+
+	await poolExecute(
+		`INSERT INTO calendar (driver_id, year, date, activity, district) VALUES (?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE activity=?, district=?`,
+		[entry.driverId, entry.year, entry.date, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
+	);
+
+	return {
+		code: 200,
 	};
 }
 

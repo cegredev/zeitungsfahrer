@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import { Driver, ScheduleEdit, ScheduleEntry, ScheduleView } from "../models/schedule.model.js";
+import { Driver, FullCalendarEntry, ScheduleEdit, ScheduleView } from "../models/schedule.model.js";
 import {
 	addDriver,
 	deleteDriver,
 	getCalendarEdit,
 	getCalendarView,
 	getDrivers,
+	updateCalendarEntry,
 	updateDriver,
 	updateSchedule,
 } from "../services/schedule.service.js";
@@ -39,6 +40,13 @@ export async function updateCalendarController(
 	res: Response<ScheduleView>
 ) {
 	await handler(async () => await updateSchedule(new Date(req.query.date), req.body), res);
+}
+
+export async function updateCalendarEntryController(
+	req: Request<any, any, FullCalendarEntry>,
+	res: Response<ScheduleView>
+) {
+	await handler(async () => await updateCalendarEntry(req.body), res);
 }
 
 export async function getDriversController(req: Request, res: Response) {
