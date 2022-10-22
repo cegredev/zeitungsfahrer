@@ -22,7 +22,7 @@ function Section({ drivers, activity, driverMap }: SectionProps) {
 
 	return (
 		<>
-			<tr style={{ backgroundColor: style.color }}>
+			<tr style={{ backgroundColor: style.backgroundColor, color: style.color }}>
 				<td>{style.displayName}</td>
 				<td colSpan={numDays}></td>
 			</tr>

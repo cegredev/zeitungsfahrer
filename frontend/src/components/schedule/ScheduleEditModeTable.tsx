@@ -222,9 +222,11 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 							{row.map((entry, entryIndex) => (
 								<td
 									key={entryIndex}
-									style={{ backgroundColor: activityStyles.get(entry.activity)?.color }}
+									style={{ backgroundColor: activityStyles.get(entry.activity)?.backgroundColor }}
 								>
 									<select
+										// Centers select in td
+										style={{ display: "block", margin: "0 auto" }}
 										value={entry.activity === 0 ? -entry.district! : entry.activity}
 										onChange={(evt) => {
 											const activity: Activity = parseInt(evt.target.value);
@@ -241,11 +243,19 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 											});
 										}}
 									>
-										<option value="1">Planfrei</option>
-										<option value="2">Urlaub</option>
-										<option value="3">Krank</option>
-										<option value="4">Plus</option>
-										<option value="5">Planfrei + Urlaub</option>
+										{[...activityStyles.entries()].slice(1).map(([id, activity]) => (
+											<option
+												key={id}
+												value={id}
+												style={{
+													backgroundColor: activity.backgroundColor,
+													color: activity.color,
+												}}
+											>
+												{String(activity.displayName)}
+											</option>
+										))}
+
 										{schedule.districts.map((district) => (
 											<option key={district} value={-district}>
 												Bezirk {district}

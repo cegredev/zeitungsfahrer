@@ -59,14 +59,12 @@ export const activities = {
 	vacation: 2,
 	sick: 3,
 	plus: 4,
-	planfreiAndVacation: 5,
 };
 
 export const activityStyles: Map<number, React.CSSProperties & { displayName?: string }> = new Map([
-	[activities.working, { color: "#756f75", displayName: "" }],
-	[activities.planfrei, { color: "#f0d62b", displayName: "Planfrei" }],
-	[activities.vacation, { color: "#07a812", displayName: "Urlaub" }],
-	[activities.sick, { color: "#bf0404", displayName: "Krank" }],
-	[activities.plus, { color: "#2f36a1", displayName: "Plus" }],
-	[activities.planfreiAndVacation, { color: "#920794", displayName: "Urlaub" }],
+	[activities.working, { backgroundColor: "#756f75", color: "inherit", displayName: "" }],
+	[activities.planfrei, { backgroundColor: "#f0d62b", color: "inherit", displayName: "Planfrei" }],
+	[activities.vacation, { backgroundColor: "#07a812", color: "inherit", displayName: "Urlaub" }],
+	[activities.sick, { backgroundColor: "#bf0404", color: "white", displayName: "Krank" }],
+	[activities.plus, { backgroundColor: "#2f36a1", color: "white", displayName: "Plus" }],
 ]);
