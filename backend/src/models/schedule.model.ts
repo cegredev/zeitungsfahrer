@@ -15,13 +15,16 @@ export interface Driver {
 	defaultDistrict: number;
 }
 
+export interface EditedDriver extends Driver {
+	oldDefault?: number;
+}
+
 /**
  * 0: Working
  * 1: Planfrei
  * 2: Vacation
  * 3: Sick
  * 4: Plus
- * 5: Planfrei & Urlaub
  */
 export type Activity = number;
 

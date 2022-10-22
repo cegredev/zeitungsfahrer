@@ -4,6 +4,7 @@ import {
 	District,
 	DistrictWeek,
 	Driver,
+	EditedDriver,
 	FullCalendarEntry,
 	ScheduleEdit,
 	ScheduleEntry,
@@ -203,12 +204,21 @@ export async function addDriver(name: string, defaultDistrict: number): Promise<
 	};
 }
 
-export async function updateDriver(driver: Driver): Promise<RouteReport> {
+export async function updateDriver(driver: EditedDriver): Promise<RouteReport> {
 	await poolExecute("UPDATE drivers SET name=?, default_district=? WHERE id=?", [
 		driver.name,
 		driver.defaultDistrict,
 		driver.id,
 	]);
+
+	if (driver.oldDefault) {
+		await poolExecute("UPDATE calendar SET district=? WHERE driver_id=? AND district=? AND year=?", [
+			driver.defaultDistrict,
+			driver.id,
+			driver.oldDefault,
+			new Date().getFullYear(),
+		]);
+	}
 
 	return {
 		code: 200,

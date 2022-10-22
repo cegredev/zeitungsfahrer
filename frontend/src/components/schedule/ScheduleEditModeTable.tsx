@@ -1,17 +1,25 @@
 import { Activity, Driver, ScheduleEdit, ScheduleEntry } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
+import React from "react";
 import Popup from "reactjs-popup";
 import { Updater, useImmer } from "use-immer";
-import { POST, PUT } from "../../api";
+import { DELETE, POST, PUT } from "../../api";
 import { activities, activityStyles, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import YearSelection from "../timeframe/YearSelection";
+import LabeledCheckbox from "../util/LabeledCheckbox";
+import YesNoPrompt from "../util/YesNoPrompt";
 
 const numDays = 365;
+const newDriverTemplate = {
+	id: -1,
+	name: "",
+	defaultDistrict: -1,
+};
 
-function EditDriver({
-	driver,
+function DriverEdit({
+	driver: originalDriver,
 	districts,
 	setSchedule,
 }: {
@@ -19,10 +27,12 @@ function EditDriver({
 	districts: number[];
 	setSchedule: Updater<ScheduleEdit | undefined>;
 }) {
-	const [draft, setDraft] = useImmer(driver);
+	const [driverEdit, setDriverEdit] = useImmer(originalDriver);
 	const [token] = useAtom(authTokenAtom);
+	const [replaceOld, setReplaceOld] = React.useState(false);
 
-	const trigger = driver.id === -1 ? <button>Neu</button> : <div>{draft.name}</div>;
+	const isDraft = originalDriver.id === -1;
+	const trigger = isDraft ? <button>Neu</button> : <div style={{ cursor: "pointer" }}>{originalDriver.name}</div>;
 
 	return (
 		<Popup modal nested trigger={trigger}>
@@ -30,80 +40,129 @@ function EditDriver({
 			{(close: () => void) => (
 				<div className="modal">
 					<div className="header">Fahrer bearbeiten</div>
-					<div className="content">
-						<input
-							type="text"
-							value={draft.name}
-							onChange={(evt) => {
-								setDraft((draft) => {
-									if (evt.target.value.length < 1) return;
+					<div className="content" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+						<div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+							<label>Name</label>
+							<input
+								type="text"
+								value={driverEdit.name}
+								onChange={(evt) => {
+									setDriverEdit((draft) => {
+										draft.name = evt.target.value;
+									});
+								}}
+							/>
+						</div>
 
-									draft.name = evt.target.value;
-								});
-							}}
-						/>
-						<select
-							value={draft.defaultDistrict}
-							onChange={(evt) => {
-								setDraft((draft) => {
-									draft.defaultDistrict = parseInt(evt.target.value);
-								});
-							}}
-						>
-							{districts.map((district) => (
-								<option key={district} value={district}>
-									{district}
-								</option>
-							))}
-						</select>
+						<div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+							<label>Standardbezirk</label>
+							<select
+								value={driverEdit.defaultDistrict}
+								onChange={(evt) => {
+									setDriverEdit((draft) => {
+										draft.defaultDistrict = parseInt(evt.target.value);
+									});
+								}}
+							>
+								{driverEdit.defaultDistrict <= 0 && <option value={-1}>-</option>}
+								{districts.map((district) => (
+									<option key={district} value={district}>
+										{district}
+									</option>
+								))}
+							</select>
+						</div>
+
+						{originalDriver.defaultDistrict !== driverEdit.defaultDistrict && !isDraft && (
+							<div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+								<LabeledCheckbox
+									value={replaceOld}
+									setValue={setReplaceOld}
+									text="Alte Einträge ersetzen"
+								/>
+							</div>
+						)}
 					</div>
+
 					<div className="actions">
+						{!isDraft && (
+							<YesNoPrompt
+								trigger={<button>Löschen</button>}
+								header="Fahrer löschen"
+								content={`Wollen Sie den Fahrer "${originalDriver.name}" wirklich löschen?`}
+								onYes={async () => {
+									await DELETE("/auth/calendar/drivers", { id: originalDriver.id }, token!);
+
+									setSchedule((draft) => {
+										const index = draft?.drivers.findIndex(
+											(driver) => driver.id === driverEdit.id
+										)!;
+
+										draft!.calendar.splice(index, 1);
+									});
+
+									close();
+								}}
+							/>
+						)}
 						<button
 							onClick={async () => {
 								close();
+
+								setDriverEdit(newDriverTemplate);
 							}}
 						>
 							Abbrechen
 						</button>
 						<button
+							disabled={driverEdit.name.length === 0 || driverEdit.defaultDistrict <= 0}
 							onClick={async () => {
-								let driver = draft;
+								let editedDriver = driverEdit;
 
-								if (driver.id === -1) {
-									const res = await POST("/auth/calendar/drivers", driver, token!);
+								if (editedDriver.id === -1) {
+									const res = await POST("/auth/calendar/drivers", editedDriver, token!);
 
 									const id = (await res.json()).id;
-									driver = {
-										...driver,
+									editedDriver = {
+										...editedDriver,
 										id,
 									};
 
 									setSchedule((draft) => {
-										draft!.drivers.push(driver);
+										draft!.drivers.push(editedDriver);
 
 										draft!.calendar.push(
 											Array(numDays)
 												.fill(null)
 												.map(() => ({
 													activity: activities.working,
-													district: driver.defaultDistrict,
+													district: editedDriver.defaultDistrict,
 												}))
 										);
 									});
 								} else {
-									await PUT("/auth/calendar/drivers", driver, token!);
+									const oldDefault =
+										!replaceOld || originalDriver.defaultDistrict === driverEdit.defaultDistrict
+											? undefined
+											: originalDriver.defaultDistrict;
+
+									await PUT("/auth/calendar/drivers", { ...editedDriver, oldDefault }, token!);
 
 									setSchedule((draft) => {
-										const i = draft?.drivers.findIndex((d) => d.id === driver.id)!;
-										draft!.drivers[i] = driver;
+										const index = draft?.drivers.findIndex((d) => d.id === editedDriver.id)!;
+										draft!.drivers[index] = editedDriver;
+
+										if (oldDefault) {
+											const row = draft!.calendar[index];
+											row.forEach(
+												(id, i) =>
+													row[i].district === oldDefault &&
+													(row[i].district = editedDriver.defaultDistrict)
+											);
+										}
 									});
 								}
 
-								setDraft({
-									name: "Neu",
-									id: -1,
-									defaultDistrict: 2,
-								});
 								close();
 							}}
 						>
@@ -153,7 +212,7 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 					return (
 						<tr key={rowIndex}>
 							<td style={{ whiteSpace: "nowrap" }}>
-								<EditDriver
+								<DriverEdit
 									key={driver.id}
 									driver={driver}
 									districts={schedule.districts}
@@ -200,8 +259,8 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 				})}
 				<tr>
 					<td>
-						<EditDriver
-							driver={{ name: "Neu", id: -1, defaultDistrict: 0 }}
+						<DriverEdit
+							driver={newDriverTemplate}
 							districts={schedule.districts}
 							setSchedule={setSchedule}
 						/>
