@@ -123,8 +123,12 @@ table.schedule-table {
 	text-align: center;
 }
 
-table.schedule-table tr {
-	/* line-height: 30px; */
+.frozen-column {
+	z-index: 10;
+	position: sticky;
+	left: 0;
+	top: 0;
+	background-color: lightgray;
 }
 
 a:visited {

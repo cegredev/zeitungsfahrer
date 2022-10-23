@@ -63,60 +63,8 @@ function ScheduleEditMode() {
 						/>
 					</div>
 
-					<div style={{ display: "flex", gap: 10 }}>
-						{/* <div
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								backgroundColor: "lightgray",
-								borderRadius: 5,
-								alignItems: "stretch",
-								textAlign: "center",
-								padding: 5,
-							}}
-						>
-							<h3>Fahrer</h3> */}
-						{/* {schedule.drivers.map((driver) => (
-								<Edit
-									key={driver.id}
-									driver={driver}
-									districts={schedule.districts}
-									save={async (driver) => {
-										if (driver.id === -1) {
-											const res = await POST("/auth/calendar/drivers", driver, token!);
-
-											const id = (await res.json()).id;
-											driver = {
-												...driver,
-												id,
-											};
-
-											setSchedule((draft) => {
-												draft!.drivers.push(driver);
-
-												draft!.calendar.push(
-													Array(numDays)
-														.fill(null)
-														.map(() => ({
-															activity: activities.working,
-															district: driver.defaultDistrict,
-														}))
-												);
-											});
-										} else {
-											await PUT("/auth/calendar/drivers", driver, token!);
-
-											setSchedule((draft) => {
-												const i = draft?.drivers.findIndex((d) => d.id === driver.id)!;
-												draft!.drivers[i] = driver;
-											});
-										}
-									}}
-								/>
-							))} */}
-						{/* </div> */}
-
-						<div className="panel" style={{ width: "70vw", overflowX: "scroll" }}>
+					<div style={{ display: "flex", gap: 10, position: "relative" }}>
+						<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
 							<ScheduleEditModeTable
 								date={date}
 								setDate={setDate}

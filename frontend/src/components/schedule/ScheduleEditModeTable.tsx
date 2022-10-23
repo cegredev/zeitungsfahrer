@@ -182,7 +182,7 @@ interface Props {
 	setSchedule: Updater<ScheduleEdit | undefined>;
 }
 
-const targetedDate = dayOfYear(dayjs(new Date()).set("day", 1).toDate());
+const targetedDate = Math.max(0, dayOfYear(dayjs(new Date()).set("day", 1).toDate()) - 2);
 
 function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) {
 	const targetedColumn = React.useRef<any | null>(null);
@@ -197,7 +197,7 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 		<table className="schedule-table">
 			<thead>
 				<tr>
-					<th style={{ whiteSpace: "nowrap" }}>
+					<th className="frozen-column" style={{ whiteSpace: "nowrap" }}>
 						<YearSelection date={date} setDate={setDate} />
 					</th>
 					{Array(numDays)
@@ -209,7 +209,7 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 						))}
 				</tr>
 				<tr>
-					<th>Fahrer</th>
+					<th className="frozen-column">Fahrer</th>
 					{Array(numDays)
 						.fill(null)
 						.map((_, index) => {
@@ -223,7 +223,7 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 
 					return (
 						<tr key={rowIndex}>
-							<td style={{ whiteSpace: "nowrap" }}>
+							<td className="frozen-column" style={{ whiteSpace: "nowrap" }}>
 								<DriverEdit
 									key={driver.id}
 									driver={driver}
@@ -280,7 +280,7 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 					);
 				})}
 				<tr>
-					<td>
+					<td className="frozen-column">
 						<DriverEdit
 							driver={newDriverTemplate}
 							districts={schedule.districts}

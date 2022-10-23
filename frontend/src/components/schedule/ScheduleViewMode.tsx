@@ -28,10 +28,8 @@ function ScheduleViewMode() {
 	return (
 		<div className="page">
 			{drivers ? (
-				<div>
-					<div className="panel">
-						<ScheduleTable date={date} setDate={setDate} drivers={drivers} />
-					</div>
+				<div className="panel">
+					<ScheduleTable date={date} setDate={setDate} drivers={drivers} />
 				</div>
 			) : (
 				<LoadingPlaceholder />
