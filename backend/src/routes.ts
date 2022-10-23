@@ -17,6 +17,7 @@ import {
 } from "./controllers/records.controller.js";
 import {
 	addDriverController,
+	deleteCalendarEntryController,
 	deleteDriverController,
 	getCalendarEditController,
 	getCalendarViewController,
@@ -73,7 +74,10 @@ function routes(app: Express) {
 
 	app.route("/auth/dashboard/allSales").get(getAllSalesController);
 
-	app.route("/auth/calendar/view").get(getCalendarViewController).post(updateCalendarEntryController);
+	app.route("/auth/calendar/view")
+		.get(getCalendarViewController)
+		.post(updateCalendarEntryController)
+		.delete(deleteCalendarEntryController);
 
 	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
 

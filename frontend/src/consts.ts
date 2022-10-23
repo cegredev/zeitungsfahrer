@@ -32,6 +32,10 @@ export function normalizeDate(date: Date): Date {
 	return new Date(dayjs(date).format("YYYY-MM-DD"));
 }
 
+export function dayOfYear(date: Date): number {
+	return Math.floor((normalizeDate(date).getTime() - new Date("2022-01-01").getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export function dateAsTextWithSystem(date: Date, system: number): string {
 	switch (system) {
 		case 0:

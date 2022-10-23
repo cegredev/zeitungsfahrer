@@ -180,6 +180,18 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 	};
 }
 
+export async function deleteCalendarEntry(entry: FullCalendarEntry): Promise<RouteReport> {
+	await poolExecute("DELETE FROM calendar WHERE driver_id=? AND year=? AND date=?", [
+		entry.driverId,
+		entry.year,
+		entry.date,
+	]);
+
+	return {
+		code: 200,
+	};
+}
+
 export async function getDrivers(): Promise<Driver[]> {
 	return await poolExecute<Driver>("SELECT id, name, default_district as defaultDistrict FROM drivers");
 }

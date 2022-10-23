@@ -5,8 +5,8 @@ import Select from "react-select";
 import React from "react";
 import { GroupBase } from "react-select";
 import { useImmer } from "use-immer";
-import { GET } from "../../api";
-import { activities, activityStyles, weekdays } from "../../consts";
+import { DELETE, GET, POST } from "../../api";
+import { activities, activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../timeframe/WeekSelection";
 import "../util/select_search.css";
@@ -135,16 +135,46 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 													isClearable={true}
 													placeholder="Fehlt"
 													noOptionsMessage={() => "Alle Fahrer im Einsatz"}
-													onChange={(option, { action }) => {
-														if (action !== "select-option") return;
+													onChange={async (option, { action }) => {
+														const timestamp = {
+															year: date.getFullYear(),
+															date: dayOfYear(date) + day,
+														};
+														const id =
+															action === "select-option"
+																? // @ts-ignore
+																  option!.value
+																: -1;
+														const oldDriver = weekDriver;
 
-														// @ts-ignore
-														const newId: number = option.value;
+														// Restore previous driver to original activity
+														if (oldDriver.id !== -1) {
+															await POST(
+																"/auth/calendar/view",
+																{
+																	...timestamp,
+																	driverId: oldDriver.id,
+																	activity: oldDriver.oldActivity,
+																},
+																token!
+															);
+														}
+
+														// Update current driver
+														if (id !== -1) {
+															await POST(
+																"/auth/calendar/view",
+																{
+																	...timestamp,
+																	driverId: id,
+																	activity: activities.working,
+																	district: districtId,
+																},
+																token!
+															);
+														}
 
 														setSchedule((draft) => {
-															const id = newId,
-																oldId = weekDriver.id;
-
 															let hiddenActivity = 0;
 
 															Array<[number[], number]>(
@@ -161,7 +191,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 																}
 
 																if (weekDriver.oldActivity === activity) {
-																	section.push(oldId);
+																	section.push(oldDriver.id);
 																}
 															});
 
@@ -179,7 +209,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 										}
 
 										return (
-											<td style={{ maxHeight: 30 }} key={day}>
+											<td style={{ minHeight: 10, height: 30, maxHeight: 30 }} key={day}>
 												{content}
 											</td>
 										);
