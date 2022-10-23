@@ -53,6 +53,29 @@ body {
 	flex: 1;
 }
 
+.schedule-select {
+	font-size: 12;
+}
+
+.schedule-select__control {
+	width: 8rem;
+	font-size: 14px;
+}
+
+.schedule-select__menu-list {
+	width: auto;
+	font-size: 14px;
+}
+
+div.schedule-select__group-heading,
+div.schedule-select__option {
+	padding: 0;
+}
+
+div.schedule-select__indicator {
+	padding: 2px;
+}
+
 .vendor-settings input {
 	max-width: 90%;
 }

@@ -4,9 +4,14 @@ export interface District {
 	id: number;
 }
 
+export interface DistrictDriver {
+	id: number;
+	oldActivity?: number; // Only set in GUI!
+}
+
 export interface DistrictWeek {
 	district: number;
-	drivers: number[];
+	drivers: DistrictDriver[];
 }
 
 export interface Driver {

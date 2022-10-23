@@ -1,8 +1,9 @@
 import { Driver, ScheduleView } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
+import Select from "react-select";
 import React from "react";
-import SelectSearch, { SelectSearchOption } from "react-select-search";
+import { GroupBase } from "react-select";
 import { useImmer } from "use-immer";
 import { GET } from "../../api";
 import { activities, activityStyles, weekdays } from "../../consts";
@@ -100,44 +101,80 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 						</tr>
 					</thead>
 					<tbody>
-						{schedule.districts.map((week) => {
+						{schedule.districts.map((week, districtIndex) => {
 							const districtId = week.district;
 
 							return (
-								<tr key={districtId + Math.random()}>
+								<tr key={districtId}>
 									<td>{districtId}</td>
-									{week.drivers.map((driverId, day) => {
+									{week.drivers.map((weekDriver, day) => {
 										let content: JSX.Element;
 
-										if (driverId === -1) {
-											const options: SelectSearchOption[] = [
+										if (weekDriver.id === -1 || weekDriver.oldActivity !== undefined) {
+											const options = [
 												{
-													type: "group",
-													name: "Plus",
-													items: schedule.plus[day].map((driverIdOption) => ({
-														name: driverMap.get(driverIdOption)!.name,
+													label: "Plus",
+													options: schedule.free[day].map((driverIdOption) => ({
+														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
 												},
 												{
-													type: "group",
-													name: "Planfrei",
-													items: schedule.free[day].map((driverIdOption) => ({
-														name: driverMap.get(driverIdOption)!.name,
+													label: "Planfrei",
+													options: schedule.plus[day].map((driverIdOption) => ({
+														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
 												},
 											];
 
 											content = (
-												<SelectSearch
+												<Select
+													classNamePrefix="schedule-select"
 													options={options}
-													placeholder="Ersatz wählen"
-													search={true}
+													isClearable={true}
+													placeholder="Fehlt"
+													noOptionsMessage={() => "Alle Fahrer im Einsatz"}
+													onChange={(option, { action }) => {
+														if (action !== "select-option") return;
+
+														// @ts-ignore
+														const newId: number = option.value;
+
+														setSchedule((draft) => {
+															const id = newId,
+																oldId = weekDriver.id;
+
+															let hiddenActivity = 0;
+
+															Array<[number[], number]>(
+																[draft!.free[day], activities.planfrei],
+																[draft!.plus[day], activities.plus]
+															).forEach(([section, activity]) => {
+																const index = section.findIndex(
+																	(driverId) => driverId === id
+																);
+
+																if (index !== -1) {
+																	section.splice(index, 1);
+																	hiddenActivity = activity;
+																}
+
+																if (weekDriver.oldActivity === activity) {
+																	section.push(oldId);
+																}
+															});
+
+															draft!.districts[districtIndex].drivers[day] = {
+																id,
+																oldActivity: hiddenActivity,
+															};
+														});
+													}}
 												/>
 											);
 										} else {
-											const driver = driverMap.get(driverId)!;
+											const driver = driverMap.get(weekDriver.id)!;
 											content = <div>{driver.name}</div>;
 										}
 

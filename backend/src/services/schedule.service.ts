@@ -76,7 +76,7 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 	for (const district of allDistricts) {
 		districtMap.set(district, {
 			district,
-			drivers: Array(numDays).fill(-1),
+			drivers: Array(numDays).fill({ id: -1 }),
 		});
 	}
 
@@ -89,16 +89,11 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 
 	for (const { activity, district, date, driverId } of calendarEntries) {
 		const index = date - startDay;
+		const drivers = districtMap.get(district)?.drivers;
 
 		switch (activity) {
 			case 0: // Working in specific (manually set) district
-				districtMap.get(district)!.drivers[index] = driverId;
-				break;
-			case 5:
-				vacation[index].push(driverId);
-
-				const drivers = districtMap.get(driverMap.get(driverId)!.defaultDistrict)!.drivers!;
-				if (drivers[index] === -1) drivers[index] = -2;
+				drivers![index] = { id: driverId };
 				break;
 			case 1:
 			case 2:
