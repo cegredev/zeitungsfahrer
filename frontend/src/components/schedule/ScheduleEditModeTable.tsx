@@ -5,7 +5,7 @@ import React from "react";
 import Popup from "reactjs-popup";
 import { Updater, useImmer } from "use-immer";
 import { DELETE, POST, PUT } from "../../api";
-import { activities, activityStyles, weekdays } from "../../consts";
+import { activities, activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import YearSelection from "../timeframe/YearSelection";
 import LabeledCheckbox from "../util/LabeledCheckbox";
@@ -182,7 +182,17 @@ interface Props {
 	setSchedule: Updater<ScheduleEdit | undefined>;
 }
 
+const targetedDate = dayOfYear(dayjs(new Date()).set("day", 1).toDate());
+
 function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) {
+	const targetedColumn = React.useRef<any | null>(null);
+
+	React.useEffect(() => {
+		targetedColumn.current!.scrollIntoView({
+			inline: "start",
+		});
+	}, []);
+
 	return (
 		<table className="schedule-table">
 			<thead>
@@ -192,9 +202,11 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 					</th>
 					{Array(numDays)
 						.fill(null)
-						.map((_, index) => {
-							return <th key={index}>{dayjs(date).add(index, "days").format("DD.MM.YYYY")}</th>;
-						})}
+						.map((_, date) => (
+							<th ref={date === targetedDate ? targetedColumn : undefined} key={date}>
+								{dayjs(date).add(date, "days").format("DD.MM.YYYY")}
+							</th>
+						))}
 				</tr>
 				<tr>
 					<th>Fahrer</th>
