@@ -2,13 +2,13 @@ import { ArticleRecords, Record } from "backend/src/models/records.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import { Updater, useImmer } from "use-immer";
-import { GET, POST } from "../api";
+import { Updater } from "use-immer";
+import { GET } from "../api";
 import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
 import { ChangedRecord } from "backend/src/models/records.model";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "./util/LoadingPlaceholder";
-import YesNoPrompt from "./util/YesNoPrompt";
+import IntInput from "./util/IntInput";
 
 const todayNormalized = normalizeDate(new Date());
 
@@ -31,15 +31,7 @@ interface Props {
 	addChangedRecord: (r: ChangedRecord) => void;
 }
 
-// enum RecordState {
-// 	MISSING, COMPLETE,
-// }
-
 function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
-	// if (record.edited) {
-	// 	return <span style={{ color: "black" }}>Bearbeitet</span>;
-	// }
-
 	if (record.missing) {
 		if (record.inFuture) {
 			return <span style={{ color: "black" }}>Ausstehend</span>;
@@ -97,11 +89,11 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 				const record = draft!.get(articleId)!.records[recordIndex];
 				update(record);
 				record.edited = true;
-			});
 
-			addChangedRecord({ ...recordsMap!.get(articleId)!.records[recordIndex], articleId });
+				addChangedRecord({ ...record, articleId });
+			});
 		},
-		[setRecords, addChangedRecord, articleId, recordsMap]
+		[setRecords, addChangedRecord, articleId]
 	);
 
 	const startDate = records?.start;
@@ -164,34 +156,31 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 										<td>{date}</td>
 										<td>{weekdays[weekday]}</td>
 										<td>
-											<input
-												type="number"
+											<IntInput
 												className="article-input"
-												min={record.remissions}
-												value={record.supply}
 												disabled={!record.editable}
-												onChange={(evt) => {
-													updateField(
-														recordIndex,
-														(r) => (r.supply = parseInt(evt.target.value))
-													);
+												min={0}
+												customProps={{
+													startValue: record.supply,
+													filter: (input) =>
+														updateField(recordIndex, (r) => (r.supply = input)),
 												}}
 											/>
 										</td>
 										<td>
-											<input
-												type="number"
+											<IntInput
 												className="article-input"
+												disabled={!record.editable}
 												min={0}
 												max={record.supply}
-												value={record.remissions}
-												disabled={!record.editable}
-												onChange={(evt) =>
-													updateField(
-														recordIndex,
-														(r) => (r.remissions = parseInt(evt.target.value))
-													)
-												}
+												customProps={{
+													startValue: record.remissions,
+													filter: (input, previous) => {
+														if (input > record.supply) return previous;
+
+														updateField(recordIndex, (r) => (r.remissions = input));
+													},
+												}}
 											/>
 										</td>
 										<td>{soldAmount}</td>
