@@ -17,6 +17,7 @@ import Settings from "./pages/settings/Settings";
 import { GET } from "./api";
 import ScheduleViewMode from "./components/schedule/ScheduleViewMode";
 import ScheduleEditMode from "./components/schedule/ScheduleEditMode";
+import { Settings as SettingsInterface } from "backend/src/models/settings.model";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -27,11 +28,9 @@ function AppContentWrapper() {
 
 	React.useEffect(() => {
 		async function fetchSettings() {
-			const response = await GET("/auth/settings", token!);
+			const response = await GET<SettingsInterface>("/auth/settings", token!);
 
-			if (!response.ok) return;
-
-			const data = await response.json();
+			const data = response.data;
 			setSettings(data);
 		}
 

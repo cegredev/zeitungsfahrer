@@ -46,23 +46,20 @@ import logger from "./logger.js";
 function routes(app: Express) {
 	logger.info("Creating routes");
 
-	app.route("/auth/articles")
-		.get(getArticlesController)
-		.post(postArticleController)
-		.put(putArticleController)
-		.delete(deleteArticleController);
+	app.route("/auth/articles").get(getArticlesController).post(postArticleController).put(putArticleController);
+
+	app.route("/auth/articles/:id").delete(deleteArticleController);
 
 	app.route("/auth/articles/sales").get(getArticleSalesController);
 
 	app.route("/auth/articles/info").get(getArticleInfoController);
 
-	app.route("/auth/vendors")
-		.get(getVendorsController)
-		.post(postVendorController)
-		.put(putVendorController)
-		.delete(deleteVendorController);
+	app.route("/auth/vendors").get(getVendorsController).post(postVendorController).put(putVendorController);
 
-	app.route("/auth/vendors/:id").get(getVendorFullController).post(createOrUpdateVendorController);
+	app.route("/auth/vendors/:id")
+		.get(getVendorFullController)
+		.post(createOrUpdateVendorController)
+		.delete(deleteVendorController);
 
 	app.route("/auth/vendors/:id/sales").get(getVendorSalesController);
 
@@ -81,11 +78,9 @@ function routes(app: Express) {
 
 	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
 
-	app.route("/auth/calendar/drivers")
-		.get(getDriversController)
-		.post(addDriverController)
-		.put(updateDriverController)
-		.delete(deleteDriverController);
+	app.route("/auth/calendar/drivers").get(getDriversController).post(addDriverController).put(updateDriverController);
+
+	app.route("/auth/calendar/drivers/:id").delete(deleteDriverController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

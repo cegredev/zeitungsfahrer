@@ -25,15 +25,15 @@ function ArticleSalesView() {
 		async function fetchData() {
 			setLoading(true);
 
-			const response = await GET(
+			const response = await GET<ArticleSales>(
 				"/auth/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 
-			const info = await GET("/auth/articles/info", token!);
-			setArticleSales(await response.json());
+			const info = await GET<ArticleInfo[]>("/auth/articles/info", token!);
+			setArticleSales(response.data);
 
-			setArticleInfo(await info.json());
+			setArticleInfo(info.data);
 
 			setLoading(false);
 		}

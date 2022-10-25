@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DELETE, GET, POST, PUT } from "../api";
 import { useAtom } from "jotai";
 import VendorCatalogSettings from "../components/VendorCatalogSettings";
-import { Vendor } from "backend/src/models/vendors.model";
+import { Vendor, VendorCatalog } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
 import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
@@ -50,11 +50,11 @@ function VendorSettings() {
 					active: true,
 				};
 
-				const response = await GET("/auth/vendors/" + id + "?catalogOnly=true", token!);
-				data = { ...template, catalog: await response.json() };
+				const response = await GET<VendorCatalog>("/auth/vendors/" + id + "?catalogOnly=true", token!);
+				data = { ...template, catalog: response.data };
 			} else {
-				const response = await GET("/auth/vendors/" + id, token!);
-				data = await response.json();
+				const response = await GET<Vendor>("/auth/vendors/" + id, token!);
+				data = response.data;
 			}
 
 			setVendor(data);
@@ -196,9 +196,9 @@ function VendorSettings() {
 							}
 							try {
 								if (isDraft) {
-									const response = await POST("/auth/vendors", vendor, token!);
-									const data = await response.json();
-									setId(data.id);
+									const response = await POST<{ id: number }>("/auth/vendors", vendor, token!);
+									const data = response.data;
+									setId(String(data.id));
 									setVendor({ ...vendor, id: data.id });
 									navigate(`/vendors/${data.id}`);
 								} else {
@@ -229,7 +229,7 @@ function VendorSettings() {
 										vendor.firstName + " " + vendor.lastName
 									}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
 									onYes={async () => {
-										await DELETE("/auth/vendors", { id: vendor.id! }, token!);
+										await DELETE("/auth/vendors/" + vendor.id!, token!);
 										navigate("/vendors");
 									}}
 								/>

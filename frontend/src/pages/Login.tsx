@@ -13,8 +13,8 @@ function Login() {
 	const login = React.useCallback(async () => {
 		setWaiting(true);
 
-		const response = await GET("/login?name=root&password=" + password);
-		const token: string = (await response.json()).token;
+		const response = await GET<{ token: string }>("/login?name=root&password=" + password);
+		const token: string = response.data.token;
 
 		if (token != null) {
 			setToken(token);

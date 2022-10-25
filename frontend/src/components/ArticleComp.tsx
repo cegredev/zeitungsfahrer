@@ -176,7 +176,7 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 					if (article.id == null) {
 						cancelDraft();
 					} else {
-						await DELETE("/auth/articles", { id: article.id }, token!);
+						await DELETE("/auth/articles/" + article.id, token!);
 						removeArticle(article.id!);
 					}
 				}}
@@ -190,18 +190,21 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 					let info = { ...article, prices };
 
 					if (isDraft) {
-						const res = await POST("/auth/articles", { ...info, startDate: new Date() }, token!);
-						const body = await res.json();
+						try {
+							const res = await POST<{ id: number }>(
+								"/auth/articles",
+								{ ...info, startDate: new Date() },
+								token!
+							);
 
-						if (res.ok) {
-							info.id = body.id;
+							info.id = res.data.id;
 
 							setArticle({ ...article, id: info.id });
 							finishArticle(info);
-						} else {
-							console.error(res);
+						} catch (error) {
+							console.error(error);
 
-							setErrorMessage(body.userMessage);
+							// setErrorMessage(body.userMessage);
 						}
 					} else {
 						await PUT(

@@ -5,6 +5,7 @@ import { GET, PUT } from "../../api";
 import { settingsAtom } from "../../stores/settings.store";
 import { authTokenAtom } from "../../stores/utility.store";
 import { invoiceSystems } from "../../consts";
+import { Settings as SettingsInterface } from "backend/src/models/settings.model";
 
 function Settings() {
 	const [settings, setSettings] = useAtom(settingsAtom);
@@ -12,9 +13,8 @@ function Settings() {
 
 	React.useEffect(() => {
 		async function fetchSettings() {
-			const response = await GET("/auth/settings", token!);
-			const data = await response.json();
-			setSettings(data);
+			const response = await GET<SettingsInterface>("/auth/settings", token!);
+			setSettings(response.data);
 		}
 
 		fetchSettings();

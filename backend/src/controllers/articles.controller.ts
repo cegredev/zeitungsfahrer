@@ -39,6 +39,6 @@ export async function putArticleController(
 	await handler(async () => await updateArticle(startDate, article), res);
 }
 
-export async function deleteArticleController(req: Request<any, any, { id: number }>, res: Response) {
-	await handler(async () => await deleteArticle(req.body.id), res);
+export async function deleteArticleController(req: Request<{ id: number }>, res: Response) {
+	await handler(async () => await deleteArticle(req.params.id), res);
 }

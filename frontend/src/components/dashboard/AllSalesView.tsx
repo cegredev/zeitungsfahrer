@@ -20,8 +20,11 @@ function AllSalesView() {
 		async function fetchData() {
 			setLoading(true);
 
-			const response = await GET("/auth/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"), token!);
-			setAllSales(await response.json());
+			const response = await GET<number[]>(
+				"/auth/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"),
+				token!
+			);
+			setAllSales(response.data);
 
 			setLoading(false);
 		}

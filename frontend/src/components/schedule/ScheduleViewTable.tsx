@@ -59,14 +59,14 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const calendarRes = await GET(
+			const calendarRes = await GET<ScheduleView>(
 				"/auth/calendar/view?start=" +
 					dayjs(date).set("day", 1).format("YYYY-MM-DD") +
 					"&end=" +
 					dayjs(date).set("day", 6).format("YYYY-MM-DD"),
 				token
 			);
-			setSchedule(await calendarRes.json());
+			setSchedule(calendarRes.data);
 		}
 
 		fetchData();

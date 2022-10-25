@@ -50,11 +50,11 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const response = await GET(
+			const response = await GET<ArticleRecords>(
 				"/auth/records/" + vendorId + "?articleId=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
-			const data: ArticleRecords = await response.json();
+			const data = response.data;
 
 			const articleRecords = {
 				...data,

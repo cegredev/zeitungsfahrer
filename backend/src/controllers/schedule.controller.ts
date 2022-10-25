@@ -75,6 +75,6 @@ export async function updateDriverController(req: Request<any, any, Driver>, res
 	await handler(async () => await updateDriver(req.body), res);
 }
 
-export async function deleteDriverController(req: Request<any, any, { id: string }>, res: Response<ScheduleView>) {
-	await handler(async () => await deleteDriver(parseInt(req.body.id)), res);
+export async function deleteDriverController(req: Request<{ id: string }>, res: Response<ScheduleView>) {
+	await handler(async () => await deleteDriver(parseInt(req.params.id)), res);
 }

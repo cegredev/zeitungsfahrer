@@ -18,9 +18,8 @@ function ScheduleViewMode() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET("/auth/calendar/drivers", token!);
-			const data = await res.json();
-			setDrivers(data);
+			const res = await GET<Driver[]>("/auth/calendar/drivers", token!);
+			setDrivers(res.data);
 		}
 
 		fetchData();

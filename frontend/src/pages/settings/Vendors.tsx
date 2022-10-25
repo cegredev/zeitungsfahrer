@@ -16,8 +16,8 @@ function Vendors() {
 		async function fetchVendors() {
 			setVendors(undefined);
 
-			const response = await GET("/auth/vendors?includeInactive=true", token!);
-			const vendors: Vendor[] = await response.json();
+			const response = await GET<Vendor[]>("/auth/vendors?includeInactive=true", token!);
+			const vendors = response.data;
 
 			setVendors(vendors);
 		}

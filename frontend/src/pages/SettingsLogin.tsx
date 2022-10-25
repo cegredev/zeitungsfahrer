@@ -12,8 +12,12 @@ function SettingsLogin() {
 	const login = React.useCallback(async () => {
 		setWaiting(true);
 
-		const response = await GET("/auth/settings/login?password=" + password, token);
-		if (response.ok) setSettingsLoggedIn(true);
+		try {
+			const response = await GET("/auth/settings/login?password=" + password, token);
+			setSettingsLoggedIn(true);
+		} catch (e) {
+			console.error(e);
+		}
 
 		setWaiting(false);
 	}, [password, setSettingsLoggedIn, token]);

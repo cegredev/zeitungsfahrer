@@ -1,37 +1,40 @@
+import axios, { AxiosResponse } from "axios";
+
 const API_URL =
 	process.env.NODE_ENV === "production" ? "https://zeitungsfahrer.herokuapp.com" : "http://localhost:3001";
 
-async function makeRequest(method: string, route: string, body?: string, headers?: any): Promise<Response> {
-	return await fetch(API_URL + route, {
-		method,
+export async function GET<T>(route: string, token?: string): Promise<AxiosResponse<T, any>> {
+	return await axios.get(API_URL + route, {
 		headers: {
 			"Content-Type": "application/json",
-			...headers,
+			authorization: token,
 		},
-		body,
 	});
 }
 
-export async function GET(route: string, token?: string): Promise<Response> {
-	return await makeRequest("GET", route, undefined, {
-		authorization: token,
+export async function POST<T>(route: string, body: any, token: string): Promise<AxiosResponse<T, any>> {
+	return await axios.post(API_URL + route, body, {
+		headers: {
+			"Content-Type": "application/json",
+			authorization: token,
+		},
 	});
 }
 
-export async function POST(route: string, body: any, token: string): Promise<Response> {
-	return await makeRequest("POST", route, JSON.stringify(body), {
-		authorization: token,
+export async function PUT<T>(route: string, body: any, token: string): Promise<AxiosResponse<T, any>> {
+	return await axios.put(API_URL + route, body, {
+		headers: {
+			"Content-Type": "application/json",
+			authorization: token,
+		},
 	});
 }
 
-export async function PUT(route: string, body: any, token: string): Promise<Response> {
-	return await makeRequest("PUT", route, JSON.stringify(body), {
-		authorization: token,
-	});
-}
-
-export async function DELETE(route: string, body: any, token: string): Promise<Response> {
-	return await makeRequest("DELETE", route, JSON.stringify(body), {
-		authorization: token,
+export async function DELETE<T>(route: string, token: string): Promise<AxiosResponse<T, any>> {
+	return await axios.delete(API_URL + route, {
+		headers: {
+			"Content-Type": "application/json",
+			authorization: token,
+		},
 	});
 }

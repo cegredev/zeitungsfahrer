@@ -50,12 +50,8 @@ function Records() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const response = await GET(`/auth/vendors/${vendorId}/includedArticles`, token!);
-			if (!response.ok) return;
-
-			const data = await response.json();
-
-			setInfo(data);
+			const response = await GET<VendorIncludedArticles>(`/auth/vendors/${vendorId}/includedArticles`, token!);
+			setInfo(response.data);
 		}
 
 		fetchData();

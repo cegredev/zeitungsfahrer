@@ -14,32 +14,27 @@ import ScheduleEditModeTable from "./ScheduleEditModeTable";
 const start = new Date("2022-01-01");
 
 function ScheduleEditMode() {
-	const numDays = 365;
-
 	const [token] = useAtom(authTokenAtom);
 
 	const [schedule, setSchedule] = useImmer<ScheduleEdit | undefined>(undefined);
 	const [date, setDate] = React.useState(start);
 
-	const [selectedDriver, setSelectedDriver] = useImmer<Driver>({ id: -1, name: "", defaultDistrict: 1 });
-
 	React.useEffect(() => {
 		async function fetchData() {
-			const calendarRes = await GET(
+			const calendarRes = await GET<ScheduleEdit>(
 				"/auth/calendar/edit?start=" +
 					dayjs(date).format("YYYY-MM-DD") +
 					"&end=" +
 					dayjs(date).add(1, "year").subtract(1, "day").format("YYYY-MM-DD"),
 				token
 			);
-			const newSchedule = await calendarRes.json();
+			const newSchedule = calendarRes.data;
 
-			setSelectedDriver(newSchedule.drivers[0].id);
 			setSchedule(newSchedule);
 		}
 
 		fetchData();
-	}, [setSchedule, date, setSelectedDriver, token]);
+	}, [setSchedule, date, token]);
 
 	return (
 		<>

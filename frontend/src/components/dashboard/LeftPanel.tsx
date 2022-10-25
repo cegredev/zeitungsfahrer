@@ -19,8 +19,8 @@ function LeftPanel() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET("/auth/vendors?includeInactive=false", token!);
-			const newVendors: Vendor[] = (await res.json()).map((vendor: Vendor) => ({
+			const res = await GET<Vendor[]>("/auth/vendors?includeInactive=false", token!);
+			const newVendors: Vendor[] = res.data.map((vendor: Vendor) => ({
 				...vendor,
 				lastRecordEntry: new Date(vendor.lastRecordEntry),
 			}));
@@ -29,8 +29,8 @@ function LeftPanel() {
 			const newIndex = newVendors.findIndex((vendor) => vendor.active);
 			setSelectedIndex(newIndex);
 
-			const articleRes = await GET(`/auth/records/${newVendors[newIndex].id}/today`, token!);
-			setArticles(await articleRes.json());
+			const articleRes = await GET<DashboardRecords>(`/auth/records/${newVendors[newIndex].id}/today`, token!);
+			setArticles(articleRes.data);
 		}
 
 		fetchData();
@@ -76,8 +76,11 @@ function LeftPanel() {
 											articles: [],
 											totalValueBrutto: 0,
 										});
-										const articles = await GET(`/auth/records/${vendors[i].id}/today`, token!);
-										setArticles(await articles.json());
+										const articles = await GET<DashboardRecords>(
+											`/auth/records/${vendors[i].id}/today`,
+											token!
+										);
+										setArticles(articles.data);
 									}}
 									onDoubleClick={() => {
 										if (!vendor.active) return;

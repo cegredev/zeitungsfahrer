@@ -36,8 +36,8 @@ export async function putVendorController(req: Request<any, any, Vendor>, res: R
 	await handler(async () => await updateVendor(req.body), res);
 }
 
-export async function deleteVendorController(req: Request<any, any, { id: number }>, res: Response) {
-	await handler(async () => await deleteVendor(req.body.id), res);
+export async function deleteVendorController(req: Request<{ id: string }>, res: Response) {
+	await handler(async () => await deleteVendor(parseInt(req.params.id)), res);
 }
 
 export async function getVendorFullController(
