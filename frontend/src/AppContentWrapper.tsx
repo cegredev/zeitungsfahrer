@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Popup from "reactjs-popup";
 import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
 import { settingsAtom } from "./stores/settings.store";
@@ -18,15 +18,19 @@ import { GET } from "./api";
 import ScheduleViewMode from "./components/schedule/ScheduleViewMode";
 import ScheduleEditMode from "./components/schedule/ScheduleEditMode";
 import { Settings as SettingsInterface } from "backend/src/models/settings.model";
+import Login from "./pages/Login";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
 	const [, setSettings] = useAtom(settingsAtom);
 	const [token] = useAtom(authTokenAtom);
+	const navigate = useNavigate();
 
 	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
 
 	React.useEffect(() => {
+		if (token === undefined) return navigate("/login");
+
 		async function fetchSettings() {
 			const response = await GET<SettingsInterface>("/auth/settings", token!);
 
@@ -55,6 +59,7 @@ function AppContentWrapper() {
 				<Navbar />
 
 				<Routes>
+					<Route path="/login" element={<Login />} />
 					<Route path="/" element={<Navigate to="/dashboard" />} />
 					<Route path="/dashboard" element={<Dashboard />} />
 					<Route path="/records/:id" element={<Records />} />

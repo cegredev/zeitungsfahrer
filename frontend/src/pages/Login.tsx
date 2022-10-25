@@ -1,14 +1,14 @@
 import { useAtom } from "jotai";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { GET } from "../api";
 import { authTokenAtom } from "../stores/utility.store";
 
 function Login() {
 	const [, setToken] = useAtom(authTokenAtom);
-
 	const [password, setPassword] = React.useState("");
-
 	const [waiting, setWaiting] = React.useState(false);
+	const navigate = useNavigate();
 
 	const login = React.useCallback(async () => {
 		setWaiting(true);
@@ -21,6 +21,8 @@ function Login() {
 		}
 
 		setWaiting(false);
+
+		navigate("/");
 	}, [password, setToken]);
 
 	return (
