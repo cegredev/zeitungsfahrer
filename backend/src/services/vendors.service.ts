@@ -7,7 +7,7 @@ import { ArticleInfo } from "../models/articles.model.js";
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	return await poolExecute<Vendor>(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
-				city, email, phone, tax_id as taxId, active, last_record_entry as lastRecordEntry
+				city, email, phone, tax_id as taxId, active, custom_id as customId, last_record_entry as lastRecordEntry
 		 FROM vendors 
 		 ${!includeInactive ? "WHERE active=1" : ""}
 		 ORDER BY last_name`
@@ -49,7 +49,7 @@ export async function getIncludedArticleIds(vendorId: number): Promise<VendorInc
 
 export async function getVendor(id: number): Promise<Vendor> {
 	const result = await poolExecute<Vendor>(
-		"SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active FROM vendors WHERE id=?",
+		"SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode, city, email, phone, tax_id as taxId, active, custom_id as customId FROM vendors WHERE id=?",
 		[id]
 	);
 
@@ -63,8 +63,6 @@ export async function getVendorFull(id: number): Promise<Vendor> {
 }
 
 export async function getVendorFullRoute(id: number): Promise<RouteReport> {
-	console.log("full");
-
 	return {
 		code: 200,
 		body: await getVendorFull(id),
@@ -72,8 +70,17 @@ export async function getVendorFullRoute(id: number): Promise<RouteReport> {
 }
 
 export async function createVendor(vendor: Vendor): Promise<RouteReport> {
+	if ((await poolExecute("SELECT 1 FROM vendors WHERE custom_id=?", [vendor.customId])).length >= 1) {
+		console.log;
+
+		return {
+			code: 400,
+			body: { userMessage: "Es gibt bereits einen Händler mit dieser Kundennummer." },
+		};
+	}
+
 	const response = await pool.execute(
-		`INSERT INTO vendors (first_name, last_name, address, zip_code, city, email, phone, tax_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO vendors (first_name, last_name, address, zip_code, city, email, phone, tax_id, custom_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		[
 			vendor.firstName,
 			vendor.lastName,
@@ -83,6 +90,7 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 			vendor.email,
 			vendor.phone,
 			vendor.taxId,
+			vendor.customId,
 		]
 	);
 
@@ -96,8 +104,17 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 }
 
 export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
+	if ((await poolExecute("SELECT 1 FROM vendors WHERE custom_id=?", [vendor.customId])).length >= 1) {
+		console.log;
+
+		return {
+			code: 401,
+			body: { userMessage: "Es gibt bereits einen Händler mit dieser Kundennummer." },
+		};
+	}
+
 	await pool.execute(
-		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=?, active=? WHERE id=?",
+		"UPDATE vendors SET first_name=?, last_name=?, address=?, zip_code=?, city=?, email=?, phone=?, tax_id=?, active=?, custom_id=? WHERE id=?",
 		[
 			vendor.firstName,
 			vendor.lastName,
@@ -108,6 +125,7 @@ export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
 			vendor.phone,
 			vendor.taxId,
 			vendor.active,
+			vendor.customId,
 			vendor.id,
 		]
 	);

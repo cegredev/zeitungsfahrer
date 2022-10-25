@@ -47,8 +47,6 @@ export async function updateCalendarEntryController(
 	req: Request<any, any, FullCalendarEntry>,
 	res: Response<ScheduleView>
 ) {
-	console.log("update", req.body);
-
 	await handler(async () => await updateCalendarEntry(req.body), res);
 }
 

@@ -120,8 +120,6 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 									filter: (value) => {
 										prices[index] = { ...prices[index], purchase: value };
 										setPrices([...prices]);
-
-										return String(value);
 									},
 								}}
 							/>
@@ -155,7 +153,7 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 								step={0.0001}
 								customProps={{
 									parse: commaFloatParse,
-									allowDecimals: true,	
+									allowDecimals: true,
 									startValue: price.marketSell,
 									filter: (value) => {
 										prices[index] = { ...prices[index], marketSell: value };

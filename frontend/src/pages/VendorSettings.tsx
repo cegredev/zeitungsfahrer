@@ -43,8 +43,9 @@ function VendorSettings() {
 					zipCode: 0,
 					city: "",
 					email: "",
-					phone: 0,
-					taxId: 0,
+					phone: "",
+					taxId: "",
+					customId: 100,
 					lastRecordEntry: new Date("1970-01-01"),
 					active: true,
 				};
@@ -124,19 +125,18 @@ function VendorSettings() {
 						<label htmlFor="email">Email: </label>
 						<input
 							name="email"
-							type="text"
+							type="email"
 							value={vendor.email}
 							onChange={(evt) => {
 								setVendor({ ...vendor, email: evt.target.value });
 							}}
 						/>
 						<label htmlFor="phone">Telefon: </label>
-						<NumberInput
+						<input
 							name="phone"
-							customProps={{
-								startValue: vendor.phone,
-							}}
-+							onChange={(evt) => {
+							type="text"
+							value={vendor.phone}
+							onChange={(evt) => {
 								setVendor({ ...vendor, phone: evt.target.value });
 							}}
 						/>
@@ -147,8 +147,8 @@ function VendorSettings() {
 
 						<label htmlFor="taxId">Steuernr.:</label>
 						<input
+							type="string"
 							name="taxId"
-							type="number"
 							value={vendor.taxId}
 							onChange={(evt) => {
 								setVendor({ ...vendor, taxId: evt.target.value });
@@ -156,30 +156,58 @@ function VendorSettings() {
 						/>
 
 						{!isDraft && (
-							<LabeledCheckbox
-								text="Aktiv"
-								value={vendor.active}
-								setValue={() => {
-									setVendor({ ...vendor, active: !vendor.active });
-								}}
-							/>
+							<>
+								<LabeledCheckbox
+									text="Aktiv"
+									value={vendor.active}
+									setValue={() => {
+										setVendor({ ...vendor, active: !vendor.active });
+									}}
+								/>
+								<div />
+							</>
 						)}
+
+						<label htmlFor="customId">Kundennr.:</label>
+						<NumberInput
+							name="customId"
+							customProps={{
+								parse: parseInt,
+								startValue: vendor.customId,
+								filter: (value) => {
+									setVendor({ ...vendor, customId: value });
+								},
+							}}
+						/>
 					</div>
 
 					<YesNoPrompt
-						trigger={<button style={{ color: "green", float: "right" }}>Speichern</button>}
+						trigger={<button style={{ color: "green", float: "right", margin: 10 }}>Speichern</button>}
 						header="Speichern"
 						content={`Wollen Sie die Änderungen wirklich speichern?`}
 						onYes={async () => {
-							if (isDraft) {
-								const response = await POST("/auth/vendors", vendor, token!);
-								const data = await response.json();
-								setId(data.id);
-								setVendor({ ...vendor, id: data.id });
-								navigate(`/vendors/${data.id}`);
-								// navigate(0);
-							} else {
-								await PUT("/auth/vendors", vendor, token!);
+							if (
+								Object.values(vendor)
+									.map((val) => String(val).length)
+									.some((length) => length === 0)
+							) {
+								setErrorMessage("Bitte füllen Sie alle Felder aus.");
+								return;
+							}
+							try {
+								if (isDraft) {
+									const response = await POST("/auth/vendors", vendor, token!);
+									const data = await response.json();
+									setId(data.id);
+									setVendor({ ...vendor, id: data.id });
+									navigate(`/vendors/${data.id}`);
+								} else {
+									await PUT("/auth/vendors", vendor, token!);
+								}
+							} catch (e) {
+								console.error(e);
+
+								setErrorMessage("Etwas hat nicht funktioniert. Überprüfen Sie bitte Ihre Eingaben.");
 							}
 						}}
 					/>
@@ -188,33 +216,26 @@ function VendorSettings() {
 							<hr className="solid-divider" style={{ marginTop: 30 }} />
 							<h3 style={headerCSS}>Artikel</h3>
 							<VendorCatalogSettings vendorId={vendor.id!} catalog={vendor.catalog!} />
+
+							<hr className="solid-divider" style={{ marginTop: 30 }} />
+
+							<div style={{ ...spanWhole, textAlign: "center", marginTop: 25 }}>
+								<YesNoPrompt
+									trigger={
+										<button style={{ color: "red", fontSize: "medium" }}>Händler löschen</button>
+									}
+									header={"Löschen"}
+									content={`Wollen Sie den Händler "${
+										vendor.firstName + " " + vendor.lastName
+									}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
+									onYes={async () => {
+										await DELETE("/auth/vendors", { id: vendor.id! }, token!);
+										navigate("/vendors");
+									}}
+								/>
+							</div>
 						</React.Fragment>
 					)}
-
-					<hr className="solid-divider" style={{ marginTop: 30 }} />
-
-					<div style={{ ...spanWhole, textAlign: "center", marginTop: 25 }}>
-						<YesNoPrompt
-							trigger={<button style={{ color: "red", fontSize: "medium" }}>Händler löschen</button>}
-							header={"Löschen"}
-							content={`Wollen Sie den Händler "${
-								vendor.firstName + " " + vendor.lastName
-							}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
-							onYes={async () => {
-								if (
-									Object.values(vendor)
-										.map((val) => String(val).length)
-										.some((length) => length === 0)
-								) {
-									setErrorMessage("Bitte füllen Sie alle Felder aus.");
-									return;
-								}
-
-								await DELETE("/auth/vendors", { id: vendor.id! }, token!);
-								navigate("/vendors");
-							}}
-						/>
-					</div>
 				</div>
 			)}
 		</div>

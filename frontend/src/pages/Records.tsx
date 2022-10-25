@@ -90,8 +90,6 @@ function Records() {
 								header="Speichern"
 								content={`Wollen Sie das gewählte Element wirklich speichern?`}
 								onYes={async () => {
-									console.log(changedRecords);
-
 									await POST(`/auth/records/${vendorId}`, changedRecords, token!);
 
 									setChangedRecords([]);

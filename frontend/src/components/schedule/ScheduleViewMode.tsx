@@ -6,7 +6,7 @@ import { GET } from "../../api";
 import { normalizeDate } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import LoadingPlaceholder from "../util/LoadingPlaceholder";
-import ScheduleTable from "./ScheduleTable";
+import ScheduleViewTable from "./ScheduleViewTable";
 
 const startDate = dayjs(normalizeDate(new Date())).set("day", 1).toDate();
 
@@ -30,7 +30,7 @@ function ScheduleViewMode() {
 		<div className="page">
 			{drivers ? (
 				<div className="panel">
-					<ScheduleTable date={date} setDate={setDate} drivers={drivers} />
+					<ScheduleViewTable date={date} setDate={setDate} drivers={drivers} />
 				</div>
 			) : (
 				<LoadingPlaceholder />

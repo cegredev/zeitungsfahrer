@@ -13,9 +13,10 @@ export interface Vendor {
 	zipCode: number;
 	city: string;
 	email: string;
-	phone: number;
-	taxId: number;
+	phone: string;
+	taxId: string;
 	active: boolean;
+	customId: number;
 	lastRecordEntry: Date;
 	catalog?: VendorCatalog;
 }
