@@ -72,3 +72,7 @@ export const activityStyles: Map<number, React.CSSProperties & { displayName?: s
 	[activities.sick, { backgroundColor: "#bf0404", color: "white", displayName: "Krank" }],
 	[activities.plus, { backgroundColor: "#2f36a1", color: "white", displayName: "Plus" }],
 ]);
+
+export function parseIntOr(input: string, or: number): number {
+	return parseInt(input) || or;
+}
