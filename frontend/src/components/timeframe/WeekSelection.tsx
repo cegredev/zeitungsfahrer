@@ -1,40 +1,49 @@
 import dayjs from "dayjs";
+import { normalizeDate } from "../../consts";
+import NumberInput from "../util/NumberInput";
 
 interface Props {
 	date: Date;
 	setDate: (date: Date) => void;
 }
 
-function correctWeek(week: number): number {
-	if (week <= 1) return 52;
+function firstWeekStart(year: number): Date {
+	let firstWeek = dayjs().set("year", year).set("month", 0).set("date", 1).set("day", 4).toDate();
 
-	// -1 because the client counts these weeks differently
-	return week - 1;
+	if (firstWeek.getFullYear() !== year) {
+		firstWeek = dayjs(firstWeek).add(7, "days").toDate();
+	}
+
+	return dayjs(normalizeDate(firstWeek)).set("day", 1).toDate();
 }
 
-function getCorrectedWeek(date: Date): number {
-	// Subtract because week counts Sunday as the first day
-	return correctWeek(dayjs(date).subtract(1, "day").week());
+function getKW(date: Date): number {
+	const firstWeek = firstWeekStart(date.getFullYear());
+	date = dayjs(normalizeDate(date)).set("day", 1).toDate();
+
+	return (date.getTime() - firstWeek.getTime()) / (1000 * 60 * 60 * 24 * 7) + 1;
 }
 
 function WeekSelection({ date, setDate }: Props) {
-	const correctedWeek = getCorrectedWeek(date);
-
 	return (
-		<input
-			type="number"
+		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={0}
-			max={52}
-			value={correctedWeek}
-			onChange={(evt) => {
-				const newWeek = correctWeek(parseInt(evt.target.value) + 1);
-				const diff = newWeek - correctedWeek;
-				const newDate = dayjs(date)
-					.add(diff * 7, "day")
-					.toDate();
+			// max={52}
+			customProps={{
+				parse: parseInt,
+				startValue: getKW(date),
+				filter: (value) => {
+					let newDate = dayjs(firstWeekStart(date.getFullYear()))
+						.add((value - 1) * 7, "days")
+						.toDate();
 
-				setDate(newDate);
+					if (newDate.getFullYear() > date.getFullYear()) newDate = firstWeekStart(date.getFullYear() + 1);
+
+					setDate(newDate);
+
+					return String(getKW(newDate));
+				},
 			}}
 		/>
 	);

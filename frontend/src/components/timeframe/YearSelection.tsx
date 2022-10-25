@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import NumberInput from "../util/NumberInput";
 
 interface Props {
 	date: Date;
@@ -7,14 +8,16 @@ interface Props {
 
 function YearSelection({ date, setDate }: Props) {
 	return (
-		<input
-			type="number"
+		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={1971}
-			value={date.getFullYear()}
-			onChange={(evt) => {
-				const newDate = dayjs(date).set("year", parseInt(evt.target.value)).toDate();
-				setDate(newDate);
+			customProps={{
+				parse: parseInt,
+				startValue: date.getFullYear(),
+				filter: (value) => {
+					const newDate = dayjs(date).set("year", value).toDate();
+					setDate(newDate);
+				},
 			}}
 		/>
 	);

@@ -3,11 +3,12 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
+import { normalizeDate } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import LoadingPlaceholder from "../util/LoadingPlaceholder";
 import ScheduleTable from "./ScheduleTable";
 
-const startDate = dayjs(new Date()).set("day", 1).toDate();
+const startDate = dayjs(normalizeDate(new Date())).set("day", 1).toDate();
 
 function ScheduleViewMode() {
 	const [token] = useAtom(authTokenAtom);
