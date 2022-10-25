@@ -10,11 +10,11 @@ export interface Vendor {
 	firstName: string;
 	lastName: string;
 	address: string;
-	zipCode: string;
+	zipCode: number;
 	city: string;
 	email: string;
-	phone: string;
-	taxId: string;
+	phone: number;
+	taxId: number;
 	active: boolean;
 	lastRecordEntry: Date;
 	catalog?: VendorCatalog;

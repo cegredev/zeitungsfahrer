@@ -13,6 +13,7 @@ import YesNoPrompt from "./util/YesNoPrompt";
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
 import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
+import NumberInput from "./util/NumberInput";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
@@ -30,6 +31,10 @@ const gridSpan2Left: React.CSSProperties = {
 const gridSpan3: React.CSSProperties = {
 	gridColumn: "span 3",
 };
+
+function commaFloatParse(input: string): number {
+	return parseFloat(input.replace(",", "."));
+}
 
 function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 	const [article, setArticle] = React.useState({ id: articleInfo.id, name: articleInfo.name });
@@ -81,68 +86,81 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 				const mwst = (100 + price.mwst) / 100.0;
 
 				return (
-					<React.Fragment key={"article-" + article.name + "-" + index}>
+					<React.Fragment key={index}>
 						<div>{weekdays[index]}</div>
 
 						{/* Mwst */}
 						<div className="display-block" style={{ ...gridSpan2, whiteSpace: "nowrap" }}>
-							<input
-								type="number"
+							<NumberInput
 								min={0}
 								max={100}
 								className="article-input"
-								defaultValue={price.mwst}
-								onChange={(evt) => {
-									prices[index] = { ...prices[index], mwst: parseInt(evt.target.value) };
-									setPrices([...prices]);
+								customProps={{
+									parse: parseInt,
+									startValue: price.mwst,
+									filter: (value) => {
+										prices[index] = { ...prices[index], mwst: value };
+										setPrices([...prices]);
+									},
 								}}
 							/>
 							%
 						</div>
 
-						{/* Sell price */}
+						{/* Purchase price */}
 						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
-							<input
-								type="number"
+							<NumberInput
 								className="article-input"
 								min={0}
-								defaultValue={price.purchase}
 								step={0.0001}
-								onChange={(evt) => {
-									prices[index] = { ...prices[index], purchase: parseFloat(evt.target.value) };
-									setPrices([...prices]);
+								customProps={{
+									parse: commaFloatParse,
+									allowDecimals: true,
+									startValue: price.purchase,
+									filter: (value) => {
+										prices[index] = { ...prices[index], purchase: value };
+										setPrices([...prices]);
+
+										return String(value);
+									},
 								}}
 							/>
 							€
 						</div>
 						<div style={gridSpan2}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
 
-						{/*  Purchase price */}
+						{/*  Sell price */}
 						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
-							<input
-								type="number"
+							<NumberInput
 								className="article-input"
-								defaultValue={price.sell}
 								step={0.0001}
-								onChange={(evt) => {
-									prices[index] = { ...prices[index], sell: parseFloat(evt.target.value) };
-									setPrices([...prices]);
+								customProps={{
+									parse: commaFloatParse,
+									allowDecimals: true,
+									startValue: price.sell,
+									filter: (value) => {
+										prices[index] = { ...prices[index], sell: value };
+										setPrices([...prices]);
+									},
 								}}
 							/>
 							€
 						</div>
 						<div style={gridSpan2}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
 
-						{/*  Purchase price */}
+						{/*  Market-sell price */}
 						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
-							<input
-								type="number"
+							<NumberInput
 								className="article-input"
-								defaultValue={price.marketSell}
 								step={0.0001}
-								onChange={(evt) => {
-									prices[index] = { ...prices[index], marketSell: parseFloat(evt.target.value) };
-									setPrices([...prices]);
+								customProps={{
+									parse: commaFloatParse,
+									allowDecimals: true,	
+									startValue: price.marketSell,
+									filter: (value) => {
+										prices[index] = { ...prices[index], marketSell: value };
+										setPrices([...prices]);
+									},
 								}}
 							/>
 							€

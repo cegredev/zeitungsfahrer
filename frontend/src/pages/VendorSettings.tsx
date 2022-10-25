@@ -7,6 +7,7 @@ import { Vendor } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
 import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
+import NumberInput from "../components/util/NumberInput";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -39,11 +40,11 @@ function VendorSettings() {
 					firstName: "",
 					lastName: "",
 					address: "",
-					zipCode: "",
+					zipCode: 0,
 					city: "",
 					email: "",
-					phone: "",
-					taxId: "",
+					phone: 0,
+					taxId: 0,
 					lastRecordEntry: new Date("1970-01-01"),
 					active: true,
 				};
@@ -97,12 +98,14 @@ function VendorSettings() {
 						<div />
 						<div />
 						<label htmlFor="zipCode">Postleitzahl:</label>
-						<input
+						<NumberInput
 							name="zipCode"
-							type="number"
-							value={vendor.zipCode}
-							onChange={(evt) => {
-								setVendor({ ...vendor, zipCode: evt.target.value });
+							customProps={{
+								parse: parseInt,
+								startValue: vendor.zipCode,
+								filter: (value) => {
+									setVendor({ ...vendor, zipCode: value });
+								},
 							}}
 						/>
 						<label htmlFor="city">Ort:</label>
@@ -128,11 +131,12 @@ function VendorSettings() {
 							}}
 						/>
 						<label htmlFor="phone">Telefon: </label>
-						<input
+						<NumberInput
 							name="phone"
-							type="text"
-							value={vendor.phone}
-							onChange={(evt) => {
+							customProps={{
+								startValue: vendor.phone,
+							}}
++							onChange={(evt) => {
 								setVendor({ ...vendor, phone: evt.target.value });
 							}}
 						/>

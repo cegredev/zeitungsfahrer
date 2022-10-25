@@ -8,7 +8,7 @@ import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays }
 import { ChangedRecord } from "backend/src/models/records.model";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "./util/LoadingPlaceholder";
-import IntInput from "./util/IntInput";
+import NumberInput from "./util/NumberInput";
 
 const todayNormalized = normalizeDate(new Date());
 
@@ -156,11 +156,12 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 										<td>{date}</td>
 										<td>{weekdays[weekday]}</td>
 										<td>
-											<IntInput
+											<NumberInput
 												className="article-input"
 												disabled={!record.editable}
 												min={0}
 												customProps={{
+													parse: parseInt,
 													startValue: record.supply,
 													filter: (input) =>
 														updateField(recordIndex, (r) => (r.supply = input)),
@@ -168,15 +169,16 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 											/>
 										</td>
 										<td>
-											<IntInput
+											<NumberInput
 												className="article-input"
 												disabled={!record.editable}
 												min={0}
 												max={record.supply}
 												customProps={{
+													parse: parseInt,
 													startValue: record.remissions,
 													filter: (input, previous) => {
-														if (input > record.supply) return previous;
+														if (input > record.supply) return String(previous);
 
 														updateField(recordIndex, (r) => (r.remissions = input));
 													},

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { normalizeDate, parseIntOr } from "../../consts";
-import IntInput from "../util/IntInput";
+import { normalizeDate } from "../../consts";
+import NumberInput from "../util/NumberInput";
 
 interface Props {
 	date: Date;
@@ -26,11 +26,12 @@ function getKW(date: Date): number {
 
 function WeekSelection({ date, setDate }: Props) {
 	return (
-		<IntInput
+		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={0}
 			// max={52}
 			customProps={{
+				parse: parseInt,
 				startValue: getKW(date),
 				filter: (value) => {
 					let newDate = dayjs(firstWeekStart(date.getFullYear()))
