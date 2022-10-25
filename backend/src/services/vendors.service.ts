@@ -108,7 +108,7 @@ export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
 		console.log;
 
 		return {
-			code: 401,
+			code: 400,
 			body: { userMessage: "Es gibt bereits einen Händler mit dieser Kundennummer." },
 		};
 	}

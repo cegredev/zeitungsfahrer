@@ -8,6 +8,7 @@ import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
 import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
 import NumberInput from "../components/util/NumberInput";
+import axios from "axios";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -205,9 +206,9 @@ function VendorSettings() {
 									await PUT("/auth/vendors", vendor, token!);
 								}
 							} catch (e) {
-								console.error(e);
-
-								setErrorMessage("Etwas hat nicht funktioniert. Überprüfen Sie bitte Ihre Eingaben.");
+								if (axios.isAxiosError(e)) {
+									setErrorMessage(e.response?.data.userMessage);
+								}
 							}
 						}}
 					/>
