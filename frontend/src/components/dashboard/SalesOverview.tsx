@@ -8,7 +8,7 @@ import { GET } from "../../api";
 import { twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 
-function LeftPanel() {
+function SalesOverview() {
 	const navigate = useNavigate();
 
 	const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
@@ -140,4 +140,4 @@ function LeftPanel() {
 	);
 }
 
-export default LeftPanel;
+export default SalesOverview;

@@ -8,8 +8,7 @@ import { useImmer } from "use-immer";
 import { DELETE, GET, POST } from "../../api";
 import { activities, activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
-import WeekSelection from "../timeframe/WeekSelection";
-import "../util/select_search.css";
+import WeekSelection from "../time/WeekSelection";
 const numDays = 6;
 
 interface SectionProps {
@@ -54,7 +53,6 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 	}
 
 	const [token] = useAtom(authTokenAtom);
-
 	const [schedule, setSchedule] = useImmer<ScheduleView | undefined>(undefined);
 
 	React.useEffect(() => {

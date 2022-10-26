@@ -2,15 +2,15 @@ import { Driver } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import { GET } from "../../api";
-import { normalizeDate } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
-import LoadingPlaceholder from "../util/LoadingPlaceholder";
-import ScheduleViewTable from "./ScheduleViewTable";
+import { GET } from "../api";
+import { normalizeDate } from "../consts";
+import { authTokenAtom } from "../stores/utility.store";
+import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
+import ScheduleTable from "../components/schedule/ScheduleTable";
 
 const startDate = dayjs(normalizeDate(new Date())).set("day", 1).toDate();
 
-function ScheduleViewMode() {
+function Schedule() {
 	const [token] = useAtom(authTokenAtom);
 
 	const [drivers, setDrivers] = React.useState<Driver[] | undefined>();
@@ -29,7 +29,7 @@ function ScheduleViewMode() {
 		<div className="page">
 			{drivers ? (
 				<div className="panel">
-					<ScheduleViewTable date={date} setDate={setDate} drivers={drivers} />
+					<ScheduleTable date={date} setDate={setDate} drivers={drivers} />
 				</div>
 			) : (
 				<LoadingPlaceholder />
@@ -38,4 +38,4 @@ function ScheduleViewMode() {
 	);
 }
 
-export default ScheduleViewMode;
+export default Schedule;

@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import ArticleComp from "../../components/ArticleComp";
+import ArticleSettingsItem from "../../components/ArticleSettingsItem";
 import Footer from "../../components/Footer";
 import { articlesListAtom, draftArticleAtom, setArticlesAtom } from "../../stores/article.store";
 import { authTokenAtom } from "../../stores/utility.store";
@@ -48,7 +48,9 @@ function ArticleSettings() {
 				{loading
 					? "Laden..."
 					: articles.map((article) => {
-							return <ArticleComp key={"article-" + (article.id || "draft")} articleInfo={article} />;
+							return (
+								<ArticleSettingsItem key={"article-" + (article.id || "draft")} articleInfo={article} />
+							);
 					  })}
 				{!articles.some((article) => article.id == null) && (
 					<div>

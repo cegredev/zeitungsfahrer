@@ -6,10 +6,10 @@ import React from "react";
 import { GET } from "../../api";
 import { twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
-import DateSelection from "../timeframe/DateSelection";
-import MonthSelection from "../timeframe/MonthSelection";
-import WeekSelection from "../timeframe/WeekSelection";
-import YearSelection from "../timeframe/YearSelection";
+import DateSelection from "../time/DateSelection";
+import MonthSelection from "../time/MonthSelection";
+import WeekSelection from "../time/WeekSelection";
+import YearSelection from "../time/YearSelection";
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);

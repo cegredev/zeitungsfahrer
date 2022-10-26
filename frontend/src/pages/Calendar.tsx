@@ -4,16 +4,16 @@ import { useAtom } from "jotai";
 import React from "react";
 import Popup from "reactjs-popup";
 import { Updater, useImmer } from "use-immer";
-import { GET, POST, PUT } from "../../api";
-import { activities } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
-import LoadingPlaceholder from "../util/LoadingPlaceholder";
-import YesNoPrompt from "../util/YesNoPrompt";
-import ScheduleEditModeTable from "./ScheduleEditModeTable";
+import { GET, POST, PUT } from "../api";
+import { activities } from "../consts";
+import { authTokenAtom } from "../stores/utility.store";
+import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
+import YesNoPrompt from "../components/util/YesNoPrompt";
+import CalendarTable from "../components/schedule/CalendarTable";
 
 const start = new Date("2022-01-01");
 
-function ScheduleEditMode() {
+function Calendar() {
 	const [token] = useAtom(authTokenAtom);
 
 	const [schedule, setSchedule] = useImmer<ScheduleEdit | undefined>(undefined);
@@ -60,7 +60,7 @@ function ScheduleEditMode() {
 
 					<div style={{ display: "flex", gap: 10, position: "relative" }}>
 						<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
-							<ScheduleEditModeTable
+							<CalendarTable
 								date={date}
 								setDate={setDate}
 								schedule={schedule}
@@ -74,4 +74,4 @@ function ScheduleEditMode() {
 	);
 }
 
-export default ScheduleEditMode;
+export default Calendar;

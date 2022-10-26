@@ -3,7 +3,7 @@ import React from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
 import { GET, POST } from "../api";
-import TimeframeSelection from "../components/TimeframeSelection";
+import TimeframeSelection from "../components/time/TimeframeSelection";
 import { useAtom } from "jotai";
 import ArticleRecordsItem, { GUIArticleRecords } from "../components/ArticleRecordsItem";
 import { authTokenAtom } from "../stores/utility.store";

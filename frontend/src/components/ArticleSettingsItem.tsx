@@ -36,7 +36,7 @@ function commaFloatParse(input: string): number {
 	return parseFloat(input.replace(",", "."));
 }
 
-function ArticleComp({ articleInfo }: { articleInfo: Article }) {
+function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 	const [article, setArticle] = React.useState({ id: articleInfo.id, name: articleInfo.name });
 	const [prices, setPrices] = React.useState(articleInfo.prices);
 
@@ -224,4 +224,4 @@ function ArticleComp({ articleInfo }: { articleInfo: Article }) {
 	);
 }
 
-export default ArticleComp;
+export default ArticleSettingsItem;

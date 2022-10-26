@@ -7,7 +7,7 @@ import { Updater, useImmer } from "use-immer";
 import { DELETE, POST, PUT } from "../../api";
 import { activities, activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
-import YearSelection from "../timeframe/YearSelection";
+import YearSelection from "../time/YearSelection";
 import LabeledCheckbox from "../util/LabeledCheckbox";
 import YesNoPrompt from "../util/YesNoPrompt";
 
@@ -188,7 +188,7 @@ interface Props {
 
 const targetedDate = Math.max(0, dayOfYear(dayjs(new Date()).set("day", 1).toDate()) - 2);
 
-function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) {
+function CalendarTable({ date, setDate, schedule, setSchedule }: Props) {
 	const targetedColumn = React.useRef<any | null>(null);
 
 	React.useEffect(() => {
@@ -297,4 +297,4 @@ function ScheduleEditModeTable({ date, setDate, schedule, setSchedule }: Props) 
 	);
 }
 
-export default ScheduleEditModeTable;
+export default CalendarTable;

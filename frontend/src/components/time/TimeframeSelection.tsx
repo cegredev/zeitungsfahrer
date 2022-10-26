@@ -1,10 +1,10 @@
 import React from "react";
 
 import "react-datepicker/dist/react-datepicker.css";
-import YearSelection from "./timeframe/YearSelection";
-import MonthSelection from "./timeframe/MonthSelection";
-import WeekSelection from "./timeframe/WeekSelection";
-import DateSelection from "./timeframe/DateSelection";
+import YearSelection from "./YearSelection";
+import MonthSelection from "./MonthSelection";
+import WeekSelection from "./WeekSelection";
+import DateSelection from "./DateSelection";
 
 interface Props {
 	onChange: (date: Date) => void;

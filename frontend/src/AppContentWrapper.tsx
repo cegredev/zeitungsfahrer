@@ -15,8 +15,8 @@ import ArticleSettings from "./pages/settings/ArticleSettings";
 import Records from "./pages/Records";
 import Settings from "./pages/settings/Settings";
 import { GET } from "./api";
-import ScheduleViewMode from "./components/schedule/ScheduleViewMode";
-import ScheduleEditMode from "./components/schedule/ScheduleEditMode";
+import Schedule from "./pages/Schedule";
+import Calendar from "./pages/Calendar";
 import { Settings as SettingsInterface } from "backend/src/models/settings.model";
 import Login from "./pages/Login";
 
@@ -96,18 +96,18 @@ function AppContentWrapper() {
 						}
 					/>
 					<Route
-						path="/schedule"
+						path="/calendar"
 						element={
-							<SettingsPage route="/schedule">
-								<ScheduleEditMode />
+							<SettingsPage route="/calendar">
+								<Calendar />
 							</SettingsPage>
 						}
 					/>
 					<Route
-						path="/week"
+						path="/schedule"
 						element={
-							<SettingsPage route="/week">
-								<ScheduleViewMode />
+							<SettingsPage route="/schedule">
+								<Schedule />
 							</SettingsPage>
 						}
 					/>
