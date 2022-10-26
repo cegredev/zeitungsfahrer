@@ -25,6 +25,10 @@ function getKW(date: Date): number {
 }
 
 function WeekSelection({ date, setDate }: Props) {
+	for (let i = 0; i <= 12; i++) {
+		// console.log(2010 + i + ":", firstWeekStart(2010 + i));
+	}
+
 	return (
 		<NumberInput
 			style={{ maxWidth: "3rem" }}

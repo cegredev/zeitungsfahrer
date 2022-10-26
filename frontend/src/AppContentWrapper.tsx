@@ -56,7 +56,7 @@ function AppContentWrapper() {
 			</Popup>
 
 			<div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-				<Navbar />
+				{token && <Navbar />}
 
 				<Routes>
 					<Route path="/login" element={<Login />} />

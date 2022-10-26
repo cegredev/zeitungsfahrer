@@ -4,8 +4,8 @@ import {
 	addDriver,
 	deleteCalendarEntry,
 	deleteDriver,
-	getCalendarEdit,
-	getCalendarView,
+	getCalendar,
+	getSchedule,
 	getDrivers,
 	updateCalendarEntry,
 	updateDriver,
@@ -18,7 +18,7 @@ export async function getCalendarViewController(
 	res: Response<ScheduleView>
 ) {
 	await handler(
-		async () => ({ code: 200, body: await getCalendarView(new Date(req.query.start), new Date(req.query.end)) }),
+		async () => ({ code: 200, body: await getSchedule(new Date(req.query.start), new Date(req.query.end)) }),
 		res
 	);
 }
@@ -30,7 +30,7 @@ export async function getCalendarEditController(
 	await handler(
 		async () => ({
 			code: 200,
-			body: await getCalendarEdit(new Date(req.query.start), new Date(req.query.end)),
+			body: await getCalendar(new Date(req.query.start), new Date(req.query.end)),
 		}),
 		res
 	);

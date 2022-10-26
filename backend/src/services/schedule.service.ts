@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+import { DATE_FORMAT } from "../consts.js";
 import pool, { RouteReport } from "../database.js";
 import {
 	Activity,
@@ -10,20 +12,18 @@ import {
 	ScheduleEntry,
 	ScheduleView,
 } from "../models/schedule.model.js";
+import { daysBetween } from "../time.js";
 import { dayOfYear, poolExecute } from "../util.js";
-import { getVendorsSimple } from "./vendors.service.js";
 
 interface CalendarEntry {
 	activity: Activity;
 	district: number;
 	driverId: number;
-	date: number;
+	date: Date;
 }
 
-export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleEdit> {
-	const startDay = dayOfYear(start) - 1,
-		endDay = dayOfYear(end) - 1,
-		numDays = endDay - startDay + 1;
+export async function getCalendar(start: Date, end: Date): Promise<ScheduleEdit> {
+	const numDays = daysBetween(start, end) + 1;
 
 	const drivers = await getDrivers();
 	const driverIndexes = new Map<number, number>(drivers.map((d, i) => [d.id, i]));
@@ -34,8 +34,8 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 		`
 		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
-		WHERE (date BETWEEN ? AND ?) AND year=?`,
-		[startDay, endDay, start.getFullYear()]
+		WHERE date BETWEEN ? AND ?`,
+		[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 	);
 
 	const calendar: ScheduleEntry[][] = Array(drivers.length)
@@ -43,7 +43,7 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 		.map((_, driverIndex) => Array(numDays).fill({ activity: 0, district: drivers[driverIndex].defaultDistrict }));
 
 	for (const entry of calendarEntries) {
-		calendar[driverIndexes.get(entry.driverId)!][entry.date] = {
+		calendar[driverIndexes.get(entry.driverId)!][dayOfYear(entry.date) - 1] = {
 			activity: entry.activity,
 			district: entry.district,
 		};
@@ -56,10 +56,8 @@ export async function getCalendarEdit(start: Date, end: Date): Promise<ScheduleE
 	};
 }
 
-export async function getCalendarView(start: Date, end: Date): Promise<ScheduleView> {
-	const startDay = dayOfYear(start) - 1,
-		endDay = dayOfYear(end) - 1,
-		numDays = endDay - startDay + 1;
+export async function getSchedule(start: Date, end: Date): Promise<ScheduleView> {
+	const numDays = daysBetween(start, end) + 1;
 
 	const drivers = await getDrivers();
 	const driverMap = new Map(drivers.map((driver) => [driver.id, driver]));
@@ -68,8 +66,8 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 		`
 		SELECT driver_id as driverId, date, activity, district
 		FROM calendar
-		WHERE (date BETWEEN ? AND ?) AND year=?`,
-		[startDay, endDay, start.getFullYear()]
+		WHERE date BETWEEN ? AND ?`,
+		[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 	);
 
 	const districtMap = new Map<number, DistrictWeek>();
@@ -88,7 +86,7 @@ export async function getCalendarView(start: Date, end: Date): Promise<ScheduleV
 	const [free, vacation, sick, plus] = sections;
 
 	for (const { activity, district, date, driverId } of calendarEntries) {
-		const index = date - startDay;
+		const index = daysBetween(start, date);
 		const drivers = districtMap.get(district)?.drivers;
 
 		switch (activity) {
@@ -140,20 +138,25 @@ export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promis
 		}
 	}
 
-	console.log(schedule.drivers);
-
-	const year = date.getFullYear(),
-		startDay = date.getDay();
+	const year = date.getFullYear();
 
 	// FIXME: Only works from jan-01
-
-	let query = "REPLACE INTO calendar (driver_id, date, year, activity, district) VALUES ";
+	let query = "REPLACE INTO calendar (driver_id, date, activity, district) VALUES ";
 
 	schedule.calendar.forEach((row, index) => {
 		const driverId = schedule.drivers[index].id;
 
 		row.forEach((entry, date) => {
-			query += `(${[driverId, date, year, entry.activity, entry.district || "NULL"].join(",")}),`;
+			query += `(${[
+				driverId,
+				'"' +
+					dayjs(new Date(`${year}-01-01`))
+						.add(date, "days")
+						.format(DATE_FORMAT) +
+					'"',
+				entry.activity,
+				entry.district || "NULL",
+			].join(",")}),`;
 		});
 	});
 

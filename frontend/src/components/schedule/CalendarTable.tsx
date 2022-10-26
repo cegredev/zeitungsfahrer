@@ -206,9 +206,9 @@ function CalendarTable({ date, setDate, schedule, setSchedule }: Props) {
 					</th>
 					{Array(numDays)
 						.fill(null)
-						.map((_, date) => (
-							<th ref={date === targetedDate ? targetedColumn : undefined} key={date}>
-								{dayjs(date).add(date, "days").format("DD.MM.YYYY")}
+						.map((_, dayOfYear) => (
+							<th ref={dayOfYear === targetedDate ? targetedColumn : undefined} key={dayOfYear}>
+								{dayjs(date).add(dayOfYear, "days").format("DD.MM.YYYY")}
 							</th>
 						))}
 				</tr>
