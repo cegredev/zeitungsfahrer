@@ -11,24 +11,21 @@ function firstWeekStart(year: number): Date {
 	let firstWeek = dayjs().set("year", year).set("month", 0).set("date", 1).set("day", 4).toDate();
 
 	if (firstWeek.getFullYear() !== year) {
-		firstWeek = dayjs(firstWeek).add(7, "days").toDate();
+		firstWeek = dayjs(firstWeek).add(1, "week").toDate();
 	}
 
-	return dayjs(normalizeDate(firstWeek)).set("day", 1).toDate();
+	return dayjs(normalizeDate(firstWeek)).toDate();
 }
 
 function getKW(date: Date): number {
 	const firstWeek = firstWeekStart(date.getFullYear());
-	date = dayjs(normalizeDate(date)).set("day", 1).toDate();
+
+	date = dayjs(normalizeDate(date)).set("day", 4).toDate();
 
 	return (date.getTime() - firstWeek.getTime()) / (1000 * 60 * 60 * 24 * 7) + 1;
 }
 
 function WeekSelection({ date, setDate }: Props) {
-	for (let i = 0; i <= 12; i++) {
-		// console.log(2010 + i + ":", firstWeekStart(2010 + i));
-	}
-
 	return (
 		<NumberInput
 			style={{ maxWidth: "3rem" }}
@@ -39,12 +36,13 @@ function WeekSelection({ date, setDate }: Props) {
 				startValue: getKW(date),
 				filter: (value) => {
 					let newDate = dayjs(firstWeekStart(date.getFullYear()))
-						.add((value - 1) * 7, "days")
+						.add(value - 1, "weeks")
 						.toDate();
 
-					if (newDate.getFullYear() > date.getFullYear()) newDate = firstWeekStart(date.getFullYear() + 1);
+					if (newDate.getFullYear() > date.getFullYear())
+						newDate = dayjs(firstWeekStart(date.getFullYear() + 1)).toDate();
 
-					setDate(newDate);
+					setDate(dayjs(newDate).set("day", 1).toDate());
 
 					return String(getKW(newDate));
 				},
