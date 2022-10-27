@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Popup from "reactjs-popup";
 import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
 import { settingsAtom } from "./stores/settings.store";
@@ -25,11 +25,12 @@ function AppContentWrapper() {
 	const [, setSettings] = useAtom(settingsAtom);
 	const [token] = useAtom(authTokenAtom);
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
 
 	React.useEffect(() => {
-		if (token === undefined) return navigate("/login");
+		if (token === undefined) return navigate("/login?target=" + location.pathname);
 
 		async function fetchSettings() {
 			const response = await GET<SettingsInterface>("/auth/settings", token!);
