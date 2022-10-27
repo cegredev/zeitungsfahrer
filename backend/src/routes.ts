@@ -16,11 +16,13 @@ import {
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
 import {
+	addDistrictController,
 	addDriverController,
 	deleteCalendarEntryController,
 	deleteDriverController,
 	getCalendarEditController,
 	getCalendarViewController,
+	getDistrictsCalendarController,
 	getDriversController,
 	updateCalendarController,
 	updateCalendarEntryController,
@@ -81,6 +83,8 @@ function routes(app: Express) {
 	app.route("/auth/calendar/drivers").get(getDriversController).post(addDriverController).put(updateDriverController);
 
 	app.route("/auth/calendar/drivers/:id").delete(deleteDriverController);
+
+	app.route("/auth/calendar/districts").get(getDistrictsCalendarController).post(addDistrictController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

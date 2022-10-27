@@ -10,6 +10,7 @@ import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import CalendarTable from "../components/schedule/CalendarTable";
+import DistrictsTable from "../components/schedule/DistrictsTable";
 
 const start = new Date("2022-01-01");
 
@@ -58,15 +59,12 @@ function Calendar() {
 						/>
 					</div>
 
-					<div style={{ display: "flex", gap: 10, position: "relative" }}>
-						<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
-							<CalendarTable
-								date={date}
-								setDate={setDate}
-								schedule={schedule}
-								setSchedule={setSchedule}
-							/>
-						</div>
+					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
+						<CalendarTable date={date} setDate={setDate} schedule={schedule} setSchedule={setSchedule} />
+					</div>
+
+					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
+						<DistrictsTable />
 					</div>
 				</div>
 			)}

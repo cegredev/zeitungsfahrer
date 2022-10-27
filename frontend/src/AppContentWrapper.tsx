@@ -40,7 +40,10 @@ function AppContentWrapper() {
 		}
 
 		fetchSettings();
-	}, [setSettings, token]);
+
+		// It wants location.pathname to be a dependency but that would lead to login always targeting login
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [token, navigate, setSettings]);
 
 	return (
 		<React.Fragment>

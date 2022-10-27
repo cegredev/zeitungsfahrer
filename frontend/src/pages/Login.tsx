@@ -23,8 +23,10 @@ function Login() {
 
 		setWaiting(false);
 
-		navigate(searchParams.get("target") || "/");
-	}, [password, setToken]);
+		const target = searchParams.get("target");
+		console.log(target);
+		navigate(target === null || target === "/login" ? "/" : target);
+	}, [password, navigate, searchParams, setToken]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

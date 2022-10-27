@@ -1,5 +1,3 @@
-import { SimpleVendor } from "./vendors.model";
-
 export interface District {
 	id: number;
 }
@@ -22,6 +20,13 @@ export interface Driver {
 
 export interface EditedDriver extends Driver {
 	oldDefault?: number;
+}
+
+export type DistrictActivity = number;
+
+export interface DistrictCalendar {
+	districts: number[];
+	calendar: DistrictActivity[][];
 }
 
 /**

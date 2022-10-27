@@ -10,6 +10,8 @@ import {
 	updateCalendarEntry,
 	updateDriver,
 	updateSchedule,
+	getDistrictCalendar,
+	addDistrict,
 } from "../services/schedule.service.js";
 import { handler } from "./controllers.js";
 
@@ -52,6 +54,23 @@ export async function updateCalendarEntryController(
 
 export async function deleteCalendarEntryController(req: Request<any, any, FullCalendarEntry>, res: Response) {
 	await handler(async () => await deleteCalendarEntry(req.body), res);
+}
+
+export async function getDistrictsCalendarController(
+	req: Request<any, any, any, { start: Date; end: Date }>,
+	res: Response
+) {
+	await handler(
+		async () => ({
+			code: 200,
+			body: await getDistrictCalendar(new Date(req.query.start), new Date(req.query.end)),
+		}),
+		res
+	);
+}
+
+export async function addDistrictController(req: Request, res: Response) {
+	await handler(async () => ({ code: 200, body: await addDistrict() }), res);
 }
 
 export async function getDriversController(req: Request, res: Response) {
