@@ -14,6 +14,7 @@ const links = [
 	["/articles", "Artikel"],
 	["/vendors", "Händler"],
 	["/calendar", "Kalender"],
+	["/districtCalendar", "Bezirke"],
 	["/schedule", "Einsatzplan"],
 ];
 

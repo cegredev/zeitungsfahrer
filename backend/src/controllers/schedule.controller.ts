@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Driver, FullCalendarEntry, ScheduleEdit, ScheduleView } from "../models/schedule.model.js";
+import { DistrictCalendar, Driver, FullCalendarEntry, ScheduleEdit, ScheduleView } from "../models/schedule.model.js";
 import {
 	addDriver,
 	deleteCalendarEntry,
@@ -12,6 +12,8 @@ import {
 	updateSchedule,
 	getDistrictCalendar,
 	addDistrict,
+	updateDistrictCalendar,
+	deleteDistrict,
 } from "../services/schedule.service.js";
 import { handler } from "./controllers.js";
 
@@ -71,6 +73,20 @@ export async function getDistrictsCalendarController(
 
 export async function addDistrictController(req: Request, res: Response) {
 	await handler(async () => ({ code: 200, body: await addDistrict() }), res);
+}
+
+export async function updateDistrictCalendarController(
+	req: Request<any, any, DistrictCalendar, { year: string }>,
+	res: Response<ScheduleView>
+) {
+	await handler(
+		async () => ({ code: 200, body: await updateDistrictCalendar(req.body, parseInt(req.query.year)) }),
+		res
+	);
+}
+
+export async function deleteDistrictController(req: Request<any, any, any, { id: string }>, res: Response) {
+	await handler(async () => deleteDistrict(parseInt(req.query.id)), res);
 }
 
 export async function getDriversController(req: Request, res: Response) {

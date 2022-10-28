@@ -19,6 +19,7 @@ import {
 	addDistrictController,
 	addDriverController,
 	deleteCalendarEntryController,
+	deleteDistrictController,
 	deleteDriverController,
 	getCalendarEditController,
 	getCalendarViewController,
@@ -26,6 +27,7 @@ import {
 	getDriversController,
 	updateCalendarController,
 	updateCalendarEntryController,
+	updateDistrictCalendarController,
 	updateDriverController,
 } from "./controllers/schedule.controller.js";
 import {
@@ -84,7 +86,11 @@ function routes(app: Express) {
 
 	app.route("/auth/calendar/drivers/:id").delete(deleteDriverController);
 
-	app.route("/auth/calendar/districts").get(getDistrictsCalendarController).post(addDistrictController);
+	app.route("/auth/calendar/districts")
+		.get(getDistrictsCalendarController)
+		.post(addDistrictController)
+		.put(updateDistrictCalendarController)
+		.delete(deleteDistrictController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

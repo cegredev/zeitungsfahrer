@@ -19,6 +19,7 @@ import Schedule from "./pages/Schedule";
 import Calendar from "./pages/Calendar";
 import { Settings as SettingsInterface } from "backend/src/models/settings.model";
 import Login from "./pages/Login";
+import DistrictCalendar from "./pages/settings/DistrictCalendar";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -112,6 +113,14 @@ function AppContentWrapper() {
 						element={
 							<SettingsPage route="/schedule">
 								<Schedule />
+							</SettingsPage>
+						}
+					/>
+					<Route
+						path="/districtCalendar"
+						element={
+							<SettingsPage route="/districtCalendar">
+								<DistrictCalendar />
 							</SettingsPage>
 						}
 					/>

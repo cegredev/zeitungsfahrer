@@ -202,7 +202,7 @@ export async function getDistrictCalendar(start: Date, end: Date): Promise<Distr
 	const districtMap = new Map<number, number>(districts.map((districtId, i) => [districtId, i]));
 
 	const entries = await poolExecute<{ districtId: number; activity: DistrictActivity; date: Date }>(`
-		SELECT district_id as districtId, activity FROM district_calendar
+		SELECT district_id as districtId, date, activity FROM district_calendar
 	`);
 
 	const calendar = Array(districts.length)
@@ -229,7 +229,37 @@ export async function addDistrict(): Promise<{ id: number }> {
 	return { id };
 }
 
-// export async function updateDistrictCalendar({districts, calendar}: ) {}
+export async function updateDistrictCalendar({ districts, calendar }: DistrictCalendar, year: number) {
+	let query = "REPLACE INTO district_calendar (district_id, date, activity) VALUES ";
+
+	calendar.forEach((row, index) => {
+		const districtId = districts[index];
+
+		row.forEach((activity, date) => {
+			query += `(${[
+				districtId,
+				'"' +
+					dayjs(new Date(`${year}-01-01`))
+						.add(date, "days")
+						.format(DATE_FORMAT) +
+					'"',
+				activity,
+			].join(",")}),`;
+		});
+	});
+
+	query = query.substring(0, query.length - 1);
+
+	await pool.execute(query);
+}
+
+export async function deleteDistrict(id: number): Promise<RouteReport> {
+	await poolExecute("DELETE FROM districts WHERE id=?", [id]);
+
+	return {
+		code: 200,
+	};
+}
 
 export async function getDrivers(): Promise<Driver[]> {
 	return await poolExecute<Driver>("SELECT id, name, default_district as defaultDistrict FROM drivers");
