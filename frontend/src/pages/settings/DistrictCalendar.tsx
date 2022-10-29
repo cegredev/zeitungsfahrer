@@ -9,7 +9,7 @@ import LoadingPlaceholder from "../../components/util/LoadingPlaceholder";
 import YesNoPrompt from "../../components/util/YesNoPrompt";
 import { authTokenAtom } from "../../stores/utility.store";
 
-const startDate = dayjs(new Date()).set("month", 0).set("date", 0).toDate();
+const startDate = dayjs(new Date()).set("month", 0).set("date", 1).toDate();
 
 function DistrictCalendar() {
 	const [date, setDate] = React.useState(startDate);

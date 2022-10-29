@@ -9,6 +9,7 @@ import { DELETE, GET, POST } from "../../api";
 import { activities, activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import WeekSelection from "../time/WeekSelection";
+import LoadingPlaceholder from "../util/LoadingPlaceholder";
 const numDays = 6;
 
 interface SectionProps {
@@ -75,7 +76,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 	return (
 		<React.Fragment>
 			{schedule === undefined ? (
-				<div>Laden...</div>
+				<LoadingPlaceholder />
 			) : (
 				<table className="schedule-table">
 					<thead>
@@ -108,7 +109,11 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 									{week.drivers.map((weekDriver, day) => {
 										let content: JSX.Element;
 
-										if (weekDriver.id === -1 || weekDriver.oldActivity !== undefined) {
+										if (weekDriver.id === -2) {
+											content = (
+												<div style={activityStyles.get(activities.planfrei)}>Planfrei</div>
+											);
+										} else if (weekDriver.id === -1 || weekDriver.oldActivity !== undefined) {
 											const options = [
 												{
 													label: "Plus",

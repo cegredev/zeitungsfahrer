@@ -6,6 +6,7 @@ import {
 	District,
 	DistrictActivity,
 	DistrictCalendar,
+	DistrictCalendarEntry,
 	DistrictWeek,
 	Driver,
 	EditedDriver,
@@ -71,6 +72,7 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 		WHERE date BETWEEN ? AND ?`,
 		[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 	);
+	const districtCalendar = await getDistrictCalendarEntriesRaw(start, end);
 
 	const districtMap = new Map<number, DistrictWeek>();
 	for (const district of allDistricts) {
@@ -101,6 +103,17 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 			case 4:
 				sections[activity - 1][index].push(driverId);
 				break;
+		}
+	}
+
+	for (const entry of districtCalendar) {
+		if (entry.activity === 1) {
+			console.log(entry);
+
+			const index = daysBetween(start, entry.date);
+			const drivers = districtMap.get(entry.districtId)?.drivers;
+
+			drivers![index] = { id: -2 };
 		}
 	}
 
@@ -197,13 +210,21 @@ export async function deleteCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 	};
 }
 
+async function getDistrictCalendarEntriesRaw(start: Date, end: Date): Promise<DistrictCalendarEntry[]> {
+	return await poolExecute<DistrictCalendarEntry>(
+		`
+		SELECT district_id as districtId, date, activity FROM district_calendar
+		WHERE date BETWEEN ? AND ?
+	`,
+		[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+	);
+}
+
 export async function getDistrictCalendar(start: Date, end: Date): Promise<DistrictCalendar> {
 	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map(({ id }) => id);
 	const districtMap = new Map<number, number>(districts.map((districtId, i) => [districtId, i]));
 
-	const entries = await poolExecute<{ districtId: number; activity: DistrictActivity; date: Date }>(`
-		SELECT district_id as districtId, date, activity FROM district_calendar
-	`);
+	const entries = await getDistrictCalendarEntriesRaw(start, end);
 
 	const calendar = Array(districts.length)
 		.fill(null)
@@ -249,6 +270,8 @@ export async function updateDistrictCalendar({ districts, calendar }: DistrictCa
 	});
 
 	query = query.substring(0, query.length - 1);
+
+	// console.log(query);
 
 	await pool.execute(query);
 }

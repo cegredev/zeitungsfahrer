@@ -1,18 +1,15 @@
-import { District, Driver, ScheduleEdit } from "backend/src/models/schedule.model";
+import { ScheduleEdit } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import Popup from "reactjs-popup";
-import { Updater, useImmer } from "use-immer";
+import { useImmer } from "use-immer";
 import { GET, POST, PUT } from "../api";
-import { activities } from "../consts";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import CalendarTable from "../components/schedule/CalendarTable";
-import DistrictsTable from "../components/schedule/DistrictsTable";
 
-const start = dayjs(new Date()).set("month", 0).set("date", 0).toDate();
+const start = dayjs(new Date()).set("month", 0).set("date", 1).toDate();
 
 function Calendar() {
 	const [token] = useAtom(authTokenAtom);

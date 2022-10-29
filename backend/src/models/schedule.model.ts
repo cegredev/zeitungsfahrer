@@ -24,6 +24,12 @@ export interface EditedDriver extends Driver {
 
 export type DistrictActivity = number;
 
+export interface DistrictCalendarEntry {
+	districtId: number;
+	activity: DistrictActivity;
+	date: Date;
+}
+
 export interface DistrictCalendar {
 	districts: number[];
 	calendar: DistrictActivity[][];
