@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
-import { twoDecimalsFormat } from "../../consts";
+import { normalizeDate, twoDecimalsFormat } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
@@ -11,7 +11,7 @@ import YearSelection from "../time/YearSelection";
 
 function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
-	const [date, setDate] = React.useState(new Date());
+	const [date, setDate] = React.useState(normalizeDate(new Date()));
 	const [loading, setLoading] = React.useState(false);
 
 	const [token] = useAtom(authTokenAtom);

@@ -117,14 +117,14 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 											const options = [
 												{
 													label: "Plus",
-													options: schedule.free[day].map((driverIdOption) => ({
+													options: schedule.plus[day].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
 												},
 												{
 													label: "Planfrei",
-													options: schedule.plus[day].map((driverIdOption) => ({
+													options: schedule.free[day].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),

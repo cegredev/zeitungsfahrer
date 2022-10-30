@@ -142,7 +142,7 @@ function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
 					);
 				})}
 				<tr>
-					<td>
+					<td className="frozen-column">
 						<button
 							onClick={async () => {
 								const response = await POST<{ id: number }>(
