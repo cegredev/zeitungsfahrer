@@ -21,6 +21,12 @@ export interface Vendor {
 	catalog?: VendorCatalog;
 }
 
+export interface DashboardVendor {
+	id: number;
+	name: string;
+	checked: boolean;
+}
+
 export interface VendorCatalogEntry {
 	articleName: string;
 	articleId: number;

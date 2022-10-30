@@ -29,15 +29,16 @@ export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 });
 
 export function normalizeDate(date: Date): Date {
-	return dayjs()
+	let draft = dayjs()
 		.year(date.getFullYear())
 		.month(date.getMonth())
 		.date(date.getDate())
 		.hour(0)
 		.minute(0)
 		.second(0)
-		.millisecond(0)
-		.toDate();
+		.millisecond(0);
+
+	return draft.toDate();
 }
 
 export function dayOfYear(date: Date): number {

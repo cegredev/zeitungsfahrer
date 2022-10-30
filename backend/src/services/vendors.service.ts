@@ -1,17 +1,40 @@
-import { SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.model.js";
+import { DashboardVendor, SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
 import { poolExecute } from "../util.js";
 import { ArticleInfo } from "../models/articles.model.js";
+import { DATE_FORMAT } from "../consts.js";
+import dayjs from "dayjs";
 
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	return await poolExecute<Vendor>(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,
-				city, email, phone, tax_id as taxId, active, custom_id as customId, last_record_entry as lastRecordEntry
+				city, email, phone, tax_id as taxId, active, custom_id as customId
 		 FROM vendors 
 		 ${!includeInactive ? "WHERE active=1" : ""}
 		 ORDER BY last_name`
 	);
+}
+
+export async function getDashboardVendors() {
+	const vendors = (await getVendorsSimple()).filter((vendor) => vendor.active);
+
+	const vendorsChecked = new Set(
+		(
+			await poolExecute<{ id: number }>(
+				`SELECT id FROM vendors
+			LEFT JOIN records ON vendors.id=records.vendor_id
+			WHERE records.date=?
+	`,
+				[dayjs(new Date()).format(DATE_FORMAT)]
+			)
+		).map((vendor) => vendor.id)
+	);
+
+	return vendors.map((vendor) => ({
+		...vendor,
+		checked: vendorsChecked.has(vendor.id),
+	}));
 }
 
 export async function getVendorsSimple(): Promise<SimpleVendor[]> {

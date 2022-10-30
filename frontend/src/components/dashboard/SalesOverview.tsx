@@ -1,5 +1,5 @@
 import { DashboardRecords } from "backend/src/models/records.model";
-import { Vendor } from "backend/src/models/vendors.model";
+import { DashboardVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -12,25 +12,21 @@ function SalesOverview() {
 	const navigate = useNavigate();
 
 	const [selectedIndex, setSelectedIndex] = React.useState<number>(0);
-	const [vendors, setVendors] = React.useState<Vendor[]>([]);
+	const [vendors, setVendors] = React.useState<DashboardVendor[]>([]);
 	const [articles, setArticles] = React.useState<DashboardRecords>({ articles: [], totalValueBrutto: 0 });
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET<Vendor[]>("/auth/vendors?includeInactive=false", token!);
-			const newVendors: Vendor[] = res.data.map((vendor: Vendor) => ({
-				...vendor,
-				lastRecordEntry: new Date(vendor.lastRecordEntry),
-			}));
-			setVendors(newVendors);
+			const res = await GET<DashboardVendor[]>("/auth/dashboard/vendors", token!);
+			const vendors = res.data;
+			setVendors(vendors);
 
-			const newIndex = newVendors.findIndex((vendor) => vendor.active);
-			setSelectedIndex(newIndex);
-
-			const articleRes = await GET<DashboardRecords>(`/auth/records/${newVendors[newIndex].id}/today`, token!);
-			setArticles(articleRes.data);
+			if (vendors.length > 0) {
+				const articleRes = await GET<DashboardRecords>(`/auth/records/${vendors[0].id}/today`, token!);
+				setArticles(articleRes.data);
+			}
 		}
 
 		fetchData();
@@ -67,10 +63,8 @@ function SalesOverview() {
 									style={{
 										flex: 1,
 										userSelect: "none",
-										color: vendor.active ? "inherit" : "gray",
 									}}
 									onClick={async () => {
-										if (!vendor.active) return;
 										setSelectedIndex(i);
 										setArticles({
 											articles: [],
@@ -83,22 +77,12 @@ function SalesOverview() {
 										setArticles(articles.data);
 									}}
 									onDoubleClick={() => {
-										if (!vendor.active) return;
 										navigate("/records/" + vendor.id);
 									}}
 								>
-									{vendor.lastName + ", " + vendor.firstName}
+									{vendor.name}
 								</div>
-								<input
-									disabled={!vendor.active}
-									checked={
-										dayjs(new Date()).subtract(1, "day").toDate().getTime() <
-										vendor.lastRecordEntry.getTime()
-									}
-									type="checkbox"
-									name="done"
-									readOnly={true}
-								/>
+								<input checked={vendor.checked} type="checkbox" name="done" readOnly={true} />
 							</div>
 						);
 					})}

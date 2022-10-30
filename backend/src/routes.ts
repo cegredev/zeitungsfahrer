@@ -38,6 +38,7 @@ import {
 import {
 	createOrUpdateVendorController,
 	deleteVendorController,
+	getDashboardVendorsController,
 	getIncludedArticlesController,
 	getVendorFullController,
 	getVendorsController,
@@ -74,6 +75,7 @@ function routes(app: Express) {
 	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
 
 	app.route("/auth/dashboard/allSales").get(getAllSalesController);
+	app.route("/auth/dashboard/vendors").get(getDashboardVendorsController);
 
 	app.route("/auth/calendar/view")
 		.get(getCalendarViewController)
