@@ -22,7 +22,7 @@ function getKW(date: Date): number {
 
 	date = dayjs(normalizeDate(date)).set("day", 4).toDate();
 
-	return dayjs(date).diff(firstWeek, "weeks") + 1;
+	return Math.ceil(dayjs(date).diff(firstWeek, "weeks")) + 1;
 }
 
 function WeekSelection({ date, setDate }: Props) {

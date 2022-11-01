@@ -108,12 +108,14 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 
 	for (const entry of districtCalendar) {
 		if (entry.activity === 1) {
-			console.log(entry);
-
 			const index = daysBetween(start, entry.date);
-			const drivers = districtMap.get(entry.districtId)?.drivers;
+			const drivers = districtMap.get(entry.districtId)!.drivers;
 
-			drivers![index] = { id: -2 };
+			const oldDriver = drivers[index].id;
+			if (oldDriver >= 0) {
+				sections[0][index].push(oldDriver);
+			}
+			drivers[index] = { id: -2 };
 		}
 	}
 
@@ -188,9 +190,9 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 	const sqlDistrict = entry.district || null;
 
 	await poolExecute(
-		`INSERT INTO calendar (driver_id, year, date, activity, district) VALUES (?, ?, ?, ?, ?)
+		`INSERT INTO calendar (driver_id, date, activity, district) VALUES (?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE activity=?, district=?`,
-		[entry.driverId, entry.year, entry.date, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
+		[entry.driverId, `${entry.date}`, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
 	);
 
 	return {
@@ -199,11 +201,7 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 }
 
 export async function deleteCalendarEntry(entry: FullCalendarEntry): Promise<RouteReport> {
-	await poolExecute("DELETE FROM calendar WHERE driver_id=? AND year=? AND date=?", [
-		entry.driverId,
-		entry.year,
-		entry.date,
-	]);
+	await poolExecute("DELETE FROM calendar WHERE driver_id=? AND date=?", [entry.driverId, `"${entry.date}"`]);
 
 	return {
 		code: 200,

@@ -45,8 +45,7 @@ export interface DistrictCalendar {
 export type Activity = number;
 
 export interface FullCalendarEntry {
-	year: number;
-	date: number;
+	date: Date;
 	driverId: number;
 	activity: number;
 	district?: number;
