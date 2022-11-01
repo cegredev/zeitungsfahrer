@@ -14,6 +14,7 @@ import {
 	addDistrict,
 	updateDistrictCalendar,
 	deleteDistrict,
+	updateDistrict,
 } from "../services/schedule.service.js";
 import { handler } from "./controllers.js";
 
@@ -71,8 +72,8 @@ export async function getDistrictsCalendarController(
 	);
 }
 
-export async function addDistrictController(req: Request, res: Response) {
-	await handler(async () => ({ code: 200, body: await addDistrict() }), res);
+export async function addDistrictController(req: Request<any, any, { customId: string }>, res: Response) {
+	await handler(async () => ({ code: 200, body: await addDistrict(parseInt(req.body.customId)) }), res);
 }
 
 export async function updateDistrictCalendarController(
@@ -83,6 +84,10 @@ export async function updateDistrictCalendarController(
 		async () => ({ code: 200, body: await updateDistrictCalendar(req.body, parseInt(req.query.year)) }),
 		res
 	);
+}
+
+export async function updateDistrictController(req: Request<{ id: string }, any, { customId: string }>, res: Response) {
+	await handler(async () => updateDistrict(parseInt(req.params.id), parseInt(req.body.customId)), res);
 }
 
 export async function deleteDistrictController(req: Request<any, any, any, { id: string }>, res: Response) {

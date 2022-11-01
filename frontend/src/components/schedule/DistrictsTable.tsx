@@ -1,40 +1,74 @@
-import { DistrictActivity, DistrictCalendar } from "backend/src/models/schedule.model";
+import { District, DistrictCalendar } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import Popup from "reactjs-popup";
 import { Updater, useImmer } from "use-immer";
-import { DELETE, GET, POST } from "../../api";
+import { DELETE, POST, PUT } from "../../api";
 import { activityStyles, dayOfYear, weekdays } from "../../consts";
 import { authTokenAtom } from "../../stores/utility.store";
 import YearSelection from "../time/YearSelection";
-import LoadingPlaceholder from "../util/LoadingPlaceholder";
-import YesNoPrompt from "../util/YesNoPrompt";
+import NumberInput from "../util/NumberInput";
 
 const numDays = 365;
 const targetedDate = Math.max(0, dayOfYear(dayjs(new Date()).set("day", 1).toDate()) - 2);
-const startDate = dayjs(new Date()).set("month", 0).set("date", 0).toDate();
 
 function DistrictEdit({
 	district,
+	districts,
 	setCalendar,
 }: {
-	district: number;
+	district: District;
+	districts: District[];
 	setCalendar: Updater<DistrictCalendar | undefined>;
 }) {
 	const [token] = useAtom(authTokenAtom);
+	const [districtEdit, setDistrictEdit] = useImmer(district);
+
+	const isDraft = district.id === -1;
+	const trigger = isDraft ? <button>Neu</button> : <div style={{ cursor: "pointer" }}>{district.customId}</div>;
 
 	return (
-		<Popup modal nested trigger={<div style={{ cursor: "pointer" }}>{district}</div>}>
+		<Popup modal nested trigger={<div style={{ cursor: "pointer" }}>{trigger}</div>}>
 			{/* @ts-ignore */}
 			{(close: () => void) => (
 				<div className="modal">
-					<div className="header">Bezirk löschen</div>
+					<div className="header">Bezirk bearbeiten</div>
 					<div className="content" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-						Wollen Sie diesen Bezirk wirklich löschen?
+						<div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+							<label>Nummer</label>
+							<NumberInput
+								customProps={{
+									parse: parseInt,
+									startValue: districtEdit.customId || 0,
+									filter: (value) =>
+										setDistrictEdit((draft) => {
+											draft.customId = value;
+										}),
+								}}
+							/>
+						</div>
 					</div>
 
 					<div className="actions">
+						{!isDraft && (
+							<button
+								onClick={async () => {
+									await DELETE("/auth/calendar/districts?id=" + district.id, token!);
+
+									setCalendar((draft) => {
+										const index = draft?.districts.findIndex((d) => d.id === district.id)!;
+
+										draft!.districts.splice(index, 1);
+										draft!.calendar.splice(index, 1);
+									});
+
+									close();
+								}}
+							>
+								Löschen
+							</button>
+						)}
 						<button
 							onClick={async () => {
 								close();
@@ -43,20 +77,45 @@ function DistrictEdit({
 							Abbrechen
 						</button>
 						<button
+							disabled={
+								districtEdit.customId === undefined ||
+								(district.customId !== districtEdit.customId &&
+									districts.find((district) => district.customId === districtEdit.customId) !==
+										undefined)
+							}
 							onClick={async () => {
-								await DELETE("/auth/calendar/districts?id=" + district, token!);
+								if (!isDraft) {
+									await PUT(
+										"/auth/calendar/districts/" + district.id,
+										{ customId: districtEdit.customId },
+										token!
+									);
 
-								setCalendar((draft) => {
-									const index = draft?.districts.findIndex((id) => id === district)!;
+									setCalendar((draft) => {
+										draft!.districts.find((d) => d.id === district.id)!.customId =
+											districtEdit.customId;
+									});
+								} else {
+									const response = await POST<{ id: number }>(
+										"/auth/calendar/districts",
+										{ customId: districtEdit.customId },
+										token!
+									);
 
-									draft!.districts.splice(index, 1);
-									draft!.calendar.splice(index, 1);
-								});
+									setCalendar((draft) => {
+										draft!.districts.push({
+											id: response.data.id,
+											customId: districtEdit.customId,
+										});
+
+										draft!.calendar.push(Array(365).fill(0));
+									});
+								}
 
 								close();
 							}}
 						>
-							Löschen
+							Speichern
 						</button>
 					</div>
 				</div>
@@ -108,11 +167,15 @@ function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
 				</tr>
 			</thead>
 			<tbody>
-				{calendar.districts.map((districtId, districtIndex) => {
+				{calendar.districts.map((district, districtIndex) => {
 					return (
-						<tr key={districtId}>
+						<tr key={district.id}>
 							<td className="frozen-column">
-								<DistrictEdit district={districtId} setCalendar={setCalendar} />
+								<DistrictEdit
+									district={district}
+									districts={calendar.districts}
+									setCalendar={setCalendar}
+								/>
 							</td>
 							{calendar.calendar[districtIndex].map((activity, date) => (
 								<td
@@ -142,24 +205,8 @@ function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
 					);
 				})}
 				<tr>
-					<td>
-						<button
-							onClick={async () => {
-								const response = await POST<{ id: number }>(
-									"/auth/calendar/districts",
-									undefined,
-									token!
-								);
-
-								setCalendar((draft) => {
-									draft!.districts.push(response.data.id);
-
-									draft!.calendar.push(Array(365).fill(0));
-								});
-							}}
-						>
-							Neu
-						</button>
+					<td className="frozen-column">
+						<DistrictEdit district={{ id: -1 }} districts={calendar.districts} setCalendar={setCalendar} />
 					</td>
 				</tr>
 			</tbody>

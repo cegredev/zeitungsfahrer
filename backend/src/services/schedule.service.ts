@@ -221,8 +221,10 @@ async function getDistrictCalendarEntriesRaw(start: Date, end: Date): Promise<Di
 }
 
 export async function getDistrictCalendar(start: Date, end: Date): Promise<DistrictCalendar> {
-	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map(({ id }) => id);
-	const districtMap = new Map<number, number>(districts.map((districtId, i) => [districtId, i]));
+	const districts = await poolExecute<{ id: number; customId: number }>(
+		"SELECT id, custom_id as customId FROM districts ORDER BY id"
+	);
+	const districtMap = new Map<number, number>(districts.map((district, i) => [district.id, i]));
 
 	const entries = await getDistrictCalendarEntriesRaw(start, end);
 
@@ -241,8 +243,8 @@ export async function getDistrictCalendar(start: Date, end: Date): Promise<Distr
 	};
 }
 
-export async function addDistrict(): Promise<{ id: number }> {
-	const response = await pool.execute("INSERT INTO districts () VALUES ()");
+export async function addDistrict(customId: number): Promise<{ id: number }> {
+	const response = await pool.execute("INSERT INTO districts (custom_id) VALUES (?)", [customId]);
 
 	// @ts-ignore
 	const id: number = response[0].insertId;
@@ -254,11 +256,11 @@ export async function updateDistrictCalendar({ districts, calendar }: DistrictCa
 	let query = "REPLACE INTO district_calendar (district_id, date, activity) VALUES ";
 
 	calendar.forEach((row, index) => {
-		const districtId = districts[index];
+		const district = districts[index];
 
 		row.forEach((activity, date) => {
 			query += `(${[
-				districtId,
+				district.id,
 				'"' +
 					dayjs(new Date(`${year}-01-01`))
 						.add(date, "days")
@@ -271,9 +273,15 @@ export async function updateDistrictCalendar({ districts, calendar }: DistrictCa
 
 	query = query.substring(0, query.length - 1);
 
-	// console.log(query);
-
 	await pool.execute(query);
+}
+
+export async function updateDistrict(id: number, customId: number): Promise<RouteReport> {
+	await poolExecute("UPDATE districts SET custom_id=? WHERE id=?", [customId, id]);
+
+	return {
+		code: 200,
+	};
 }
 
 export async function deleteDistrict(id: number): Promise<RouteReport> {
@@ -311,7 +319,7 @@ export async function updateDriver(driver: EditedDriver): Promise<RouteReport> {
 	]);
 
 	if (driver.oldDefault) {
-		await poolExecute("UPDATE calendar SET district=? WHERE driver_id=? AND district=? AND year=?", [
+		await poolExecute("UPDATE calendar SET district=? WHERE driver_id=? AND district=? AND YEAR(date)=?", [
 			driver.defaultDistrict,
 			driver.id,
 			driver.oldDefault,

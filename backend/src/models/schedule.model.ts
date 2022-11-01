@@ -1,5 +1,6 @@
 export interface District {
 	id: number;
+	customId?: number;
 }
 
 export interface DistrictDriver {
@@ -31,7 +32,7 @@ export interface DistrictCalendarEntry {
 }
 
 export interface DistrictCalendar {
-	districts: number[];
+	districts: District[];
 	calendar: DistrictActivity[][];
 }
 
