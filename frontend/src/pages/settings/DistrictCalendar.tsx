@@ -1,4 +1,4 @@
-import { DistrictCalendar as DistrictCalendarInfo } from "backend/src/models/schedule.model";
+import { DistrictActivity, DistrictCalendar as DistrictCalendarInfo } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -11,10 +11,17 @@ import { authTokenAtom } from "../../stores/utility.store";
 
 const startDate = dayjs(new Date()).set("month", 0).set("date", 1).toDate();
 
+export interface ChangedEntry {
+	date: string;
+	districtId: number;
+	activity: DistrictActivity;
+}
+
 function DistrictCalendar() {
 	const [date, setDate] = React.useState(startDate);
 	const [calendar, setCalendar] = useImmer<DistrictCalendarInfo | undefined>(undefined);
 	const [token] = useAtom(authTokenAtom);
+	const [changedEntries, setChangedEntries] = useImmer<ChangedEntry[]>([]);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -44,13 +51,20 @@ function DistrictCalendar() {
 							header="Speichern"
 							content="Wollen Sie wirklich speichern?"
 							onYes={async () => {
-								await PUT("/auth/calendar/districts?year=" + date.getFullYear(), calendar, token!);
+								await PUT("/auth/calendar/districts", changedEntries, token!);
 							}}
 						/>
 					</div>
 
 					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
-						<DistrictsTable date={date} setDate={setDate} calendar={calendar} setCalendar={setCalendar} />
+						<DistrictsTable
+							date={date}
+							setDate={setDate}
+							calendar={calendar}
+							setCalendar={setCalendar}
+							changedEntries={changedEntries}
+							setChangedEntries={setChangedEntries}
+						/>
 					</div>
 				</div>
 			)}{" "}

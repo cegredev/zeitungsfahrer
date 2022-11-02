@@ -1,5 +1,12 @@
 import { Request, Response } from "express";
-import { DistrictCalendar, Driver, FullCalendarEntry, ScheduleEdit, ScheduleView } from "../models/schedule.model.js";
+import {
+	DistrictCalendar,
+	DistrictCalendarEntry,
+	Driver,
+	FullCalendarEntry,
+	ScheduleEdit,
+	ScheduleView,
+} from "../models/schedule.model.js";
 import {
 	addDriver,
 	deleteCalendarEntry,
@@ -77,11 +84,14 @@ export async function addDistrictController(req: Request<any, any, { customId: s
 }
 
 export async function updateDistrictCalendarController(
-	req: Request<any, any, DistrictCalendar, { year: string }>,
+	req: Request<any, any, DistrictCalendarEntry[]>,
 	res: Response<ScheduleView>
 ) {
 	await handler(
-		async () => ({ code: 200, body: await updateDistrictCalendar(req.body, parseInt(req.query.year)) }),
+		async () => ({
+			code: 200,
+			body: await updateDistrictCalendar(req.body.map((entry) => ({ ...entry, date: new Date(entry.date) }))),
+		}),
 		res
 	);
 }

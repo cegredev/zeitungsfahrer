@@ -252,28 +252,15 @@ export async function addDistrict(customId: number): Promise<{ id: number }> {
 	return { id };
 }
 
-export async function updateDistrictCalendar({ districts, calendar }: DistrictCalendar, year: number) {
-	let query = "REPLACE INTO district_calendar (district_id, date, activity) VALUES ";
-
-	calendar.forEach((row, index) => {
-		const district = districts[index];
-
-		row.forEach((activity, date) => {
-			query += `(${[
-				district.id,
-				'"' +
-					dayjs(new Date(`${year}-01-01`))
-						.add(date, "days")
-						.format(DATE_FORMAT) +
-					'"',
-				activity,
-			].join(",")}),`;
-		});
-	});
-
-	query = query.substring(0, query.length - 1);
-
-	await pool.execute(query);
+export async function updateDistrictCalendar(entries: DistrictCalendarEntry[]) {
+	for (const { districtId, date, activity } of entries) {
+		await poolExecute(
+			`INSERT INTO district_calendar (district_id, date, activity) VALUES (?, ?, ?)
+			ON DUPLICATE KEY UPDATE activity=?
+		`,
+			[districtId, dayjs(date).format(DATE_FORMAT), activity, activity]
+		);
+	}
 }
 
 export async function updateDistrict(id: number, customId: number): Promise<RouteReport> {

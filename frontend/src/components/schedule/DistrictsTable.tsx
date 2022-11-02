@@ -1,4 +1,4 @@
-import { District, DistrictCalendar } from "backend/src/models/schedule.model";
+import { District, DistrictActivity, DistrictCalendar } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -6,6 +6,7 @@ import Popup from "reactjs-popup";
 import { Updater, useImmer } from "use-immer";
 import { DELETE, POST, PUT } from "../../api";
 import { activityStyles, dayOfYear, weekdays } from "../../consts";
+import { ChangedEntry } from "../../pages/settings/DistrictCalendar";
 import { authTokenAtom } from "../../stores/utility.store";
 import YearSelection from "../time/YearSelection";
 import NumberInput from "../util/NumberInput";
@@ -129,12 +130,12 @@ interface Props {
 	setDate: (date: Date) => void;
 	calendar: DistrictCalendar;
 	setCalendar: Updater<DistrictCalendar | undefined>;
+	changedEntries: ChangedEntry[];
+	setChangedEntries: Updater<ChangedEntry[]>;
 }
 
-function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
+function DistrictsTable({ date, setDate, calendar, setCalendar, changedEntries, setChangedEntries }: Props) {
 	const targetedColumn = React.useRef<any | null>(null);
-
-	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		targetedColumn.current!.scrollIntoView({
@@ -177,9 +178,9 @@ function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
 									setCalendar={setCalendar}
 								/>
 							</td>
-							{calendar.calendar[districtIndex].map((activity, date) => (
+							{calendar.calendar[districtIndex].map((activity, dayYear) => (
 								<td
-									key={date}
+									key={dayYear}
 									style={{
 										backgroundColor: activityStyles.get(activity)?.backgroundColor,
 									}}
@@ -189,12 +190,39 @@ function DistrictsTable({ date, setDate, calendar, setCalendar }: Props) {
 										onChange={(evt) => {
 											const activity = parseInt(evt.target.value);
 
+											setChangedEntries((draft) => {
+												const newEntry = {
+													date: dayjs()
+														.year(date.getFullYear())
+														.month(0)
+														.date(1)
+														.add(dayYear, "days")
+														.format("YYYY-MM-DD"),
+													districtId: district.id,
+													activity,
+												};
+
+												const index = draft.findIndex(
+													(entry) =>
+														dayOfYear(new Date(entry.date)) === dayYear &&
+														entry.districtId === district.id
+												);
+
+												if (index === -1) {
+													draft.push(newEntry);
+												} else {
+													draft[index] = newEntry;
+												}
+											});
+
 											setCalendar((draft) => {
-												draft!.calendar[districtIndex][date] = activity;
+												draft!.calendar[districtIndex][dayYear] = activity;
 											});
 										}}
 									>
-										<option value="0">Aktiv</option>
+										<option value="0" style={activityStyles.get(0)}>
+											Aktiv
+										</option>
 										<option value="1" style={activityStyles.get(1)}>
 											Planfrei
 										</option>
