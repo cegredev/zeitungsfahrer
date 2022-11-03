@@ -44,6 +44,13 @@ export interface DistrictCalendar {
  */
 export type Activity = number;
 
+export interface ChangedCalendarEntry {
+	date: string;
+	driverId: number;
+	activity: number;
+	districtId?: number;
+}
+
 export interface FullCalendarEntry {
 	date: Date;
 	driverId: number;

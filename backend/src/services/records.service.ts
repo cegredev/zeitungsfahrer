@@ -270,11 +270,6 @@ export async function getVendorSalesRoute(articleId: number, end: Date): Promise
 }
 
 export async function createOrUpdateArticleRecords(vendorId: number, records: ChangedRecord[]): Promise<RouteReport> {
-	await pool.execute("UPDATE vendors SET last_record_entry=? WHERE id=?", [
-		dayjs(new Date()).format(DATE_FORMAT),
-		vendorId,
-	]);
-
 	for (const record of records) {
 		pool.execute(
 			`INSERT INTO records (date, article_id, vendor_id, supply, remissions) VALUES (?, ?, ?, ?, ?)
@@ -291,6 +286,7 @@ export async function createOrUpdateArticleRecords(vendorId: number, records: Ch
 			]
 		);
 	}
+
 	return {
 		code: 200,
 	};

@@ -1,4 +1,4 @@
-import { ScheduleEdit } from "backend/src/models/schedule.model";
+import { ChangedCalendarEntry, ScheduleEdit } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -16,6 +16,7 @@ function Calendar() {
 
 	const [schedule, setSchedule] = useImmer<ScheduleEdit | undefined>(undefined);
 	const [date, setDate] = React.useState(start);
+	const [changedEntries, setChangedEntries] = useImmer<ChangedCalendarEntry[]>([]);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -26,9 +27,8 @@ function Calendar() {
 					dayjs(date).add(1, "year").subtract(1, "day").format("YYYY-MM-DD"),
 				token
 			);
-			const newSchedule = calendarRes.data;
 
-			setSchedule(newSchedule);
+			setSchedule(calendarRes.data);
 		}
 
 		fetchData();
@@ -41,7 +41,6 @@ function Calendar() {
 			) : (
 				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
 					<div className="panel">
-						{/* <div style={{ textAlign: "center", marginBottom: 10 }}> */}
 						<YesNoPrompt
 							trigger={<button style={{ marginLeft: 10, color: "green" }}>Speichern</button>}
 							header="Speichern"
@@ -49,7 +48,7 @@ function Calendar() {
 							onYes={async () => {
 								await POST(
 									"/auth/calendar/edit?date=" + dayjs(start).format("YYYY-MM-DD"),
-									schedule,
+									changedEntries,
 									token!
 								);
 							}}
@@ -57,7 +56,14 @@ function Calendar() {
 					</div>
 
 					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
-						<CalendarTable date={date} setDate={setDate} schedule={schedule} setSchedule={setSchedule} />
+						<CalendarTable
+							date={date}
+							setDate={setDate}
+							schedule={schedule}
+							setSchedule={setSchedule}
+							changedEntries={changedEntries}
+							setChangedEntries={setChangedEntries}
+						/>
 					</div>
 				</div>
 			)}

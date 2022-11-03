@@ -15,8 +15,6 @@ function Login() {
 		setWaiting(true);
 
 		try {
-			console.log(password);
-
 			const response = await GET<{ token: string }>("/login?name=root&password=" + password);
 			setToken(response.data.token);
 
