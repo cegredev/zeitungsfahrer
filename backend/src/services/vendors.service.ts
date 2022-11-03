@@ -127,9 +127,10 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 }
 
 export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
-	if ((await poolExecute("SELECT 1 FROM vendors WHERE custom_id=?", [vendor.customId])).length >= 1) {
-		console.log;
-
+	if (
+		(await poolExecute("SELECT 1 FROM vendors WHERE custom_id=? AND id!=?", [vendor.customId, vendor.id])).length >=
+		1
+	) {
 		return {
 			code: 400,
 			body: { userMessage: "Es gibt bereits einen Händler mit dieser Kundennummer." },

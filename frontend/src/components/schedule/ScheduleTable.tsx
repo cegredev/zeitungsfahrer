@@ -106,7 +106,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 							return (
 								<tr key={districtId}>
 									<td>{districtId}</td>
-									{week.drivers.map((weekDriver, day) => {
+									{week.drivers.map((weekDriver, dayOfWeek) => {
 										let content: JSX.Element;
 
 										if (
@@ -117,14 +117,14 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 											const options = [
 												{
 													label: "Plus",
-													options: schedule.plus[day].map((driverIdOption) => ({
+													options: schedule.plus[dayOfWeek].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
 												},
 												{
 													label: "Planfrei",
-													options: schedule.free[day].map((driverIdOption) => ({
+													options: schedule.free[dayOfWeek].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
@@ -140,7 +140,9 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 													noOptionsMessage={() => "Alle Fahrer im Einsatz"}
 													onChange={async (option, { action }) => {
 														const timestamp = {
-															date: dayjs(date).format("YYYY-MM-DD"),
+															date: dayjs(date)
+																.day((dayOfWeek + 1) % 6)
+																.format("YYYY-MM-DD"),
 														};
 														const id =
 															action === "select-option"
@@ -180,8 +182,8 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 															let hiddenActivity = 0;
 
 															Array<[number[], number]>(
-																[draft!.free[day], activities.planfrei],
-																[draft!.plus[day], activities.plus]
+																[draft!.free[dayOfWeek], activities.planfrei],
+																[draft!.plus[dayOfWeek], activities.plus]
 															).forEach(([section, activity]) => {
 																const index = section.findIndex(
 																	(driverId) => driverId === id
@@ -197,7 +199,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 																}
 															});
 
-															draft!.districts[districtIndex].drivers[day] = {
+															draft!.districts[districtIndex].drivers[dayOfWeek] = {
 																id,
 																oldActivity: hiddenActivity,
 															};
@@ -211,7 +213,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 										}
 
 										return (
-											<td style={{ minHeight: 10, height: 30, maxHeight: 30 }} key={day}>
+											<td style={{ minHeight: 10, height: 30, maxHeight: 30 }} key={dayOfWeek}>
 												{content}
 											</td>
 										);

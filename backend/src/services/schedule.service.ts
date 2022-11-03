@@ -147,30 +147,6 @@ export async function updateCalendar(entries: ChangedCalendarEntry[]): Promise<R
 		]);
 	}
 
-	// // FIXME: Only works from jan-01
-	// let query = "REPLACE INTO calendar (driver_id, date, activity, district) VALUES ";
-
-	// schedule.calendar.forEach((row, index) => {
-	// 	const driverId = schedule.drivers[index].id;
-
-	// 	row.forEach((entry, date) => {
-	// 		query += `(${[
-	// 			driverId,
-	// 			'"' +
-	// 				dayjs(new Date(`${year}-01-01`))
-	// 					.add(date, "days")
-	// 					.format(DATE_FORMAT) +
-	// 				'"',
-	// 			entry.activity,
-	// 			entry.district || "NULL",
-	// 		].join(",")}),`;
-	// 	});
-	// });
-
-	// query = query.substring(0, query.length - 1);
-
-	// await pool.execute(query);
-
 	return {
 		code: 201,
 	};
@@ -182,7 +158,7 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 	await poolExecute(
 		`INSERT INTO calendar (driver_id, date, activity, district) VALUES (?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE activity=?, district=?`,
-		[entry.driverId, `${entry.date}`, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
+		[entry.driverId, entry.date, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
 	);
 
 	return {
