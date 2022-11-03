@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import React from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { GET } from "../api";
 import { authTokenAtom } from "../stores/utility.store";
 
@@ -14,18 +14,17 @@ function Login() {
 	const login = React.useCallback(async () => {
 		setWaiting(true);
 
-		const response = await GET<{ token: string }>("/login?name=root&password=" + password);
-		const token: string = response.data.token;
+		try {
+			const response = await GET<{ token: string }>("/login?name=root&password=" + password);
+			setToken(response.data.token);
 
-		if (token != null) {
-			setToken(token);
+			const target = searchParams.get("target");
+			navigate(target === null ? "/" : target);
+		} catch {
+			setPassword("");
 		}
 
 		setWaiting(false);
-
-		const target = searchParams.get("target");
-		console.log(target);
-		navigate(target === null || target === "/login" ? "/" : target);
 	}, [password, navigate, searchParams, setToken]);
 
 	return (

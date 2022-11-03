@@ -22,7 +22,7 @@ function getKW(date: Date): number {
 
 	date = dayjs(normalizeDate(date)).set("day", 4).toDate();
 
-	return (date.getTime() - firstWeek.getTime()) / (1000 * 60 * 60 * 24 * 7) + 1;
+	return Math.ceil(dayjs(date).diff(firstWeek, "weeks")) + 1;
 }
 
 function WeekSelection({ date, setDate }: Props) {
@@ -30,7 +30,6 @@ function WeekSelection({ date, setDate }: Props) {
 		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={0}
-			// max={52}
 			customProps={{
 				parse: parseInt,
 				startValue: getKW(date),

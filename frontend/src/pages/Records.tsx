@@ -9,13 +9,13 @@ import ArticleRecordsItem, { GUIArticleRecords } from "../components/ArticleReco
 import { authTokenAtom } from "../stores/utility.store";
 import AuthorizedPage from "./AuthorizedPage";
 import YesNoPrompt from "../components/util/YesNoPrompt";
-import { calculateTotalValueBrutto, twoDecimalsFormat } from "../consts";
+import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat } from "../consts";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import { VendorIncludedArticles } from "backend/src/models/vendors.model";
 import { useImmer } from "use-immer";
 import { ChangedRecord } from "backend/src/models/records.model";
 
-const initialEndDate = new Date();
+const initialEndDate = normalizeDate(new Date());
 
 function Records() {
 	const vendorId = parseInt(useParams().id!);

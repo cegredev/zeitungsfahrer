@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import {
-	DistrictCalendar,
 	DistrictCalendarEntry,
+	ChangedCalendarEntry,
 	Driver,
 	FullCalendarEntry,
 	ScheduleEdit,
@@ -16,7 +16,7 @@ import {
 	getDrivers,
 	updateCalendarEntry,
 	updateDriver,
-	updateSchedule,
+	updateCalendar,
 	getDistrictCalendar,
 	addDistrict,
 	updateDistrictCalendar,
@@ -49,10 +49,10 @@ export async function getCalendarEditController(
 }
 
 export async function updateCalendarController(
-	req: Request<any, any, ScheduleEdit, { date: string }>,
+	req: Request<any, any, ChangedCalendarEntry[]>,
 	res: Response<ScheduleView>
 ) {
-	await handler(async () => await updateSchedule(new Date(req.query.date), req.body), res);
+	await handler(async () => await updateCalendar(req.body), res);
 }
 
 export async function updateCalendarEntryController(

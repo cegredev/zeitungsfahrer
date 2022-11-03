@@ -3,6 +3,7 @@ import { DATE_FORMAT } from "../consts.js";
 import pool, { RouteReport } from "../database.js";
 import {
 	Activity,
+	ChangedCalendarEntry,
 	District,
 	DistrictActivity,
 	DistrictCalendar,
@@ -108,12 +109,14 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 
 	for (const entry of districtCalendar) {
 		if (entry.activity === 1) {
-			console.log(entry);
-
 			const index = daysBetween(start, entry.date);
-			const drivers = districtMap.get(entry.districtId)?.drivers;
+			const drivers = districtMap.get(entry.districtId)!.drivers;
 
-			drivers![index] = { id: -2 };
+			const oldDriver = drivers[index].id;
+			if (oldDriver >= 0) {
+				sections[0][index].push(oldDriver);
+			}
+			drivers[index] = { id: -2 };
 		}
 	}
 
@@ -134,50 +137,39 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 	};
 }
 
-export async function updateSchedule(date: Date, schedule: ScheduleEdit): Promise<RouteReport> {
-	for (const driver of schedule.drivers) {
-		if (driver.id === -1) {
-			const response = await pool.execute("INSERT INTO drivers (name, default_district) VALUES (?, ?)", [
-				driver.name,
-				driver.defaultDistrict,
-			]);
-
-			// @ts-ignore
-			driver.id = response[0].insertId;
-		} else {
-			await poolExecute("UPDATE drivers SET name=?, default_district=? WHERE id=?", [
-				driver.name,
-				driver.defaultDistrict,
-				driver.id,
-			]);
-		}
+export async function updateCalendar(entries: ChangedCalendarEntry[]): Promise<RouteReport> {
+	for (const { date, driverId, activity, districtId } of entries) {
+		await poolExecute("REPLACE INTO calendar (driver_id, date, activity, district) VALUES (?, ?, ?, ?)", [
+			driverId,
+			date,
+			activity,
+			districtId || null,
+		]);
 	}
 
-	const year = date.getFullYear();
+	// // FIXME: Only works from jan-01
+	// let query = "REPLACE INTO calendar (driver_id, date, activity, district) VALUES ";
 
-	// FIXME: Only works from jan-01
-	let query = "REPLACE INTO calendar (driver_id, date, activity, district) VALUES ";
+	// schedule.calendar.forEach((row, index) => {
+	// 	const driverId = schedule.drivers[index].id;
 
-	schedule.calendar.forEach((row, index) => {
-		const driverId = schedule.drivers[index].id;
+	// 	row.forEach((entry, date) => {
+	// 		query += `(${[
+	// 			driverId,
+	// 			'"' +
+	// 				dayjs(new Date(`${year}-01-01`))
+	// 					.add(date, "days")
+	// 					.format(DATE_FORMAT) +
+	// 				'"',
+	// 			entry.activity,
+	// 			entry.district || "NULL",
+	// 		].join(",")}),`;
+	// 	});
+	// });
 
-		row.forEach((entry, date) => {
-			query += `(${[
-				driverId,
-				'"' +
-					dayjs(new Date(`${year}-01-01`))
-						.add(date, "days")
-						.format(DATE_FORMAT) +
-					'"',
-				entry.activity,
-				entry.district || "NULL",
-			].join(",")}),`;
-		});
-	});
+	// query = query.substring(0, query.length - 1);
 
-	query = query.substring(0, query.length - 1);
-
-	await pool.execute(query);
+	// await pool.execute(query);
 
 	return {
 		code: 201,
@@ -188,9 +180,9 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 	const sqlDistrict = entry.district || null;
 
 	await poolExecute(
-		`INSERT INTO calendar (driver_id, year, date, activity, district) VALUES (?, ?, ?, ?, ?)
+		`INSERT INTO calendar (driver_id, date, activity, district) VALUES (?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE activity=?, district=?`,
-		[entry.driverId, entry.year, entry.date, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
+		[entry.driverId, `${entry.date}`, entry.activity, sqlDistrict, entry.activity, sqlDistrict]
 	);
 
 	return {
@@ -199,11 +191,7 @@ export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<Rou
 }
 
 export async function deleteCalendarEntry(entry: FullCalendarEntry): Promise<RouteReport> {
-	await poolExecute("DELETE FROM calendar WHERE driver_id=? AND year=? AND date=?", [
-		entry.driverId,
-		entry.year,
-		entry.date,
-	]);
+	await poolExecute("DELETE FROM calendar WHERE driver_id=? AND date=?", [entry.driverId, `"${entry.date}"`]);
 
 	return {
 		code: 200,

@@ -109,22 +109,22 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 									{week.drivers.map((weekDriver, day) => {
 										let content: JSX.Element;
 
-										if (weekDriver.id === -2) {
-											content = (
-												<div style={activityStyles.get(activities.planfrei)}>Planfrei</div>
-											);
-										} else if (weekDriver.id === -1 || weekDriver.oldActivity !== undefined) {
+										if (
+											weekDriver.id === -1 ||
+											weekDriver.id === -2 ||
+											weekDriver.oldActivity !== undefined
+										) {
 											const options = [
 												{
 													label: "Plus",
-													options: schedule.free[day].map((driverIdOption) => ({
+													options: schedule.plus[day].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
 												},
 												{
 													label: "Planfrei",
-													options: schedule.plus[day].map((driverIdOption) => ({
+													options: schedule.free[day].map((driverIdOption) => ({
 														label: driverMap.get(driverIdOption)!.name,
 														value: driverIdOption,
 													})),
@@ -140,8 +140,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 													noOptionsMessage={() => "Alle Fahrer im Einsatz"}
 													onChange={async (option, { action }) => {
 														const timestamp = {
-															year: date.getFullYear(),
-															date: dayOfYear(date) + day,
+															date: dayjs(date).format("YYYY-MM-DD"),
 														};
 														const id =
 															action === "select-option"
@@ -151,7 +150,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 														const oldDriver = weekDriver;
 
 														// Restore previous driver to original activity
-														if (oldDriver.id !== -1) {
+														if (oldDriver.id !== -1 && oldDriver.id !== -2) {
 															await POST(
 																"/auth/calendar/view",
 																{

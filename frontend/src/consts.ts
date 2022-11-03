@@ -29,11 +29,23 @@ export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 });
 
 export function normalizeDate(date: Date): Date {
-	return new Date(dayjs(date).format("YYYY-MM-DD"));
+	let draft = dayjs()
+		.year(date.getFullYear())
+		.month(date.getMonth())
+		.date(date.getDate())
+		.hour(0)
+		.minute(0)
+		.second(0)
+		.millisecond(0);
+
+	return draft.toDate();
 }
 
 export function dayOfYear(date: Date): number {
-	return Math.floor((normalizeDate(date).getTime() - new Date("2022-01-01").getTime()) / (1000 * 60 * 60 * 24));
+	return Math.floor(
+		(normalizeDate(date).getTime() - new Date(new Date().getFullYear() + "-01-01").getTime()) /
+			(1000 * 60 * 60 * 24)
+	);
 }
 
 export function dateAsTextWithSystem(date: Date, system: number): string {

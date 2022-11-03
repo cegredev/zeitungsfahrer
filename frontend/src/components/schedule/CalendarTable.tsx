@@ -1,4 +1,4 @@
-import { Activity, Driver, ScheduleEdit, ScheduleEntry } from "backend/src/models/schedule.model";
+import { Activity, ChangedCalendarEntry, Driver, ScheduleEdit, ScheduleEntry } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -184,11 +184,13 @@ interface Props {
 	setDate: (date: Date) => void;
 	schedule: ScheduleEdit;
 	setSchedule: Updater<ScheduleEdit | undefined>;
+	changedEntries: ChangedCalendarEntry[];
+	setChangedEntries: Updater<ChangedCalendarEntry[]>;
 }
 
 const targetedDate = Math.max(0, dayOfYear(dayjs(new Date()).set("day", 1).toDate()) - 2);
 
-function CalendarTable({ date, setDate, schedule, setSchedule }: Props) {
+function CalendarTable({ date, setDate, schedule, setSchedule, changedEntries, setChangedEntries }: Props) {
 	const targetedColumn = React.useRef<any | null>(null);
 
 	React.useEffect(() => {
@@ -235,9 +237,9 @@ function CalendarTable({ date, setDate, schedule, setSchedule }: Props) {
 									setSchedule={setSchedule}
 								/>
 							</td>
-							{row.map((entry, entryIndex) => (
+							{row.map((entry, dayYear) => (
 								<td
-									key={entryIndex}
+									key={dayYear}
 									style={{ backgroundColor: activityStyles.get(entry.activity)?.backgroundColor }}
 								>
 									<select
@@ -255,7 +257,34 @@ function CalendarTable({ date, setDate, schedule, setSchedule }: Props) {
 											if (activity < 0) newCell = { activity: 0, district: -activity };
 
 											setSchedule((draft) => {
-												draft!.calendar[rowIndex][entryIndex] = newCell;
+												draft!.calendar[rowIndex][dayYear] = newCell;
+											});
+
+											setChangedEntries((draft) => {
+												const newEntry = {
+													date: dayjs()
+														.year(date.getFullYear())
+														.month(0)
+														.date(1)
+														.add(dayYear, "days")
+														.format("YYYY-MM-DD"),
+													driverId: driver.id,
+													...newCell,
+												};
+
+												console.log(newEntry.date);
+
+												const index = changedEntries.findIndex(
+													(entry) =>
+														entry.driverId === driver.id &&
+														dayOfYear(dayjs(entry.date).toDate()) === dayYear
+												);
+
+												if (index === -1) {
+													draft.push(newEntry);
+												} else {
+													draft[index] = newEntry;
+												}
 											});
 										}}
 									>

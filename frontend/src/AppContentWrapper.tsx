@@ -31,6 +31,7 @@ function AppContentWrapper() {
 	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
 
 	React.useEffect(() => {
+		if (location.pathname === "/login") return;
 		if (token === undefined) return navigate("/login?target=" + location.pathname);
 
 		async function fetchSettings() {
