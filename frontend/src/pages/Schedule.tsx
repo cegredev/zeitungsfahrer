@@ -7,6 +7,7 @@ import { normalizeDate } from "../consts";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import ScheduleTable from "../components/schedule/ScheduleTable";
+import YearSelection from "../components/time/YearSelection";
 
 const startDate = dayjs(normalizeDate(new Date())).set("day", 1).toDate();
 
@@ -26,7 +27,16 @@ function Schedule() {
 	}, [setDrivers, token]);
 
 	return (
-		<div className="page">
+		<div className="page" style={{ gap: 10 }}>
+			<h3 className="panel">
+				Jahr:{" "}
+				<YearSelection
+					date={date}
+					setDate={(date) => {
+						setDate(dayjs(date).day(1).toDate());
+					}}
+				/>
+			</h3>
 			{drivers ? (
 				<div className="panel">
 					<ScheduleTable date={date} setDate={setDate} drivers={drivers} />
