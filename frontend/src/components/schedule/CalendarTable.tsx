@@ -1,4 +1,11 @@
-import { Activity, ChangedCalendarEntry, Driver, ScheduleEdit, ScheduleEntry } from "backend/src/models/schedule.model";
+import {
+	Activity,
+	ChangedCalendarEntry,
+	District,
+	Driver,
+	ScheduleEdit,
+	ScheduleEntry,
+} from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -24,7 +31,7 @@ function DriverEdit({
 	setSchedule,
 }: {
 	driver: Driver;
-	districts: number[];
+	districts: District[];
 	setSchedule: Updater<ScheduleEdit | undefined>;
 }) {
 	const [driverEdit, setDriverEdit] = useImmer(originalDriver);
@@ -66,8 +73,8 @@ function DriverEdit({
 							>
 								{driverEdit.defaultDistrict <= 0 && <option value={-1}>-</option>}
 								{districts.map((district) => (
-									<option key={district} value={district}>
-										{district}
+									<option key={district.id} value={district.id}>
+										{district.customId}
 									</option>
 								))}
 							</select>
@@ -302,8 +309,8 @@ function CalendarTable({ date, setDate, schedule, setSchedule, changedEntries, s
 										))}
 
 										{schedule.districts.map((district) => (
-											<option key={district} value={-district}>
-												Bezirk {district}
+											<option key={district.id} value={-district.id}>
+												Bezirk {district.customId}
 											</option>
 										))}
 									</select>

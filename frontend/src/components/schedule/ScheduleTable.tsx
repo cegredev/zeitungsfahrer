@@ -101,11 +101,11 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 					</thead>
 					<tbody>
 						{schedule.districts.map((week, districtIndex) => {
-							const districtId = week.district;
+							const district = week.district;
 
 							return (
-								<tr key={districtId}>
-									<td>{districtId}</td>
+								<tr key={district.id}>
+									<td>{district.customId}</td>
 									{week.drivers.map((weekDriver, dayOfWeek) => {
 										let content: JSX.Element;
 
@@ -172,7 +172,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 																	...timestamp,
 																	driverId: id,
 																	activity: activities.working,
-																	district: districtId,
+																	district: district.id,
 																},
 																token!
 															);

@@ -32,7 +32,7 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleEdit>
 	const drivers = await getDrivers();
 	const driverIndexes = new Map<number, number>(drivers.map((d, i) => [d.id, i]));
 
-	const districts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
+	const districts = await poolExecute<District>("SELECT id, custom_id as customId FROM districts");
 
 	const calendarEntries = await poolExecute<CalendarEntry>(
 		`
@@ -56,7 +56,7 @@ export async function getCalendar(start: Date, end: Date): Promise<ScheduleEdit>
 	return {
 		calendar,
 		drivers,
-		districts: districts.sort((a, b) => a - b),
+		districts: districts.sort((a, b) => a.id - b.id),
 	};
 }
 
@@ -65,7 +65,7 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 
 	const drivers = await getDrivers();
 	const driverMap = new Map(drivers.map((driver) => [driver.id, driver]));
-	const allDistricts = (await poolExecute<{ id: number }>("SELECT id FROM districts")).map((d) => d.id);
+	const allDistricts = await poolExecute<District>("SELECT id, custom_id as customId FROM districts");
 	const calendarEntries = await poolExecute<CalendarEntry>(
 		`
 		SELECT driver_id as driverId, date, activity, district
@@ -77,7 +77,7 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 
 	const districtMap = new Map<number, DistrictWeek>();
 	for (const district of allDistricts) {
-		districtMap.set(district, {
+		districtMap.set(district.id, {
 			district,
 			drivers: Array(numDays).fill({ id: -1 }),
 		});
@@ -128,7 +128,7 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 	}
 
 	return {
-		districts: [...districtMap.values()].sort((a, b) => a.district - b.district),
+		districts: [...districtMap.values()].sort((a, b) => a.district.id - b.district.id),
 		free,
 		vacation,
 		sick,

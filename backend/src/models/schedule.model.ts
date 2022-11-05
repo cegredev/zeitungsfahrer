@@ -9,7 +9,7 @@ export interface DistrictDriver {
 }
 
 export interface DistrictWeek {
-	district: number;
+	district: District;
 	drivers: DistrictDriver[];
 }
 
@@ -67,7 +67,7 @@ export interface ScheduleEntry {
 export interface ScheduleEdit {
 	calendar: ScheduleEntry[][];
 	drivers: Driver[];
-	districts: number[];
+	districts: District[];
 }
 
 export interface ScheduleView {
