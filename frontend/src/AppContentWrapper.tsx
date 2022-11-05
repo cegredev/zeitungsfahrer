@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Popup from "reactjs-popup";
-import { authTokenAtom, errorMessageAtom } from "./stores/utility.store";
+import { authTokenAtom, errorMessageAtom, userRoleAtom } from "./stores/utility.store";
 import { settingsAtom } from "./stores/settings.store";
 
 import Navbar from "./components/Navbar";
@@ -25,6 +25,7 @@ function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
 	const [, setSettings] = useAtom(settingsAtom);
 	const [token] = useAtom(authTokenAtom);
+	const [role] = useAtom(userRoleAtom);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -32,7 +33,8 @@ function AppContentWrapper() {
 
 	React.useEffect(() => {
 		if (location.pathname === "/login") return;
-		if (token === undefined) return navigate("/login?target=" + location.pathname);
+		if (token === undefined)
+			return navigate("/login" + (location.pathname === "/" ? "" : "?target=" + location.pathname));
 
 		async function fetchSettings() {
 			const response = await GET<SettingsInterface>("/auth/settings", token!);
@@ -62,7 +64,22 @@ function AppContentWrapper() {
 			</Popup>
 
 			<div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-				{token && <Navbar />}
+				{token && (
+					<Navbar
+						links={
+							role === 1
+								? [
+										{ name: "Dashboard", url: "/" },
+										{ name: "Einstellungen", url: "/settings" },
+								  ]
+								: [
+										{ name: "Einsatzplan", url: "/schedule" },
+										{ name: "Kalender", url: "/calendar" },
+										{ name: "Bezirke", url: "/districts" },
+								  ]
+						}
+					/>
+				)}
 
 				<Routes>
 					<Route path="/login" element={<Login />} />

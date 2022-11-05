@@ -2,11 +2,14 @@ import { useAtom } from "jotai";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GET } from "../api";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom, userRoleAtom } from "../stores/utility.store";
+import { LoginResult } from "backend/src/models/accounts.model";
 
 function Login() {
 	const [, setToken] = useAtom(authTokenAtom);
+	const [, setRole] = useAtom(userRoleAtom);
 	const [password, setPassword] = React.useState("");
+	const [username, setUsername] = React.useState("");
 	const [waiting, setWaiting] = React.useState(false);
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
@@ -15,11 +18,12 @@ function Login() {
 		setWaiting(true);
 
 		try {
-			const response = await GET<{ token: string }>("/login?name=root&password=" + password);
+			const response = await GET<LoginResult>(`/login?name=${username}&password=${password}`);
 			setToken(response.data.token);
+			setRole(response.data.role);
 
 			const target = searchParams.get("target");
-			navigate(target === null ? "/" : target);
+			navigate(target === null ? response.data.path : target);
 		} catch {
 			setPassword("");
 		}
@@ -40,6 +44,14 @@ function Login() {
 				<input
 					type="text"
 					disabled={waiting}
+					value={username}
+					name="username"
+					placeholder="Benutzername"
+					onChange={(evt) => setUsername(evt.target.value)}
+				/>
+				<input
+					type="text"
+					disabled={waiting}
 					value={password}
 					name="password"
 					placeholder="Passwort"
@@ -47,7 +59,7 @@ function Login() {
 				/>
 			</form>
 
-			<button disabled={password.length === 0 || waiting} onClick={login}>
+			<button disabled={username.length === 0 || password.length === 0 || waiting} onClick={login}>
 				Anmelden
 			</button>
 		</div>

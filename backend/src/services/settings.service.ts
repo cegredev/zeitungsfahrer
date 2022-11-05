@@ -1,7 +1,7 @@
 import pool, { RouteReport } from "../database.js";
 import { Settings } from "../models/settings.model.js";
 import { poolExecute } from "../util.js";
-import { validatePassword } from "./accounts.service.js";
+import { login } from "./accounts.service.js";
 
 const initialSettings = (await poolExecute("SELECT * FROM settings LIMIT 1"))[0];
 
@@ -11,7 +11,7 @@ const settings: Settings = {
 };
 
 export async function loginSettings(password: string): Promise<RouteReport> {
-	return (await validatePassword("settings", password)) ? { code: 200 } : { code: 403 };
+	return (await login("settings", password)) ? { code: 200 } : { code: 403 };
 }
 
 export async function updateSettings(newSettings: Settings): Promise<void> {

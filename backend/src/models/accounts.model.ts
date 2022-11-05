@@ -1,4 +1,10 @@
 export interface Account {
 	name: string;
-	role: 0 | 1;
+	role: number;
+}
+
+export interface LoginResult {
+	token: string;
+	path: string;
+	role: number;
 }

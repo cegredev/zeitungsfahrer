@@ -2,38 +2,56 @@ import { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
+import { LoginResult } from "../models/accounts.model.js";
 
 function generateAccessToken(name: string) {
 	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "12h" });
 }
 
-export async function validatePassword(name: string, password: string): Promise<boolean> {
+export async function login(name: string, password: string): Promise<LoginResult | undefined> {
 	const response = await poolExecute<{ name: string; password: string; role: number }>(
 		"SELECT name, password, role FROM accounts WHERE name=?",
 		[name]
 	);
 
+	if (response.length === 0) return;
+
+	const data = response[0];
+
 	// FIXME
-	return response[0].password === password;
-}
+	if (data.password !== password) return;
 
-async function login(name: string, password: string) {
-	if (!(await validatePassword(name, password))) return;
+	let path;
+	switch (data.role) {
+		case 1:
+			path = "/dashboard";
+			break;
+		case 2:
+			path = "/schedule";
+			break;
+		default:
+			path = "/badrole";
+			break;
+	}
 
-	return generateAccessToken(name);
+	return {
+		token: generateAccessToken(name),
+		path,
+		role: data.role,
+	};
 }
 
 export async function loginRoute(name: string, password: string): Promise<RouteReport> {
-	const token = await login(name, password);
+	const data = await login(name, password);
 
-	return token === undefined
+	return data === undefined
 		? {
 				code: 401,
 				body: {},
 		  }
 		: {
 				code: 200,
-				body: { token },
+				body: data,
 		  };
 }
 
