@@ -90,6 +90,19 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 	);
 	const [free, vacation, sick, plus] = sections;
 
+	for (const entry of districtCalendar) {
+		if (entry.activity === 1) {
+			const index = daysBetween(start, entry.date);
+			const drivers = districtMap.get(entry.districtId)!.drivers;
+
+			const oldDriver = drivers[index].id;
+			if (oldDriver >= 0) {
+				sections[0][index].push(oldDriver);
+			}
+			drivers[index] = { id: -2 };
+		}
+	}
+
 	for (const { activity, district, date, driverId } of calendarEntries) {
 		const index = daysBetween(start, date);
 		const drivers = districtMap.get(district)?.drivers;
@@ -104,19 +117,6 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 			case 4:
 				sections[activity - 1][index].push(driverId);
 				break;
-		}
-	}
-
-	for (const entry of districtCalendar) {
-		if (entry.activity === 1) {
-			const index = daysBetween(start, entry.date);
-			const drivers = districtMap.get(entry.districtId)!.drivers;
-
-			const oldDriver = drivers[index].id;
-			if (oldDriver >= 0) {
-				sections[0][index].push(oldDriver);
-			}
-			drivers[index] = { id: -2 };
 		}
 	}
 
