@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
 import { useImmer } from "use-immer";
-import { GET, POST, PUT } from "../api";
+import { GET, POST } from "../api";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import YesNoPrompt from "../components/util/YesNoPrompt";
@@ -35,11 +35,19 @@ function Calendar() {
 	}, [setSchedule, date, token]);
 
 	return (
-		<>
+		<div className="page" style={{ padding: 10 }}>
 			{schedule === undefined ? (
 				<LoadingPlaceholder />
 			) : (
-				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						gap: 10,
+						maxWidth: "100%",
+					}}
+				>
 					<div className="panel">
 						<YesNoPrompt
 							trigger={<button style={{ marginLeft: 10, color: "green" }}>Speichern</button>}
@@ -55,7 +63,7 @@ function Calendar() {
 						/>
 					</div>
 
-					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
+					<div className="panel" style={{ width: "90%", overflowX: "scroll", paddingLeft: 0 }}>
 						<CalendarTable
 							date={date}
 							setDate={setDate}
@@ -67,7 +75,7 @@ function Calendar() {
 					</div>
 				</div>
 			)}
-		</>
+		</div>
 	);
 }
 

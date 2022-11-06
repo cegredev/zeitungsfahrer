@@ -63,7 +63,7 @@ function AppContentWrapper() {
 				</div>
 			</Popup>
 
-			<div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+			<div style={{ flex: 1, display: "flex", flexDirection: "column", maxWidth: "100%" }}>
 				{token && (
 					<Navbar
 						links={
@@ -83,65 +83,52 @@ function AppContentWrapper() {
 
 				<Routes>
 					<Route path="/login" element={<Login />} />
-					<Route path="/" element={<Navigate to="/dashboard" />} />
-					<Route path="/dashboard" element={<Dashboard />} />
-					<Route path="/records/:id" element={<Records />} />
-					<Route
-						path="/articles"
-						element={
-							<SettingsPage route="/articles">
-								<ArticleSettings />
-							</SettingsPage>
-						}
-					/>{" "}
-					<Route
-						path="/vendors"
-						element={
-							<SettingsPage route="/vendors">
-								<Vendors />
-							</SettingsPage>
-						}
-					/>{" "}
-					<Route
-						path="/vendors/:id"
-						element={
-							<SettingsPage route="/vendors">
-								<VendorSettings />
-							</SettingsPage>
-						}
-					/>
-					<Route
-						path="/settings"
-						element={
-							<SettingsPage route="/settings">
-								<Settings />
-							</SettingsPage>
-						}
-					/>
-					<Route
-						path="/calendar"
-						element={
-							<SettingsPage route="/calendar">
-								<Calendar />
-							</SettingsPage>
-						}
-					/>
-					<Route
-						path="/schedule"
-						element={
-							<SettingsPage route="/schedule">
-								<Schedule />
-							</SettingsPage>
-						}
-					/>
-					<Route
-						path="/districtCalendar"
-						element={
-							<SettingsPage route="/districtCalendar">
-								<DistrictCalendar />
-							</SettingsPage>
-						}
-					/>
+					<Route path="/" element={<Navigate to={role === 1 ? "/dashboard" : "/schedule"} />} />
+					{role === 1 && (
+						<>
+							<Route path="/dashboard" element={<Dashboard />} />
+							<Route path="/records/:id" element={<Records />} />
+							<Route
+								path="/articles"
+								element={
+									<SettingsPage route="/articles">
+										<ArticleSettings />
+									</SettingsPage>
+								}
+							/>{" "}
+							<Route
+								path="/vendors"
+								element={
+									<SettingsPage route="/vendors">
+										<Vendors />
+									</SettingsPage>
+								}
+							/>{" "}
+							<Route
+								path="/vendors/:id"
+								element={
+									<SettingsPage route="/vendors">
+										<VendorSettings />
+									</SettingsPage>
+								}
+							/>
+							<Route
+								path="/settings"
+								element={
+									<SettingsPage route="/settings">
+										<Settings />
+									</SettingsPage>
+								}
+							/>
+						</>
+					)}
+					{role === 2 && (
+						<>
+							<Route path="/calendar" element={<Calendar />} />
+							<Route path="/schedule" element={<Schedule />} />
+							<Route path="/districts" element={<DistrictCalendar />} />
+						</>
+					)}
 					<Route path="*" element={<Error404 />} />
 				</Routes>
 			</div>

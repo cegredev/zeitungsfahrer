@@ -29,7 +29,7 @@ function Login() {
 		}
 
 		setWaiting(false);
-	}, [password, navigate, searchParams, setToken]);
+	}, [password, navigate, searchParams, setToken, setRole, username]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
@@ -57,6 +57,7 @@ function Login() {
 					placeholder="Passwort"
 					onChange={(evt) => setPassword(evt.target.value)}
 				/>
+				<input type="submit" hidden />
 			</form>
 
 			<button disabled={username.length === 0 || password.length === 0 || waiting} onClick={login}>

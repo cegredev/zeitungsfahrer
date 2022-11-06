@@ -13,9 +13,6 @@ const links = [
 	["/settings", "Allgemein"],
 	["/articles", "Artikel"],
 	["/vendors", "Händler"],
-	["/calendar", "Kalender"],
-	["/districtCalendar", "Bezirke"],
-	["/schedule", "Einsatzplan"],
 ];
 
 function SettingsNav({ route: activeRoute, children }: Props) {

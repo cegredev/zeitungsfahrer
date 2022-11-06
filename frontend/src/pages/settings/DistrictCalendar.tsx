@@ -39,13 +39,20 @@ function DistrictCalendar() {
 	}, [setCalendar, date, token]);
 
 	return (
-		<>
+		<div className="page" style={{ padding: 10 }}>
 			{calendar === undefined ? (
 				<LoadingPlaceholder />
 			) : (
-				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+				<div
+					style={{
+						display: "flex",
+						maxWidth: "100%",
+						flexDirection: "column",
+						alignItems: "center",
+						gap: 10,
+					}}
+				>
 					<div className="panel">
-						{/* <div style={{ textAlign: "center", marginBottom: 10 }}> */}
 						<YesNoPrompt
 							trigger={<button style={{ marginLeft: 10, color: "green" }}>Speichern</button>}
 							header="Speichern"
@@ -56,7 +63,7 @@ function DistrictCalendar() {
 						/>
 					</div>
 
-					<div className="panel" style={{ width: "70vw", overflowX: "scroll", paddingLeft: 0 }}>
+					<div className="panel" style={{ width: "90%", overflowX: "scroll", paddingLeft: 0 }}>
 						<DistrictsTable
 							date={date}
 							setDate={setDate}
@@ -67,8 +74,8 @@ function DistrictCalendar() {
 						/>
 					</div>
 				</div>
-			)}{" "}
-		</>
+			)}
+		</div>
 	);
 }
 

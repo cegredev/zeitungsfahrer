@@ -81,9 +81,10 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 				<table className="schedule-table">
 					<thead>
 						<tr>
-							<th style={{ whiteSpace: "nowrap" }}>
+							{/* <th style={{ whiteSpace: "nowrap" }}>
 								KW <WeekSelection date={date} setDate={setDate} />
-							</th>
+							</th> */}
+							<th />
 							{Array(numDays)
 								.fill(null)
 								.map((_, index) => {
