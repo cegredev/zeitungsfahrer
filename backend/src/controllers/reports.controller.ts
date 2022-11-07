@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { getArticleSalesReport, getVendorSalesReport } from "../services/reports.service.js";
+import {
+	createVendorSalesReportDoc,
+	getArticleSalesReport,
+	getVendorSalesReport,
+} from "../services/reports.service.js";
 import { handler } from "./controllers.js";
 
 export async function getArticleSalesReportController(
@@ -23,6 +27,8 @@ export async function getVendorSalesReportController(
 	req: Request<{ id: string }, any, any, { start: string; end: string }>,
 	res: Response
 ) {
+	await createVendorSalesReportDoc(parseInt(req.params.id), new Date(req.query.start), new Date(req.query.end));
+
 	await handler(
 		async () => ({
 			code: 200,

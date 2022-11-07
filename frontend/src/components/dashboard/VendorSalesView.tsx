@@ -109,12 +109,12 @@ function VendorSalesView() {
 				</tr>
 				<tr>
 					<td />
-					{[0, 1, 2, 3].map(() => (
-						<td style={{ textAlign: "center" }}>
+					{[0, 1, 2, 3].map((_, i) => (
+						<td key={i} style={{ textAlign: "center" }}>
 							<button
 								onClick={async () => {
 									const report = await GET(
-										`/auth/reports/vendor/${vendorId}?start=2022-10-17&end=2022-10-23`,
+										`/auth/reports/vendor/${vendorId}?start=2022-01-01&end=2022-12-30`,
 										token!
 									);
 
