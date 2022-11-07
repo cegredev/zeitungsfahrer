@@ -107,6 +107,25 @@ function VendorSalesView() {
 						))
 					)}
 				</tr>
+				<tr>
+					<td />
+					{[0, 1, 2, 3].map(() => (
+						<td style={{ textAlign: "center" }}>
+							<button
+								onClick={async () => {
+									const report = await GET(
+										`/auth/reports/vendor/${vendorId}?start=2022-10-17&end=2022-10-23`,
+										token!
+									);
+
+									console.log("Vendor report:", report);
+								}}
+							>
+								Bericht
+							</button>
+						</td>
+					))}
+				</tr>
 			</tbody>
 		</table>
 	);

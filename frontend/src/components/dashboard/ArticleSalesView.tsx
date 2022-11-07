@@ -99,6 +99,16 @@ function ArticleSalesView() {
 								<td style={{ textAlign: "center" }}>{sales.supply}</td>
 								<td style={{ textAlign: "center" }}>{sales.remissions}</td>
 								<td style={{ textAlign: "center" }}>{sales.supply - sales.remissions}</td>
+								<td>
+									<button
+										onClick={() => {
+											const report = GET("/auth/reports/articleSales", token!);
+											console.log("Report:", report);
+										}}
+									>
+										Bericht
+									</button>
+								</td>
 							</tr>
 						);
 					})
