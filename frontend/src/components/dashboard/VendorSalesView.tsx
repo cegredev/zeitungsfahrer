@@ -1,5 +1,6 @@
 import { VendorSales } from "backend/src/models/records.model";
-import { Vendor } from "backend/src/models/vendors.model";
+import { ReportMode } from "backend/src/models/reports.model";
+import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -10,21 +11,23 @@ import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
+import ReportButton from "./ReportButton";
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
 	const [vendorId, setVendorId] = React.useState(-1);
-	const [vendors, setVendors] = React.useState<Vendor[]>([]);
+	const [vendors, setVendors] = React.useState<SimpleVendor[]>([]);
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
 	const [loading, setLoading] = React.useState(false);
+	const [reportMode, setReportMode] = React.useState<ReportMode>("excel");
 
 	const [token] = useAtom(authTokenAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			setLoading(true);
-			const info = await GET<Vendor[]>("/auth/vendors", token!);
+			const info = await GET<SimpleVendor[]>("/auth/vendors?simple=true", token!);
 			const newVendors = info.data;
 
 			const newVendorId = vendorId === -1 ? (newVendors.length > 0 ? newVendors[0].id : -1) : vendorId;
@@ -66,7 +69,7 @@ function VendorSalesView() {
 						>
 							{vendors.map((vendor, i) => (
 								<option key={"vendor-option-" + vendor.id} value={i}>
-									{vendor.firstName + " " + vendor.lastName}
+									{vendor.name}
 								</option>
 							))}
 						</select>
@@ -108,21 +111,27 @@ function VendorSalesView() {
 					)}
 				</tr>
 				<tr>
-					<td />
-					{[0, 1, 2, 3].map((_, i) => (
-						<td key={i} style={{ textAlign: "center" }}>
-							<button
-								onClick={async () => {
-									const report = await GET(
-										`/auth/reports/vendor/${vendorId}?start=2022-01-01&end=2022-12-30`,
-										token!
-									);
-
-									console.log("Vendor report:", report);
-								}}
-							>
-								Bericht
-							</button>
+					<td style={{ fontWeight: "bold" }}>
+						<select
+							value={reportMode}
+							onChange={(evt) => {
+								// @ts-ignore
+								setReportMode(evt.target.value);
+							}}
+						>
+							<option value="excel">Excel</option>
+							<option value="pdf">PDF</option>
+						</select>
+					</td>
+					{[3, 2, 1, 0].map((invoiceSystem) => (
+						<td key={invoiceSystem} style={{ textAlign: "center" }}>
+							<ReportButton
+								date={date}
+								filePrefix={vendors.find((vendor) => vendor.id === vendorId)?.name || ""}
+								invoiceSystem={invoiceSystem}
+								mode={reportMode}
+								reportsPath={"vendor/" + vendorId}
+							/>
 						</td>
 					))}
 				</tr>

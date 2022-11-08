@@ -17,7 +17,7 @@ function firstWeekStart(year: number): Date {
 	return dayjs(normalizeDate(firstWeek)).toDate();
 }
 
-function getKW(date: Date): number {
+export function getKW(date: Date): number {
 	const firstWeek = firstWeekStart(date.getFullYear());
 
 	date = dayjs(normalizeDate(date)).set("day", 4).toDate();

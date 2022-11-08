@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 import Big from "big.js";
 import { getVendorCatalog } from "./vendors.service.js";
-import { getArticleRecords } from "./records.service.js";
+import { getArticleRecords, getDateRange } from "./records.service.js";
 import { ArticleInfo } from "../models/articles.model.js";
 
 export async function getArticleSalesReport(articleId: number, start: Date, end: Date) {}
@@ -18,14 +18,18 @@ interface VendorSalesReport {
 	amountsByArticle: Map<number, ReportedArticle>;
 }
 
-export async function getVendorSalesReport(vendorId: number, start: Date, end: Date): Promise<VendorSalesReport> {
+export async function getVendorSalesReport(
+	vendorId: number,
+	date: Date,
+	invoiceSystem: number
+): Promise<VendorSalesReport> {
 	const catalog = await getVendorCatalog(vendorId);
 	const articles = catalog.entries.filter((entry) => entry.included);
 
 	const amountsByArticle = new Map<number, ReportedArticle>();
 
-	for (const { articleId, articleName } of articles) {
-		const articleRecords = await getArticleRecords(vendorId, articleId, start, end);
+	for (const { articleId } of articles) {
+		const articleRecords = await getArticleRecords(vendorId, articleId, ...getDateRange(date, invoiceSystem));
 		const records = articleRecords.records.filter((record) => !record.missing);
 
 		const amountsByMwst = new Map<number, ReportedArticle>();
@@ -73,8 +77,8 @@ export async function getVendorSalesReport(vendorId: number, start: Date, end: D
 	};
 }
 
-export async function createVendorSalesReportDoc(vendorId: number, start: Date, end: Date) {
-	const { articles, amountsByArticle } = await getVendorSalesReport(vendorId, start, end);
+export async function createVendorSalesReportDoc(vendorId: number, date: Date, invoiceSystem: number): Promise<string> {
+	const { articles, amountsByArticle } = await getVendorSalesReport(vendorId, date, invoiceSystem);
 
 	const workbook = new ExcelJS.Workbook();
 
@@ -88,27 +92,33 @@ export async function createVendorSalesReportDoc(vendorId: number, start: Date, 
 		{
 			header: "Artikel",
 			key: "article",
+			width: 20,
 		},
 		{
 			header: "Lieferung",
 			key: "supply",
+			width: 10,
 		},
 		{
 			header: "Remission",
 			key: "remissions",
+			width: 10,
 		},
 		{
 			header: "Verkauf",
 			key: "sales",
+			width: 10,
 		},
 		{
 			header: "Betrag (Netto)",
 			key: "valueNetto",
+			width: 20,
 			style: { numFmt: '#,##0.00 "€"' },
 		},
 		{
 			header: "Betrag (Brutto)",
 			key: "valueBrutto",
+			width: 20,
 			style: { numFmt: '#,##0.00 "€"' },
 		},
 	];
@@ -137,5 +147,7 @@ export async function createVendorSalesReportDoc(vendorId: number, start: Date, 
 	sheet.getCell(rowOffset + articles.size + 1, 5).value = totalAmountNetto.round(2).toNumber();
 	sheet.getCell(rowOffset + articles.size + 1, 6).value = totalAmountBrutto.round(2).toNumber();
 
-	workbook.xlsx.writeFile("export.xlsx");
+	const fileName = "temp_report_" + new Date().getTime() + ".xlsx";
+	await workbook.xlsx.writeFile(fileName);
+	return fileName;
 }

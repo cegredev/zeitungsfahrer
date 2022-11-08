@@ -5,6 +5,7 @@ import {
 	getVendorSalesReport,
 } from "../services/reports.service.js";
 import { handler } from "./controllers.js";
+import path from "path";
 
 export async function getArticleSalesReportController(
 	req: Request<{ id: string }, any, any, { start: string; end: string }>,
@@ -24,20 +25,16 @@ export async function getArticleSalesReportController(
 }
 
 export async function getVendorSalesReportController(
-	req: Request<{ id: string }, any, any, { start: string; end: string }>,
+	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string }>,
 	res: Response
 ) {
-	await createVendorSalesReportDoc(parseInt(req.params.id), new Date(req.query.start), new Date(req.query.end));
-
-	await handler(
-		async () => ({
-			code: 200,
-			body: await getVendorSalesReport(
-				parseInt(req.params.id),
-				new Date(req.query.start),
-				new Date(req.query.end)
-			),
-		}),
-		res
+	const file = await createVendorSalesReportDoc(
+		parseInt(req.params.id),
+		new Date(req.query.date),
+		parseInt(req.query.invoiceSystem)
 	);
+
+	res.sendFile(path.join(process.cwd(), file), (err) => {
+		if (err) console.error(err);
+	});
 }
