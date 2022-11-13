@@ -6,17 +6,17 @@ import { months } from "../../consts";
 import { downloadUrl } from "../../files";
 import { authTokenAtom } from "../../stores/utility.store";
 import { getKW } from "../time/WeekSelection";
-import { ReportMode } from "backend/src/models/reports.model";
+import { ReportType } from "backend/src/models/reports.model";
 
 interface Props {
 	invoiceSystem: number;
-	mode: ReportMode;
+	type: ReportType;
 	filePrefix: string;
 	reportsPath: string;
 	date: Date;
 }
 
-function ReportButton({ invoiceSystem, mode, filePrefix, reportsPath, date }: Props) {
+function ReportButton({ invoiceSystem, type, filePrefix, reportsPath, date }: Props) {
 	const [token] = useAtom(authTokenAtom);
 
 	return (
@@ -25,7 +25,7 @@ function ReportButton({ invoiceSystem, mode, filePrefix, reportsPath, date }: Pr
 				const report = await GET_BLOB(
 					`/auth/reports/${reportsPath}?date=${dayjs(date).format(
 						"YYYY-MM-DD"
-					)}&invoiceSystem=${invoiceSystem}&mode=${mode}`,
+					)}&invoiceSystem=${invoiceSystem}&mode=${type}`,
 					token!
 				);
 
@@ -48,7 +48,7 @@ function ReportButton({ invoiceSystem, mode, filePrefix, reportsPath, date }: Pr
 
 				const fileUrl = URL.createObjectURL(report.data);
 
-				if (mode === "excel") {
+				if (type === "excel") {
 					downloadUrl(fileUrl, fileName + ".xlsx");
 				} else {
 					window.open(fileUrl, "_blank")?.focus();

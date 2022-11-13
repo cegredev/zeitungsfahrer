@@ -2,150 +2,252 @@ import ExcelJS from "exceljs";
 import Big from "big.js";
 import { getVendorCatalog } from "./vendors.service.js";
 import { getArticleRecords, getDateRange } from "./records.service.js";
-import { ArticleInfo } from "../models/articles.model.js";
+import { Report, ReportedArticle, ReportType, VendorSalesReport } from "../models/reports.model.js";
+import { poolExecute } from "../util.js";
+import dayjs from "dayjs";
+import { DATE_FORMAT } from "../consts.js";
+import { daysBetween } from "../time.js";
+import { Record } from "../models/records.model.js";
+import { Price } from "../models/articles.model.js";
 
-export async function getArticleSalesReport(articleId: number, start: Date, end: Date) {}
+export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
+	const [start, end] = getDateRange(date, invoiceSystem);
+	const dateRange = daysBetween(start, end);
 
-interface ReportedArticle {
-	supply: number;
-	remissions: number;
-	amountNetto: Big;
-	amountBrutto: Big;
-}
+	const records = await poolExecute<{ date: Date; supply: number; remissions: number; sales: number }>(
+		`SELECT date, supply, remissions, (supply - remissions) AS sales
+		 FROM records WHERE article_id=? AND date BETWEEN ? AND ?
+		 ORDER BY date`,
+		[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+	);
 
-interface VendorSalesReport {
-	articles: Map<number, string>;
-	amountsByArticle: Map<number, ReportedArticle>;
-}
+	const newRecords: { supply: number; remissions: number; sales: number }[] = [];
 
-export async function getVendorSalesReport(
-	vendorId: number,
-	date: Date,
-	invoiceSystem: number
-): Promise<VendorSalesReport> {
-	const catalog = await getVendorCatalog(vendorId);
-	const articles = catalog.entries.filter((entry) => entry.included);
+	let prev = dayjs(start).subtract(1, "day").toDate();
+	for (const { date, supply, remissions, sales } of records) {
+		const missingDays = daysBetween(prev, date) - 1;
 
-	const amountsByArticle = new Map<number, ReportedArticle>();
-
-	for (const { articleId } of articles) {
-		const articleRecords = await getArticleRecords(vendorId, articleId, ...getDateRange(date, invoiceSystem));
-		const records = articleRecords.records.filter((record) => !record.missing);
-
-		const amountsByMwst = new Map<number, ReportedArticle>();
-		let totalSupply = 0;
-		let totalRemissions = 0;
-
-		for (const { price, remissions, supply } of records) {
-			let reportedArticle = amountsByMwst.get(price!.mwst);
-			if (reportedArticle === undefined) {
-				reportedArticle = {
-					supply: 0,
-					remissions: 0,
-					amountNetto: new Big(0),
-					amountBrutto: new Big(0),
-				};
-
-				amountsByMwst.set(price!.mwst, reportedArticle);
-			}
-
-			reportedArticle.amountNetto = reportedArticle.amountNetto.add(
-				Big(supply - remissions).mul(Big(price!.sell))
-			);
-
-			totalSupply += supply;
-			totalRemissions += remissions;
+		for (let i = 0; i < missingDays; i++) {
+			newRecords.push({
+				supply: 0,
+				remissions: 0,
+				sales: 0,
+			});
 		}
 
-		amountsByArticle.set(articleId, {
-			amountNetto: [...amountsByMwst.values()]
-				.map((article) => article.amountNetto)
-				.reduce((a, b) => a.add(b), Big(0)),
-			amountBrutto: [...amountsByMwst.entries()]
-				.map(([mwst, article]) => article.amountNetto.mul(1 + mwst / 100))
-				.reduce((prev, current) => current.add(prev), Big(0)),
-			supply: totalSupply,
-			remissions: totalRemissions,
-		});
+		newRecords.push({ supply, remissions, sales });
 
-		console.log(articleId, JSON.stringify(amountsByArticle.get(articleId)));
+		prev = date;
 	}
 
+	const totalDays = daysBetween(start, end);
+	for (let day = newRecords.length; day <= totalDays; day++) {
+		newRecords.push({ supply: 0, remissions: 0, sales: 0 });
+	}
+
+	const [totalSupply, totalRemissions] = records
+		.map((r) => [r.supply, r.remissions])
+		.reduce(([pSupply, pRem], [cSupply, cRem]) => [pSupply + cSupply, pRem + cRem], [0, 0]);
+
 	return {
-		articles: new Map(articles.map((article) => [article.articleId, article.articleName])),
-		amountsByArticle,
+		records: newRecords,
+		totalSupply,
+		totalRemissions,
+		totalSales: totalSupply - totalRemissions,
 	};
 }
 
-export async function createVendorSalesReportDoc(vendorId: number, date: Date, invoiceSystem: number): Promise<string> {
-	const { articles, amountsByArticle } = await getVendorSalesReport(vendorId, date, invoiceSystem);
+export async function createArticleSalesReport(articleId: number, date: Date, invoiceSystem: number): Promise<Report> {
+	const data = await getArticleSalesReport(articleId, date, invoiceSystem);
 
+	const [start] = getDateRange(date, invoiceSystem);
+	const startDate = dayjs(start);
+
+	return {
+		invoiceSystem,
+		columns: [
+			{
+				header: "Datum",
+				width: 20,
+			},
+			{
+				header: "Lieferung",
+				width: 10,
+			},
+			{
+				header: "Remissionen",
+				width: 15,
+			},
+			{
+				header: "Verkauf",
+				width: 10,
+			},
+		],
+		date,
+		body:
+			invoiceSystem === 3
+				? undefined
+				: data.records.map((r, i) => [startDate.add(i, "days").toDate(), r.supply, r.remissions, r.sales]),
+		summary: [data.totalSupply, data.totalRemissions, data.totalSales],
+	};
+}
+
+export async function getVendorSalesReport(vendorId: number, date: Date, invoiceSystem: number) {
+	const catalog = await getVendorCatalog(vendorId);
+	const articles = catalog.entries.filter((entry) => entry.included);
+	const [start, end] = getDateRange(date, invoiceSystem);
+	const numDays = daysBetween(start, end) + 1;
+
+	const recordsByDate: { supply: number; remissions: number; articleId: number; price: Price }[][] = Array(numDays)
+		.fill(null)
+		.map(() => []);
+
+	let [totalSupply, totalRemissions] = [0, 0];
+	const valuesByMwst = new Map<number, Big>();
+
+	for (const { articleId } of articles) {
+		const plainRecords = (await getArticleRecords(vendorId, articleId, start, end)).records;
+		const records = plainRecords.map((r) =>
+			r.missing
+				? {
+						supply: 0,
+						remissions: 0,
+						articleId,
+						price: r.price!,
+				  }
+				: {
+						supply: r.supply,
+						remissions: r.remissions,
+						articleId,
+						price: r.price!,
+				  }
+		);
+
+		for (let i = 0; i < records.length; i++) {
+			const record = records[i];
+
+			recordsByDate[i].push(record);
+			totalSupply += record.supply;
+			totalRemissions += record.remissions;
+
+			const sales = record.supply - record.remissions;
+			if (sales === 0) continue;
+
+			const value = valuesByMwst.get(record.price.mwst) || new Big(0);
+			valuesByMwst.set(record.price.mwst, value.add(Big(sales).mul(record.price.sell)));
+		}
+	}
+
+	const totalNetto = [...valuesByMwst.values()].reduce((a, b) => a.add(b), Big(0));
+	const totalBrutto = [...valuesByMwst.entries()]
+		.map(([mwst, value]) => value.mul(1 + mwst / 100))
+		.reduce((a, b) => a.add(b), Big(0));
+
+	return {
+		articles: new Map(articles.map((article) => [article.articleId, article.articleName])),
+		recordsByDate,
+		totalSupply,
+		totalRemissions,
+		totalNetto,
+		totalBrutto,
+	};
+}
+
+export async function createVendorSalesReport(vendorId: number, date: Date, invoiceSystem: number): Promise<Report> {
+	const { articles, recordsByDate, totalSupply, totalRemissions, totalNetto, totalBrutto } =
+		await getVendorSalesReport(vendorId, date, invoiceSystem);
+
+	const [startDate] = getDateRange(date, invoiceSystem);
+	const start = dayjs(startDate);
+
+	return {
+		invoiceSystem,
+		columns: [
+			{
+				header: "Datum",
+				width: 20,
+			},
+			{
+				header: "Artikel",
+				width: 15,
+			},
+			{
+				header: "Lieferung",
+				width: 10,
+			},
+			{
+				header: "Remission",
+				width: 10,
+			},
+			{
+				header: "Verkauf",
+				width: 10,
+			},
+			{
+				header: "Betrag (Netto)",
+				width: 15,
+				style: { numFmt: '#,##0.00 "€"' },
+			},
+			{
+				header: "Betrag (Brutto)",
+				width: 15,
+				style: { numFmt: '#,##0.00 "€"' },
+			},
+		],
+		body: recordsByDate.flat().map((record, i) => {
+			const sales = record.supply - record.remissions;
+			const value = Big(sales).mul(record.price!.sell);
+
+			return [
+				start.add(Math.floor(i / articles.size), "days").toDate(),
+				articles.get(record.articleId)!,
+				record.supply,
+				record.remissions,
+				sales,
+				value.toNumber(),
+				value.mul(1 + record.price!.mwst / 100.0).toNumber(),
+			];
+		}),
+		date,
+		summary: [
+			"",
+			totalSupply,
+			totalRemissions,
+			totalSupply - totalRemissions,
+			totalNetto.toNumber(),
+			totalBrutto.toNumber(),
+		],
+	};
+}
+
+export async function createReportDoc(report: Report, type: ReportType): Promise<string> {
 	const workbook = new ExcelJS.Workbook();
+	const sheet = workbook.addWorksheet("Bericht");
 
-	const sheet = workbook.addWorksheet("Sheet!", {
-		pageSetup: {
-			orientation: "portrait",
-		},
-	});
-
-	sheet.columns = [
-		{
-			header: "Artikel",
-			key: "article",
-			width: 20,
-		},
-		{
-			header: "Lieferung",
-			key: "supply",
-			width: 10,
-		},
-		{
-			header: "Remission",
-			key: "remissions",
-			width: 10,
-		},
-		{
-			header: "Verkauf",
-			key: "sales",
-			width: 10,
-		},
-		{
-			header: "Betrag (Netto)",
-			key: "valueNetto",
-			width: 20,
-			style: { numFmt: '#,##0.00 "€"' },
-		},
-		{
-			header: "Betrag (Brutto)",
-			key: "valueBrutto",
-			width: 20,
-			style: { numFmt: '#,##0.00 "€"' },
-		},
-	];
+	sheet.columns = report.columns;
 
 	const rowOffset = 1;
 
-	let totalAmountNetto = new Big(0);
-	let totalAmountBrutto = new Big(0);
-
-	[...amountsByArticle.entries()].forEach(([articleId, article], i) => {
-		const row = rowOffset + i + 1;
-
-		const name = articles.get(articleId);
-		const supply = article.supply;
-		const remissions = article.remissions;
-		const sales = supply - remissions;
-		const valueNetto = article.amountNetto.round(2).toNumber();
-		const valueBrutto = article.amountBrutto.round(2).toNumber();
-
-		totalAmountNetto = totalAmountNetto.add(valueNetto);
-		totalAmountBrutto = totalAmountBrutto.add(valueBrutto);
-
-		sheet.insertRow(row, [name, supply, remissions, sales, valueNetto, valueBrutto]);
+	report.body?.forEach((row, i) => {
+		sheet.insertRow(rowOffset + i + 1, row);
 	});
 
-	sheet.getCell(rowOffset + articles.size + 1, 5).value = totalAmountNetto.round(2).toNumber();
-	sheet.getCell(rowOffset + articles.size + 1, 6).value = totalAmountBrutto.round(2).toNumber();
+	const summaryRow = rowOffset + (report.body?.length || 0) + 2;
+	const summary = ["Zusammenfassung", ...report.summary];
+
+	sheet.insertRow(summaryRow - 1, []);
+	sheet.insertRow(summaryRow, summary);
+
+	for (let column = 1; column <= summary.length; column++) {
+		const cell = sheet.getCell(summaryRow, column);
+		cell.style = {
+			...cell.style,
+			font: {
+				...cell.style.font,
+				bold: true,
+			},
+		};
+	}
 
 	const fileName = "temp_report_" + new Date().getTime() + ".xlsx";
 	await workbook.xlsx.writeFile(fileName);

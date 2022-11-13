@@ -94,8 +94,6 @@ export async function getVendorFullRoute(id: number): Promise<RouteReport> {
 
 export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 	if ((await poolExecute("SELECT 1 FROM vendors WHERE custom_id=?", [vendor.customId])).length >= 1) {
-		console.log;
-
 		return {
 			code: 400,
 			body: { userMessage: "Es gibt bereits einen Händler mit dieser Kundennummer." },

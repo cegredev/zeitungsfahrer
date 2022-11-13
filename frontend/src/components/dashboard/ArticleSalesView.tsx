@@ -1,5 +1,6 @@
 import { ArticleInfo } from "backend/src/models/articles.model";
 import { ArticleSales } from "backend/src/models/records.model";
+import { ReportType } from "backend/src/models/reports.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -10,6 +11,7 @@ import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
+import ReportButton from "./ReportButton";
 
 function ArticleSalesView() {
 	const [articleSales, setArticleSales] = React.useState<ArticleSales | undefined>(undefined);
@@ -18,6 +20,7 @@ function ArticleSalesView() {
 	const [articleIndex, setArticleIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
 	const [loading, setLoading] = React.useState(false);
+	const [reportType, setReportType] = React.useState<ReportType>("excel");
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -79,6 +82,18 @@ function ArticleSalesView() {
 					<th>Lieferung</th>
 					<th>Remission</th>
 					<th>Verkauf</th>
+					<th>
+						<select
+							value={reportType}
+							onChange={(evt) => {
+								// @ts-ignore
+								setReportType(evt.target.value);
+							}}
+						>
+							<option value="excel">Excel</option>
+							<option value="pdf">PDF</option>
+						</select>
+					</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -100,14 +115,13 @@ function ArticleSalesView() {
 								<td style={{ textAlign: "center" }}>{sales.remissions}</td>
 								<td style={{ textAlign: "center" }}>{sales.supply - sales.remissions}</td>
 								<td>
-									<button
-										onClick={() => {
-											const report = GET("/auth/reports/articleSales", token!);
-											console.log("Report:", report);
-										}}
-									>
-										Bericht
-									</button>
+									<ReportButton
+										date={date}
+										filePrefix={articleInfo.find((article) => article.id === articleId)!.name}
+										reportsPath={"article/" + articleId}
+										invoiceSystem={3 - index}
+										type={reportType}
+									/>
 								</td>
 							</tr>
 						);

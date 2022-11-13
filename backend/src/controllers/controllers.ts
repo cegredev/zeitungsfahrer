@@ -5,6 +5,9 @@ import logger from "../logger.js";
 import jwt from "jsonwebtoken";
 import { getEnvToken } from "../util.js";
 
+import path from "path";
+import fs from "fs";
+
 export async function validateTokenHandler(req: Request, res: Response, next: NextFunction) {
 	const token = req.headers["authorization"];
 
@@ -29,4 +32,18 @@ export async function handler(func: () => Promise<RouteReport>, res: Response) {
 		logger.error(e);
 		res.sendStatus(500);
 	}
+}
+
+export async function downloadFileHandler(func: () => Promise<string>, res: Response, deleteAfter: boolean) {
+	const file = await func();
+
+	res.download(path.join(process.cwd(), file), (err) => {
+		if (err) console.error(err);
+
+		if (deleteAfter) {
+			fs.unlink(file, (err) => {
+				if (err) console.error(err);
+			});
+		}
+	});
 }

@@ -1,26 +1,23 @@
 import { Request, Response } from "express";
-import {
-	createVendorSalesReportDoc,
-	getArticleSalesReport,
-	getVendorSalesReport,
-} from "../services/reports.service.js";
-import { handler } from "./controllers.js";
-import path from "path";
+import { createArticleSalesReport, createReportDoc, createVendorSalesReport } from "../services/reports.service.js";
+import { downloadFileHandler } from "./controllers.js";
 
 export async function getArticleSalesReportController(
-	req: Request<{ id: string }, any, any, { start: string; end: string }>,
+	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string }>,
 	res: Response
 ) {
-	await handler(
-		async () => ({
-			code: 200,
-			body: await getArticleSalesReport(
-				parseInt(req.params.id),
-				new Date(req.query.start),
-				new Date(req.query.end)
+	await downloadFileHandler(
+		async () =>
+			createReportDoc(
+				await createArticleSalesReport(
+					parseInt(req.params.id),
+					new Date(req.query.date),
+					parseInt(req.query.invoiceSystem)
+				),
+				"excel"
 			),
-		}),
-		res
+		res,
+		true
 	);
 }
 
@@ -28,13 +25,17 @@ export async function getVendorSalesReportController(
 	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string }>,
 	res: Response
 ) {
-	const file = await createVendorSalesReportDoc(
-		parseInt(req.params.id),
-		new Date(req.query.date),
-		parseInt(req.query.invoiceSystem)
+	await downloadFileHandler(
+		async () =>
+			createReportDoc(
+				await createVendorSalesReport(
+					parseInt(req.params.id),
+					new Date(req.query.date),
+					parseInt(req.query.invoiceSystem)
+				),
+				"excel"
+			),
+		res,
+		true
 	);
-
-	res.sendFile(path.join(process.cwd(), file), (err) => {
-		if (err) console.error(err);
-	});
 }

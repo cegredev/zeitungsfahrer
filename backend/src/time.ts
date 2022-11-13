@@ -1,7 +1,16 @@
 import dayjs from "dayjs";
 
 export function normalizeDate(date: Date): Date {
-	return new Date(dayjs(date).format("YYYY-MM-DD"));
+	let draft = dayjs()
+		.year(date.getFullYear())
+		.month(date.getMonth())
+		.date(date.getDate())
+		.hour(1)
+		.minute(0)
+		.second(0)
+		.millisecond(0);
+
+	return draft.toDate();
 }
 
 export function daysBetween(a: Date, b: Date): number {

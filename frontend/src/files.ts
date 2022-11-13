@@ -5,10 +5,10 @@ export function downloadBlob(blob: Blob, name: string) {
 }
 
 export function downloadUrl(url: string, name: string) {
-	// create "a" HTML element with href to file & click
+	// create and anchor HTML element with href to file & click
 	const link = document.createElement("a");
 	link.href = url;
-	link.setAttribute("download", name); //or any other extension
+	link.setAttribute("download", name);
 	document.body.appendChild(link);
 	link.click();
 

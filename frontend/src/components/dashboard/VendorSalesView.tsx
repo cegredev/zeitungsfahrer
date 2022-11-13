@@ -1,5 +1,5 @@
 import { VendorSales } from "backend/src/models/records.model";
-import { ReportMode } from "backend/src/models/reports.model";
+import { ReportType } from "backend/src/models/reports.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
@@ -20,7 +20,7 @@ function VendorSalesView() {
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
 	const [loading, setLoading] = React.useState(false);
-	const [reportMode, setReportMode] = React.useState<ReportMode>("excel");
+	const [reportType, setReportType] = React.useState<ReportType>("excel");
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -113,10 +113,10 @@ function VendorSalesView() {
 				<tr>
 					<td style={{ fontWeight: "bold" }}>
 						<select
-							value={reportMode}
+							value={reportType}
 							onChange={(evt) => {
 								// @ts-ignore
-								setReportMode(evt.target.value);
+								setReportType(evt.target.value);
 							}}
 						>
 							<option value="excel">Excel</option>
@@ -129,7 +129,7 @@ function VendorSalesView() {
 								date={date}
 								filePrefix={vendors.find((vendor) => vendor.id === vendorId)?.name || ""}
 								invoiceSystem={invoiceSystem}
-								mode={reportMode}
+								type={reportType}
 								reportsPath={"vendor/" + vendorId}
 							/>
 						</td>
