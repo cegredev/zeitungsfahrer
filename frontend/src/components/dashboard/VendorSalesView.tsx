@@ -111,7 +111,7 @@ function VendorSalesView() {
 					)}
 				</tr>
 				<tr>
-					<td style={{ fontWeight: "bold" }}>
+					<td>
 						<select
 							value={reportType}
 							onChange={(evt) => {

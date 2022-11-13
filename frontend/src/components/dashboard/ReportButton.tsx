@@ -25,7 +25,7 @@ function ReportButton({ invoiceSystem, type, filePrefix, reportsPath, date }: Pr
 				const report = await GET_BLOB(
 					`/auth/reports/${reportsPath}?date=${dayjs(date).format(
 						"YYYY-MM-DD"
-					)}&invoiceSystem=${invoiceSystem}&mode=${type}`,
+					)}&invoiceSystem=${invoiceSystem}&type=${type}`,
 					token!
 				);
 

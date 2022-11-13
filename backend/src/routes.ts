@@ -15,7 +15,11 @@ import {
 	getVendorSalesController,
 	postArticleRecordsController,
 } from "./controllers/records.controller.js";
-import { getArticleSalesReportController, getVendorSalesReportController } from "./controllers/reports.controller.js";
+import {
+	getAllSalesReportController,
+	getArticleSalesReportController,
+	getVendorSalesReportController,
+} from "./controllers/reports.controller.js";
 import {
 	addDistrictController,
 	addDriverController,
@@ -98,6 +102,7 @@ function routes(app: Express) {
 
 	app.get("/auth/reports/article/:id", getArticleSalesReportController);
 	app.get("/auth/reports/vendor/:id", getVendorSalesReportController);
+	app.get("/auth/reports/all", getAllSalesReportController);
 
 	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
 

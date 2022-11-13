@@ -220,6 +220,23 @@ export async function createVendorSalesReport(vendorId: number, date: Date, invo
 	};
 }
 
+export async function getAllSalesReport(date: Date, invoiceSystem: number) {
+	const [start, end] = getDateRange(date, invoiceSystem);
+
+	const records = await poolExecute<Record>(
+		`SELECT date, article_id, SUM(supply) AS totalSupply, SUM(remissions) AS totalRemissions FROM records
+		WHERE date BETWEEN ? AND ?
+		GROUP BY vendor_id, date`,
+		[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+	);
+}
+
+export async function createAllSalesReport(date: Date, invoiceSystem: number): Promise<Report> {
+	const data = await getAllSalesReport(date, invoiceSystem);
+
+	throw new Error();
+}
+
 export async function createReportDoc(report: Report, type: ReportType): Promise<string> {
 	const workbook = new ExcelJS.Workbook();
 	const sheet = workbook.addWorksheet("Bericht");

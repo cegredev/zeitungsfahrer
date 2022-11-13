@@ -1,3 +1,4 @@
+import { ReportType } from "backend/src/models/reports.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -8,11 +9,13 @@ import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
+import ReportButton from "./ReportButton";
 
 function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
 	const [date, setDate] = React.useState(normalizeDate(new Date()));
 	const [loading, setLoading] = React.useState(false);
+	const [reportType, setReportType] = React.useState<ReportType>("excel");
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -79,6 +82,31 @@ function AllSalesView() {
 							</td>
 						))
 					)}
+				</tr>
+				<tr>
+					<td>
+						<select
+							value={reportType}
+							onChange={(evt) => {
+								// @ts-ignore
+								setReportType(evt.target.value);
+							}}
+						>
+							<option value="excel">Excel</option>
+							<option value="pdf">PDF</option>
+						</select>
+					</td>
+					{[3, 2, 1, 0].map((invoiceSystem) => (
+						<td key={invoiceSystem} style={{ textAlign: "center" }}>
+							<ReportButton
+								date={date}
+								filePrefix={"Gesamt"}
+								invoiceSystem={invoiceSystem}
+								type={"excel"}
+								reportsPath={"all"}
+							/>
+						</td>
+					))}
 				</tr>
 			</tbody>
 		</table>
