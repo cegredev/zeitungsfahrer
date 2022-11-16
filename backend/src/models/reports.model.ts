@@ -24,6 +24,17 @@ export interface Report {
 	summary: any[];
 }
 
+export interface ReportDoc {
+	header: {
+		top: string;
+		sub: string;
+		itemSpecifier: string;
+	};
+	columns: Column[];
+	body?: string[][];
+	summary: string[];
+}
+
 export interface VendorSalesReport {
 	articles: Map<number, string>;
 	amountsByArticle: Map<number, ReportedArticle>;

@@ -1,29 +1,39 @@
 import { Request, Response } from "express";
-import { ReportType } from "../models/reports.model.js";
+import { Report, ReportType } from "../models/reports.model.js";
 import {
-	createAllSalesReport,
 	createArticleSalesReport,
 	createReportDoc,
-	createVendorSalesReport,
+	createArticleListingReport,
+	getVendorSalesReport,
+	getAllSalesReport,
+	createExcelReport,
+	createPDFReport,
 } from "../services/reports.service.js";
 import { downloadFileHandler } from "./controllers.js";
+
+async function downloadReportHandler(generator: () => Promise<Report>, type: ReportType, res: Response) {
+	const doc = await createReportDoc(await generator());
+
+	await downloadFileHandler(
+		async () => (type === "excel" ? await createExcelReport(doc) : await createPDFReport(doc)),
+		res,
+		true
+	);
+}
 
 export async function getArticleSalesReportController(
 	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string; type: ReportType }>,
 	res: Response
 ) {
-	await downloadFileHandler(
+	await downloadReportHandler(
 		async () =>
-			createReportDoc(
-				await createArticleSalesReport(
-					parseInt(req.params.id),
-					new Date(req.query.date),
-					parseInt(req.query.invoiceSystem)
-				),
-				req.query.type
+			await createArticleSalesReport(
+				parseInt(req.params.id),
+				new Date(req.query.date),
+				parseInt(req.query.invoiceSystem)
 			),
-		res,
-		true
+		req.query.type,
+		res
 	);
 }
 
@@ -31,18 +41,18 @@ export async function getVendorSalesReportController(
 	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string; type: ReportType }>,
 	res: Response
 ) {
-	await downloadFileHandler(
+	const date = new Date(req.query.date);
+	const invoiceSystem = parseInt(req.query.invoiceSystem);
+
+	await downloadReportHandler(
 		async () =>
-			createReportDoc(
-				await createVendorSalesReport(
-					parseInt(req.params.id),
-					new Date(req.query.date),
-					parseInt(req.query.invoiceSystem)
-				),
-				req.query.type
+			await createArticleListingReport(
+				await getVendorSalesReport(parseInt(req.params.id), date, invoiceSystem),
+				date,
+				invoiceSystem
 			),
-		res,
-		true
+		req.query.type,
+		res
 	);
 }
 
@@ -50,13 +60,12 @@ export async function getAllSalesReportController(
 	req: Request<any, any, any, { date: string; invoiceSystem: string; type: ReportType }>,
 	res: Response
 ) {
-	await downloadFileHandler(
-		async () =>
-			createReportDoc(
-				await createAllSalesReport(new Date(req.query.date), parseInt(req.query.invoiceSystem)),
-				req.query.type
-			),
-		res,
-		true
+	const date = new Date(req.query.date);
+	const invoiceSystem = parseInt(req.query.invoiceSystem);
+
+	await downloadReportHandler(
+		async () => await createArticleListingReport(await getAllSalesReport(date, invoiceSystem), date, invoiceSystem),
+		req.query.type,
+		res
 	);
 }

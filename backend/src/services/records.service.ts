@@ -9,7 +9,7 @@ import { getConvertedWeekday, poolExecute } from "../util.js";
 import settings from "./settings.service.js";
 import { ArticleInfo } from "../models/articles.model.js";
 
-async function applyPrices(
+export async function applyPrices(
 	start: Date,
 	end: Date,
 	articlesRecords: { id: number; records: Record[] }[]
