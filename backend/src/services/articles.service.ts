@@ -70,6 +70,11 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 	};
 }
 
+export async function getArticleInfo(articleId: number): Promise<ArticleInfo> {
+	const res = await poolExecute<ArticleInfo>("SELECT id, name FROM articles WHERE id=?", [articleId]);
+	return res[0];
+}
+
 export async function getArticleInfos(): Promise<ArticleInfo[]> {
 	return await poolExecute<ArticleInfo>("SELECT id, name FROM articles");
 }

@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { DATE_FORMAT, months, twoDecimalFormat } from "../consts.js";
 import { daysBetween, getKW } from "../time.js";
 import { Record } from "../models/records.model.js";
-import { getArticleInfos } from "./articles.service.js";
+import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 
 // @ts-ignore
@@ -78,22 +78,27 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 
 	return {
 		invoiceSystem,
+		itemSpecifier: (await getArticleInfo(articleId)).name,
 		columns: [
 			{
 				header: "Datum",
 				width: 20,
+				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
 			{
 				header: "Lieferung",
 				width: 10,
+				// styler: (v) => v + " Stk.",
 			},
 			{
 				header: "Remissionen",
 				width: 15,
+				// styler: (v) => v + " Stk.",
 			},
 			{
 				header: "Verkauf",
 				width: 10,
+				// styler: (v) => v + " Stk.",
 			},
 		],
 		date,
@@ -423,12 +428,13 @@ export async function createPDFReport(report: ReportDoc): Promise<string> {
 				title: "Bericht",
 				header: report.header,
 				columns: report.columns,
-				rows: report.body!.map((row) =>
-					row.map((cell, i) => {
-						const styler = report.columns[i].styler;
-						return styler === undefined ? cell.toString() : styler(cell);
-					})
-				),
+				rows:
+					report.body?.map((row) =>
+						row.map((cell, i) => {
+							const styler = report.columns[i].styler;
+							return styler === undefined ? cell.toString() : styler(cell);
+						})
+					) || [],
 				summary: report.summary.map((cell, i) => {
 					const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
 					return styler === undefined ? cell.toString() : styler(cell);

@@ -12,6 +12,7 @@ import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
 import ReportButton from "./ReportButton";
+import ReportTypeSelction from "./ReportTypeSelction";
 
 function ArticleSalesView() {
 	const [articleSales, setArticleSales] = React.useState<ArticleSales | undefined>(undefined);
@@ -83,16 +84,7 @@ function ArticleSalesView() {
 					<th>Remission</th>
 					<th>Verkauf</th>
 					<th>
-						<select
-							value={reportType}
-							onChange={(evt) => {
-								// @ts-ignore
-								setReportType(evt.target.value);
-							}}
-						>
-							<option value="excel">Excel</option>
-							<option value="pdf">PDF</option>
-						</select>
+						<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
 					</th>
 				</tr>
 			</thead>

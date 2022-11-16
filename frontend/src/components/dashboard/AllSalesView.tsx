@@ -10,12 +10,13 @@ import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
 import ReportButton from "./ReportButton";
+import ReportTypeSelction from "./ReportTypeSelction";
 
 function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
 	const [date, setDate] = React.useState(normalizeDate(new Date()));
 	const [loading, setLoading] = React.useState(false);
-	const [reportType, setReportType] = React.useState<ReportType>("excel");
+	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -85,16 +86,7 @@ function AllSalesView() {
 				</tr>
 				<tr>
 					<td>
-						<select
-							value={reportType}
-							onChange={(evt) => {
-								// @ts-ignore
-								setReportType(evt.target.value);
-							}}
-						>
-							<option value="excel">Excel</option>
-							<option value="pdf">PDF</option>
-						</select>
+						<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
 					</td>
 					{[3, 2, 1, 0].map((invoiceSystem) => (
 						<td key={invoiceSystem} style={{ textAlign: "center" }}>
@@ -102,7 +94,7 @@ function AllSalesView() {
 								date={date}
 								filePrefix={"Gesamt"}
 								invoiceSystem={invoiceSystem}
-								type={"excel"}
+								type={reportType}
 								reportsPath={"all"}
 							/>
 						</td>

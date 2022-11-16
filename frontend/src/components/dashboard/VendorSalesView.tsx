@@ -12,6 +12,7 @@ import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
 import ReportButton from "./ReportButton";
+import ReportTypeSelction from "./ReportTypeSelction";
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
@@ -20,7 +21,7 @@ function VendorSalesView() {
 	const [vendorIndex, setVendorIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
 	const [loading, setLoading] = React.useState(false);
-	const [reportType, setReportType] = React.useState<ReportType>("excel");
+	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
 	const [token] = useAtom(authTokenAtom);
 
@@ -112,16 +113,7 @@ function VendorSalesView() {
 				</tr>
 				<tr>
 					<td>
-						<select
-							value={reportType}
-							onChange={(evt) => {
-								// @ts-ignore
-								setReportType(evt.target.value);
-							}}
-						>
-							<option value="excel">Excel</option>
-							<option value="pdf">PDF</option>
-						</select>
+						<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
 					</td>
 					{[3, 2, 1, 0].map((invoiceSystem) => (
 						<td key={invoiceSystem} style={{ textAlign: "center" }}>

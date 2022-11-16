@@ -51,7 +51,21 @@ function ReportButton({ invoiceSystem, type, filePrefix, reportsPath, date }: Pr
 				if (type === "excel") {
 					downloadUrl(fileUrl, fileName + ".xlsx");
 				} else {
-					window.open(fileUrl, "_blank")?.focus();
+					const w = window.open(fileUrl, "_blank");
+					if (w) {
+						w.document.write(
+							"<html><head><title>" +
+								fileName +
+								"</title></head><body>" +
+								'<embed width="100%" height="100%" name="plugin" src="' +
+								fileUrl +
+								'" ' +
+								'type="application/pdf" internalinstanceid="21"></body></html>'
+						);
+						w.focus();
+					}
+
+					setTimeout(() => downloadUrl(fileUrl, fileName + ".pdf"), 1000);
 				}
 			}}
 		>

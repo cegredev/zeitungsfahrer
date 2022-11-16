@@ -14,6 +14,8 @@ import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import { VendorIncludedArticles } from "backend/src/models/vendors.model";
 import { useImmer } from "use-immer";
 import { ChangedRecord } from "backend/src/models/records.model";
+import { ReportType } from "backend/src/models/reports.model";
+import ReportTypeSelction from "../components/dashboard/ReportTypeSelction";
 
 const initialEndDate = normalizeDate(new Date());
 
@@ -21,6 +23,7 @@ function Records() {
 	const vendorId = parseInt(useParams().id!);
 	const navigate = useNavigate();
 	const [date, setDate] = React.useState(initialEndDate);
+	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
 	const [info, setInfo] = React.useState<VendorIncludedArticles | undefined>();
 	const [token] = useAtom(authTokenAtom);
@@ -80,29 +83,42 @@ function Records() {
 									Zurück
 								</button>
 							)}
-							<TimeframeSelection onChange={(date) => setDate(date)} startDate={initialEndDate} />
-							<YesNoPrompt
-								trigger={<button style={{ color: "green" }}>Speichern</button>}
-								header="Speichern"
-								content={`Wollen Sie das gewählte Element wirklich speichern?`}
-								onYes={async () => {
-									await POST(`/auth/records/${vendorId}`, changedRecords, token!);
-
-									setChangedRecords([]);
-
-									setRecordsMap((draft) => {
-										draft!.forEach(
-											(aRecords) =>
-												(aRecords.records = aRecords.records.map((r) => ({
-													...r,
-													missing: !r.edited && r.missing,
-													edited: false,
-													editable: r.edited ? false : r.editable,
-												})))
-										);
-									});
-								}}
+							<TimeframeSelection
+								onChange={(date) => setDate(date)}
+								startDate={initialEndDate}
+								vendor={{ id: vendorId, name: info.name }}
+								reportType={reportType}
 							/>
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: 5,
+									justifyContent: "flex-start",
+								}}
+							>
+								<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
+								<YesNoPrompt
+									trigger={<button style={{ color: "green" }}>Speichern</button>}
+									header="Speichern"
+									content={`Wollen Sie das gewählte Element wirklich speichern?`}
+									onYes={async () => {
+										await POST(`/auth/records/${vendorId}`, changedRecords, token!);
+										setChangedRecords([]);
+										setRecordsMap((draft) => {
+											draft!.forEach(
+												(aRecords) =>
+													(aRecords.records = aRecords.records.map((r) => ({
+														...r,
+														missing: !r.edited && r.missing,
+														edited: false,
+														editable: r.edited ? false : r.editable,
+													})))
+											);
+										});
+									}}
+								/>
+							</div>
 						</div>
 						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>
 							Gesamt (Brutto):{" "}
