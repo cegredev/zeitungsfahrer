@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif">
+	<head>
+		<meta charset="utf-8" />
+		<title>{{title}}</title>
+
+		<style>
+			.doc-top {
+				margin: 20px;
+			}
+
+			h1 {
+				margin: 5px;
+				margin-bottom: 10px;
+			}
+
+			h3 {
+				margin: 5px;
+			}
+
+			table,
+			th,
+			td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+
+			td {
+				padding: 2px;
+				text-align: center;
+			}
+
+			table {
+				width: 90%;
+				margin-left: 5%;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="doc-top">
+			<h1>{{header.top}}</h1>
+			<h3>{{header.sub}} - {{header.itemSpecifier}}</h3>
+		</div>
+		<table>
+			<thead>
+				{{#each columns}}
+				<th>{{this.header}}</th>
+				{{/each}}
+			</thead>
+			<tbody>
+				{{#each rows}}
+				<tr>
+					{{#each this}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+				{{/each}}
+
+				<tr>
+					<td style="font-weight: bold">Zusammenfassung</td>
+					{{#each summary}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>

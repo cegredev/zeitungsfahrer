@@ -39,7 +39,7 @@ export async function getDashboardVendors() {
 
 export async function getVendorsSimple(): Promise<SimpleVendor[]> {
 	const vendors = await poolExecute<{ id: number; name: string; active: number; customId: number }>(
-		`SELECT id, CONCAT(first_name, " ", last_name) as name, active, custom_id as customId, FROM vendors ORDER BY last_name`
+		`SELECT id, CONCAT(first_name, " ", last_name) as name, active, custom_id as customId FROM vendors ORDER BY last_name`
 	);
 
 	return vendors.map((vendor) => ({ ...vendor, active: vendor.active === 1 }));

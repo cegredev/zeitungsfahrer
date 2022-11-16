@@ -13,6 +13,7 @@ interface Column {
 	header: string;
 	width: number;
 	style?: any;
+	styler?: (value: any) => string;
 }
 
 export interface Report {
@@ -31,7 +32,7 @@ export interface ReportDoc {
 		itemSpecifier: string;
 	};
 	columns: Column[];
-	body?: string[][];
+	body?: any[][];
 	summary: string[];
 }
 

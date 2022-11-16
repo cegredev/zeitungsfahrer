@@ -5,11 +5,14 @@ import { applyPrices, getArticleRecords, getDateRange } from "./records.service.
 import { Report, ReportDoc, ReportedArticle, ReportType, VendorSalesReport } from "../models/reports.model.js";
 import { poolExecute } from "../util.js";
 import dayjs from "dayjs";
-import { DATE_FORMAT, months } from "../consts.js";
+import { DATE_FORMAT, months, twoDecimalFormat } from "../consts.js";
 import { daysBetween, getKW } from "../time.js";
 import { Record } from "../models/records.model.js";
-import { Price } from "../models/articles.model.js";
 import { getArticleInfos } from "./articles.service.js";
+import fs from "fs/promises";
+
+// @ts-ignore
+import PDFCreator from "pdf-creator-node";
 
 function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 	const totalNetto = [...byMwst.values()].reduce((a, b) => a.add(b), Big(0));
@@ -192,6 +195,7 @@ export async function createArticleListingReport(
 			{
 				header: "Datum",
 				width: 20,
+				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
 			{
 				header: "Artikel",
@@ -213,11 +217,13 @@ export async function createArticleListingReport(
 				header: "Betrag (Netto)",
 				width: 15,
 				style: { numFmt: '#,##0.00 "€"' },
+				styler: twoDecimalFormat.format,
 			},
 			{
 				header: "Betrag (Brutto)",
 				width: 15,
 				style: { numFmt: '#,##0.00 "€"' },
+				styler: twoDecimalFormat.format,
 			},
 		],
 		body: recordsByDate.flat().map((record, i) => {
@@ -363,6 +369,10 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	};
 }
 
+function createTempName(): string {
+	return "temp_report_" + new Date().getTime();
+}
+
 export async function createExcelReport(doc: ReportDoc): Promise<string> {
 	const workbook = new ExcelJS.Workbook();
 	const sheet = workbook.addWorksheet("Bericht");
@@ -396,11 +406,42 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 		};
 	}
 
-	const fileName = "temp_report_" + new Date().getTime() + ".xlsx";
+	const fileName = createTempName() + ".xlsx";
 	await workbook.xlsx.writeFile(fileName);
 	return fileName;
 }
 
-export async function createPDFReport(doc: ReportDoc): Promise<string> {
-	return "";
+export async function createPDFReport(report: ReportDoc): Promise<string> {
+	const template = (await fs.readFile("./pdf_report_template.html")).toString();
+
+	const fileName = createTempName() + ".pdf";
+
+	await PDFCreator.create(
+		{
+			html: template,
+			data: {
+				title: "Bericht",
+				header: report.header,
+				columns: report.columns,
+				rows: report.body!.map((row) =>
+					row.map((cell, i) => {
+						const styler = report.columns[i].styler;
+						return styler === undefined ? cell.toString() : styler(cell);
+					})
+				),
+				summary: report.summary.map((cell, i) => {
+					const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
+					return styler === undefined ? cell.toString() : styler(cell);
+				}),
+			},
+			path: "./" + fileName,
+			type: "",
+		},
+		{
+			orientation: "portrait",
+			format: "A4",
+		}
+	);
+
+	return fileName;
 }

@@ -15,3 +15,9 @@ export const months = [
 	"November",
 	"Dezember",
 ];
+
+export const twoDecimalFormat = new Intl.NumberFormat("de-DE", {
+	style: "currency",
+	currency: "EUR",
+	maximumFractionDigits: 2,
+});
