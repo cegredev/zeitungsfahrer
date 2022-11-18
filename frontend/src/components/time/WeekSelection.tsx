@@ -30,6 +30,7 @@ function WeekSelection({ date, setDate }: Props) {
 		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={0}
+			value={getKW(date)}
 			customProps={{
 				parse: parseInt,
 				startValue: getKW(date),

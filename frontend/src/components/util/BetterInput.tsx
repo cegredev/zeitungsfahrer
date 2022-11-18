@@ -2,7 +2,6 @@ import React from "react";
 
 export interface InputProps
 	extends React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
-	value?: never;
 	defaultValue?: never;
 }
 
@@ -17,6 +16,10 @@ function BetterInput(props: BetterInputProps) {
 	const { startValue, filter } = props.customProps!;
 
 	const [text, setText] = React.useState(String(startValue));
+
+	React.useEffect(() => {
+		setText((t) => (props.value ? String(props.value) : t));
+	}, [props.value, setText]);
 
 	const inputProps = React.useMemo(() => {
 		const inputProps = { ...props };

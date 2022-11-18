@@ -50,7 +50,7 @@ function Login() {
 					onChange={(evt) => setUsername(evt.target.value)}
 				/>
 				<input
-					type="text"
+					type="password"
 					disabled={waiting}
 					value={password}
 					name="password"

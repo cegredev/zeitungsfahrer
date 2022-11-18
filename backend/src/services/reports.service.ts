@@ -231,20 +231,23 @@ export async function createArticleListingReport(
 				styler: twoDecimalFormat.format,
 			},
 		],
-		body: recordsByDate.flat().map((record, i) => {
-			const sales = record.supply - record.remissions;
-			const value = sales > 0 ? Big(sales).mul(record.price!.sell) : Big(0);
+		body:
+			invoiceSystem === 3
+				? undefined
+				: recordsByDate.flat().map((record, i) => {
+						const sales = record.supply - record.remissions;
+						const value = sales > 0 ? Big(sales).mul(record.price!.sell) : Big(0);
 
-			return [
-				start.add(Math.floor(i / articles.size), "days").toDate(),
-				articles.get(record.articleId!)!,
-				record.supply,
-				record.remissions,
-				sales,
-				value.toNumber(),
-				value.eq(0) ? 0 : value.mul(1 + record.price!.mwst / 100.0).toNumber(),
-			];
-		}),
+						return [
+							start.add(Math.floor(i / articles.size), "days").toDate(),
+							articles.get(record.articleId!)!,
+							record.supply,
+							record.remissions,
+							sales,
+							value.toNumber(),
+							value.eq(0) ? 0 : value.mul(1 + record.price!.mwst / 100.0).toNumber(),
+						];
+				  }),
 		date,
 		summary: [
 			"",
@@ -386,7 +389,14 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 
 	sheet.insertRow(1, []);
 
-	for (const text of [doc.header.itemSpecifier, doc.header.sub, doc.header.top]) sheet.insertRow(1, [text]);
+	[doc.header.itemSpecifier, doc.header.sub, doc.header.top].forEach((text, i) => {
+		sheet.insertRow(3 - i, [text]);
+		sheet.getCell(i + 1, 1).style = {
+			font: {
+				bold: true,
+			},
+		};
+	});
 
 	const rowOffset = 5;
 
@@ -394,10 +404,9 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 		sheet.insertRow(rowOffset + i + 1, row);
 	});
 
-	const summaryRow = rowOffset + (doc.body?.length || 0) + 2;
+	const summaryRow = rowOffset + (doc.body?.length || 0) + 1;
 	const summary = ["Zusammenfassung", ...doc.summary];
 
-	sheet.insertRow(summaryRow - 1, []);
 	sheet.insertRow(summaryRow, summary);
 
 	for (let column = 1; column <= summary.length; column++) {
