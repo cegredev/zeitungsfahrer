@@ -19,6 +19,7 @@ import {
 	getAllSalesReportController,
 	getArticleSalesReportController,
 	getVendorSalesReportController,
+	getWeeklyBillReportController,
 } from "./controllers/reports.controller.js";
 import {
 	addDistrictController,
@@ -103,6 +104,7 @@ function routes(app: Express) {
 	app.get("/auth/reports/article/:id", getArticleSalesReportController);
 	app.get("/auth/reports/vendor/:id", getVendorSalesReportController);
 	app.get("/auth/reports/all", getAllSalesReportController);
+	app.get("/auth/reports/weeklyBill", getWeeklyBillReportController);
 
 	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
 

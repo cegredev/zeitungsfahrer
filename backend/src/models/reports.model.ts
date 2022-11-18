@@ -1,6 +1,19 @@
 import Big from "big.js";
+import { SimpleVendor } from "./vendors.model";
 
 export type ReportType = "pdf" | "excel";
+
+export interface ReportedVendor {
+	name: string;
+	amountNetto: Big;
+	amountBrutto: Big;
+}
+
+export interface WeeklyBillReport {
+	vendors: ReportedVendor[];
+	totalNetto: Big;
+	totalBrutto: Big;
+}
 
 export interface ReportedArticle {
 	supply: number;

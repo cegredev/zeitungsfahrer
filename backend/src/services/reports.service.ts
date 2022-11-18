@@ -1,8 +1,16 @@
 import ExcelJS from "exceljs";
 import Big from "big.js";
-import { getVendorCatalog, getVendorSimple } from "./vendors.service.js";
+import { getVendorCatalog, getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { applyPrices, getArticleRecords, getDateRange } from "./records.service.js";
-import { Report, ReportDoc, ReportedArticle, ReportType, VendorSalesReport } from "../models/reports.model.js";
+import {
+	Report,
+	ReportDoc,
+	ReportedArticle,
+	ReportedVendor,
+	ReportType,
+	VendorSalesReport,
+	WeeklyBillReport,
+} from "../models/reports.model.js";
 import { poolExecute } from "../util.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT, months, twoDecimalFormat } from "../consts.js";
@@ -332,45 +340,93 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 	};
 }
 
-export async function createReportDoc(report: Report): Promise<ReportDoc> {
-	let header = {
-		top: "Bericht",
-		sub: dayjs(report.date).format("DD.MM.YYYY"),
-		itemSpecifier: report.itemSpecifier || "",
+export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport> {
+	const vendors = await getVendorsSimple();
+
+	let totalNetto = Big(0),
+		totalBrutto = Big(0);
+	const reports: ReportedVendor[] = [];
+	for (const { id, name } of vendors) {
+		const report = await getVendorSalesReport(id, date, 1);
+		reports.push({
+			name,
+			amountNetto: report.totalNetto,
+			amountBrutto: report.totalBrutto,
+		});
+
+		totalNetto = totalNetto.add(report.totalNetto);
+		totalBrutto = totalBrutto.add(report.totalBrutto);
+	}
+
+	return {
+		vendors: reports,
+		totalNetto,
+		totalBrutto,
 	};
+}
+
+export async function createWeeklyBillReport(report: WeeklyBillReport, date: Date): Promise<Report> {
+	return {
+		date,
+		invoiceSystem: 1,
+		itemSpecifier: "Alle Händler",
+		body: report.vendors.map((vendor) => [
+			vendor.name,
+			vendor.amountNetto.toNumber(),
+			vendor.amountBrutto.toNumber(),
+		]),
+		columns: [
+			{
+				header: "Händler",
+				width: 15,
+			},
+			{
+				header: "Betrag (Netto)",
+				width: 20,
+				style: { numFmt: '#,##0.00 "€"' },
+				styler: twoDecimalFormat.format,
+			},
+			{
+				header: "Betrag (Brutto)",
+				width: 20,
+				style: { numFmt: '#,##0.00 "€"' },
+				styler: twoDecimalFormat.format,
+			},
+		],
+		summary: [report.totalNetto.toNumber(), report.totalBrutto.toNumber()],
+	};
+}
+
+export async function createReportDoc(report: Report): Promise<ReportDoc> {
+	let top = "Bericht",
+		sub = dayjs(report.date).format("DD.MM.YYYY"),
+		itemSpecifier = report.itemSpecifier || "";
+
 	switch (report.invoiceSystem) {
 		case 0:
-			header = {
-				top: "Tagesbericht",
-				sub: dayjs(report.date).format("DD.MM.YYYY"),
-				itemSpecifier: report.itemSpecifier || "",
-			};
+			top = "Tagesbericht";
+			sub = dayjs(report.date).format("DD.MM.YYYY");
 			break;
 		case 1:
-			header = {
-				top: "Wochenbericht",
-				sub: "KW " + getKW(report.date),
-				itemSpecifier: report.itemSpecifier || "",
-			};
+			top = "Wochenbericht";
+			sub = "KW " + getKW(report.date);
 			break;
 		case 2:
-			header = {
-				top: "Monatsbericht",
-				sub: months[report.date.getMonth()],
-				itemSpecifier: report.itemSpecifier || "",
-			};
+			top = "Monatsbericht";
+			sub = months[report.date.getMonth()];
 			break;
 		case 3:
-			header = {
-				top: "Jahresbericht",
-				sub: "" + report.date.getFullYear(),
-				itemSpecifier: report.itemSpecifier || "",
-			};
+			top = "Jahresbericht";
+			sub = "" + report.date.getFullYear();
 			break;
 	}
 
 	return {
-		header,
+		header: {
+			top,
+			sub,
+			itemSpecifier,
+		},
 		columns: report.columns,
 		body: report.body,
 		summary: report.summary,
@@ -389,8 +445,8 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 
 	sheet.insertRow(1, []);
 
-	[doc.header.itemSpecifier, doc.header.sub, doc.header.top].forEach((text, i) => {
-		sheet.insertRow(3 - i, [text]);
+	[doc.header.top, doc.header.sub, doc.header.itemSpecifier].forEach((text, i) => {
+		sheet.insertRow(i + 1, [text]);
 		sheet.getCell(i + 1, 1).style = {
 			font: {
 				bold: true,

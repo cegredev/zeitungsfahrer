@@ -8,6 +8,8 @@ import {
 	getAllSalesReport,
 	createExcelReport,
 	createPDFReport,
+	createWeeklyBillReport,
+	getWeeklyBillReport,
 } from "../services/reports.service.js";
 import { downloadFileHandler } from "./controllers.js";
 
@@ -65,6 +67,19 @@ export async function getAllSalesReportController(
 
 	await downloadReportHandler(
 		async () => await createArticleListingReport(await getAllSalesReport(date, invoiceSystem), date, invoiceSystem),
+		req.query.type,
+		res
+	);
+}
+
+export async function getWeeklyBillReportController(
+	req: Request<any, any, any, { date: string; type: ReportType }>,
+	res: Response
+) {
+	const date = new Date(req.query.date);
+
+	await downloadReportHandler(
+		async () => await createWeeklyBillReport(await getWeeklyBillReport(date), date),
 		req.query.type,
 		res
 	);
