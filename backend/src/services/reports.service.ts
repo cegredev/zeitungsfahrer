@@ -19,9 +19,6 @@ import { Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 
-// @ts-ignore
-import PDFCreator from "pdf-creator-node";
-
 function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 	const totalNetto = [...byMwst.values()].reduce((a, b) => a.add(b), Big(0));
 	const totalBrutto = [...byMwst.entries()]
@@ -482,37 +479,39 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 }
 
 export async function createPDFReport(report: ReportDoc): Promise<string> {
-	const template = (await fs.readFile("./pdf_report_template.html")).toString();
+	throw new Error("PDF export currently not possible!");
 
-	const fileName = createTempName() + ".pdf";
+	// const template = (await fs.readFile("./pdf_report_template.html")).toString();
 
-	await PDFCreator.create(
-		{
-			html: template,
-			data: {
-				title: "Bericht",
-				header: report.header,
-				columns: report.columns,
-				rows:
-					report.body?.map((row) =>
-						row.map((cell, i) => {
-							const styler = report.columns[i].styler;
-							return styler === undefined ? cell.toString() : styler(cell);
-						})
-					) || [],
-				summary: report.summary.map((cell, i) => {
-					const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
-					return styler === undefined ? cell.toString() : styler(cell);
-				}),
-			},
-			path: "./" + fileName,
-			type: "",
-		},
-		{
-			orientation: "portrait",
-			format: "A4",
-		}
-	);
+	// const fileName = createTempName() + ".pdf";
 
-	return fileName;
+	// await PDFCreator.create(
+	// 	{
+	// 		html: template,
+	// 		data: {
+	// 			title: "Bericht",
+	// 			header: report.header,
+	// 			columns: report.columns,
+	// 			rows:
+	// 				report.body?.map((row) =>
+	// 					row.map((cell, i) => {
+	// 						const styler = report.columns[i].styler;
+	// 						return styler === undefined ? cell.toString() : styler(cell);
+	// 					})
+	// 				) || [],
+	// 			summary: report.summary.map((cell, i) => {
+	// 				const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
+	// 				return styler === undefined ? cell.toString() : styler(cell);
+	// 			}),
+	// 		},
+	// 		path: "./" + fileName,
+	// 		type: "",
+	// 	},
+	// 	{
+	// 		orientation: "portrait",
+	// 		format: "A4",
+	// 	}
+	// );
+
+	// return fileName;
 }
