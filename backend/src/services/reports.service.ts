@@ -18,9 +18,8 @@ import { daysBetween, getKW } from "../time.js";
 import { Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
-
-// @ts-ignore
-import PDFCreator from "pdf-creator-node";
+import Handlebars from "handlebars";
+import Puppeteer from "puppeteer";
 
 function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 	const totalNetto = [...byMwst.values()].reduce((a, b) => a.add(b), Big(0));
@@ -482,37 +481,47 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 }
 
 export async function createPDFReport(report: ReportDoc): Promise<string> {
-	const template = (await fs.readFile("./pdf_report_template.html")).toString();
+	const html = (await fs.readFile("./pdf_report_template.html")).toString();
 
 	const fileName = createTempName() + ".pdf";
 
-	await PDFCreator.create(
-		{
-			html: template,
-			data: {
-				title: "Bericht",
-				header: report.header,
-				columns: report.columns,
-				rows:
-					report.body?.map((row) =>
-						row.map((cell, i) => {
-							const styler = report.columns[i].styler;
-							return styler === undefined ? cell.toString() : styler(cell);
-						})
-					) || [],
-				summary: report.summary.map((cell, i) => {
-					const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
-					return styler === undefined ? cell.toString() : styler(cell);
-				}),
-			},
-			path: "./" + fileName,
-			type: "",
-		},
-		{
-			orientation: "portrait",
-			format: "A4",
-		}
+	const template = Handlebars.compile(html);
+	const finalHtml = encodeURIComponent(
+		template({
+			title: "Bericht",
+			header: report.header,
+			columns: report.columns,
+			rows:
+				report.body?.map((row) =>
+					row.map((cell, i) => {
+						const styler = report.columns[i].styler;
+						return styler === undefined ? cell.toString() : styler(cell);
+					})
+				) || [],
+			summary: report.summary.map((cell, i) => {
+				const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
+				return styler === undefined ? cell.toString() : styler(cell);
+			}),
+		})
 	);
+
+	const browser = await Puppeteer.launch({
+		args: ["--no-sandbox"],
+		headless: true,
+	});
+
+	const page = await browser.newPage();
+	await page.goto(`data:text/html;charset=UTF-8,${finalHtml}`, {
+		waitUntil: "networkidle0",
+	});
+
+	const buffer = await page.pdf({
+		format: "A4",
+	});
+
+	await fs.writeFile("./" + fileName, buffer);
+
+	await browser.close();
 
 	return fileName;
 }

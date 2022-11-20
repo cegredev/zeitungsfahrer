@@ -16,7 +16,7 @@ function AllSalesView() {
 	const [allSales, setAllSales] = React.useState<number[] | undefined>(undefined);
 	const [date, setDate] = React.useState(normalizeDate(new Date()));
 	const [loading, setLoading] = React.useState(false);
-	const [reportType, setReportType] = React.useState<ReportType>("pdf");
+	const [reportType, setReportType] = React.useState<ReportType>("excel");
 
 	const [token] = useAtom(authTokenAtom);
 
