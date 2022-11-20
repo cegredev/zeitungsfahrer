@@ -506,7 +506,7 @@ export async function createPDFReport(report: ReportDoc): Promise<string> {
 	);
 
 	const browser = await Puppeteer.launch({
-		args: ["--no-sandbox"],
+		args: ["--no-sandbox", "--disable-setuid-sandbox"],
 		headless: true,
 	});
 
