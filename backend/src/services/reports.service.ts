@@ -483,7 +483,7 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 export async function createPDFReport(report: ReportDoc): Promise<string> {
 	const html = (await fs.readFile("./pdf_report_template.html")).toString();
 
-	// const fileName = createTempName() + ".pdf";
+	const fileName = createTempName() + ".pdf";
 
 	const template = Handlebars.compile(html);
 	const finalHtml = encodeURIComponent(
