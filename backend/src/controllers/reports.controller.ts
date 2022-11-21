@@ -16,11 +16,15 @@ import { downloadFileHandler } from "./controllers.js";
 async function downloadReportHandler(generator: () => Promise<Report>, type: ReportType, res: Response) {
 	const doc = await createReportDoc(await generator());
 
-	await downloadFileHandler(
-		async () => (type === "excel" ? await createExcelReport(doc) : await createPDFReport(doc)),
-		res,
-		true
-	);
+	if (type === "excel") {
+		res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		const excel = await createExcelReport(doc);
+		excel.xlsx.write(res);
+	} else {
+		res.set("Content-Type", "application/pdf");
+		res.send(await createPDFReport(doc, res));
+		// pdf.pipe(res);
+	}
 }
 
 export async function getArticleSalesReportController(

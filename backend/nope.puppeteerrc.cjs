@@ -5,5 +5,5 @@ const { join } = require("path");
  */
 module.exports = {
 	// Changes the cache location for Puppeteer.
-	cacheDirectory: join(__dirname, ".cache", "puppeteer"),
+	cacheDirectory: process.env.CHANGE_PUPPETEER_DIR ? join(__dirname, ".cache", "puppeteer") : undefined,
 };

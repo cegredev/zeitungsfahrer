@@ -18,8 +18,9 @@ import { daysBetween, getKW } from "../time.js";
 import { Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
-import Handlebars from "handlebars";
 import Puppeteer from "puppeteer";
+import { generatePDF, populateTemplateHtml } from "../pdf.js";
+import { Response } from "express";
 
 function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 	const totalNetto = [...byMwst.values()].reduce((a, b) => a.add(b), Big(0));
@@ -432,11 +433,7 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	};
 }
 
-function createTempName(): string {
-	return "temp_report_" + new Date().getTime();
-}
-
-export async function createExcelReport(doc: ReportDoc): Promise<string> {
+export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workbook> {
 	const workbook = new ExcelJS.Workbook();
 	const sheet = workbook.addWorksheet("Bericht");
 
@@ -475,53 +472,28 @@ export async function createExcelReport(doc: ReportDoc): Promise<string> {
 		};
 	}
 
-	const fileName = createTempName() + ".xlsx";
-	await workbook.xlsx.writeFile(fileName);
-	return fileName;
+	return workbook;
 }
 
-export async function createPDFReport(report: ReportDoc): Promise<string> {
-	const html = (await fs.readFile("./pdf_report_template.html")).toString();
+export async function createPDFReport(report: ReportDoc, res: Response): Promise<Buffer> {
+	const template = (await fs.readFile("./pdf_report_template.html")).toString();
 
-	const fileName = createTempName() + ".pdf";
-
-	const template = Handlebars.compile(html);
-	const finalHtml = encodeURIComponent(
-		template({
-			title: "Bericht",
-			header: report.header,
-			columns: report.columns,
-			rows:
-				report.body?.map((row) =>
-					row.map((cell, i) => {
-						const styler = report.columns[i].styler;
-						return styler === undefined ? cell.toString() : styler(cell);
-					})
-				) || [],
-			summary: report.summary.map((cell, i) => {
-				const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
-				return styler === undefined ? cell.toString() : styler(cell);
-			}),
-		})
-	);
-
-	const browser = await Puppeteer.launch({
-		args: ["--no-sandbox", "--disable-setuid-sandbox"],
-		headless: true,
+	const html = populateTemplateHtml(template, {
+		title: "Bericht",
+		header: report.header,
+		columns: report.columns,
+		rows:
+			report.body?.map((row) =>
+				row.map((cell, i) => {
+					const styler = report.columns[i].styler;
+					return styler === undefined ? cell.toString() : styler(cell);
+				})
+			) || [],
+		summary: report.summary.map((cell, i) => {
+			const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
+			return styler === undefined ? cell.toString() : styler(cell);
+		}),
 	});
 
-	const page = await browser.newPage();
-	await page.goto(`data:text/html;charset=UTF-8,${finalHtml}`, {
-		waitUntil: "networkidle0",
-	});
-
-	const buffer = await page.pdf({
-		format: "A4",
-	});
-
-	await fs.writeFile("./" + fileName, buffer);
-
-	await browser.close();
-
-	return fileName;
+	return await generatePDF(html);
 }
