@@ -1,5 +1,5 @@
 const { join } = require("path");
-import env from "src/env.js";
+const env = require("ckey");
 
 console.log("own env:", env);
 console.log("process.env", process.env);
