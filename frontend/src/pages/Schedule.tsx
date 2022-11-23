@@ -2,13 +2,14 @@ import { Driver } from "backend/src/models/schedule.model";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
-import { GET } from "../api";
+import { GET, GET_BLOB } from "../api";
 import { normalizeDate } from "../consts";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import YearSelection from "../components/time/YearSelection";
-import WeekSelection from "../components/time/WeekSelection";
+import WeekSelection, { getKW } from "../components/time/WeekSelection";
+import { downloadUrl } from "../files";
 
 const startDate = dayjs(normalizeDate(new Date())).set("day", 1).toDate();
 
@@ -41,6 +42,24 @@ function Schedule() {
 				</div>
 				<div>
 					KW: <WeekSelection date={date} setDate={setDate} />
+				</div>
+				<div>
+					<button
+						onClick={async () => {
+							const res = await GET_BLOB(
+								"/auth/calendar/view/excel?start=" + dayjs(date).format("YYYY-MM-DD"),
+								token!
+							);
+
+							console.log(res);
+
+							const fileUrl = URL.createObjectURL(res.data);
+
+							downloadUrl(fileUrl, "Einsatzplan KW " + getKW(date) + ".xlsx");
+						}}
+					>
+						Excel
+					</button>
 				</div>
 			</h3>
 			{drivers ? (

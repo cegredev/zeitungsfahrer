@@ -8,6 +8,8 @@ import { getEnvToken } from "../util.js";
 import path from "path";
 import fs from "fs";
 
+import ExcelJS from "exceljs";
+
 export async function validateTokenHandler(req: Request, res: Response, next: NextFunction) {
 	const token = req.headers["authorization"];
 
@@ -46,4 +48,9 @@ export async function downloadFileHandler(func: () => Promise<string>, res: Resp
 			});
 		}
 	});
+}
+
+export async function downloadExcelHandler(excel: ExcelJS.Workbook, res: Response) {
+	res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	excel.xlsx.write(res);
 }

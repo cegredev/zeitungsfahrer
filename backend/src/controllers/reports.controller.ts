@@ -11,19 +11,16 @@ import {
 	createWeeklyBillReport,
 	getWeeklyBillReport,
 } from "../services/reports.service.js";
-import { downloadFileHandler } from "./controllers.js";
+import { downloadExcelHandler } from "./controllers.js";
 
 async function downloadReportHandler(generator: () => Promise<Report>, type: ReportType, res: Response) {
 	const doc = await createReportDoc(await generator());
 
 	if (type === "excel") {
-		res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		const excel = await createExcelReport(doc);
-		excel.xlsx.write(res);
+		downloadExcelHandler(await createExcelReport(doc), res);
 	} else {
 		res.set("Content-Type", "application/pdf");
 		res.send(await createPDFReport(doc, res));
-		// pdf.pipe(res);
 	}
 }
 

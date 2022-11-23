@@ -31,6 +31,7 @@ import {
 	getCalendarViewController,
 	getDistrictsCalendarController,
 	getDriversController,
+	getScheduleExcelController,
 	updateCalendarController,
 	updateCalendarEntryController,
 	updateDistrictCalendarController,
@@ -88,6 +89,8 @@ function routes(app: Express) {
 		.get(getCalendarViewController)
 		.post(updateCalendarEntryController)
 		.delete(deleteCalendarEntryController);
+
+	app.route("/auth/calendar/view/excel").get(getScheduleExcelController);
 
 	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
 

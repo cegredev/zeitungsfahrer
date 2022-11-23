@@ -22,8 +22,9 @@ import {
 	updateDistrictCalendar,
 	deleteDistrict,
 	updateDistrict,
+	createScheduleExcel,
 } from "../services/schedule.service.js";
-import { handler } from "./controllers.js";
+import { downloadExcelHandler, handler } from "./controllers.js";
 
 export async function getCalendarViewController(
 	req: Request<any, any, any, { start: Date; end: Date }>,
@@ -33,6 +34,13 @@ export async function getCalendarViewController(
 		async () => ({ code: 200, body: await getSchedule(new Date(req.query.start), new Date(req.query.end)) }),
 		res
 	);
+}
+
+export async function getScheduleExcelController(
+	req: Request<any, any, any, { start: Date }>,
+	res: Response<ScheduleView>
+) {
+	downloadExcelHandler(await createScheduleExcel(new Date(req.query.start)), res);
 }
 
 export async function getCalendarEditController(

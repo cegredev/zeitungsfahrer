@@ -18,6 +18,7 @@ import {
 } from "../models/schedule.model.js";
 import { daysBetween } from "../time.js";
 import { dayOfYear, poolExecute } from "../util.js";
+import ExcelJS from "exceljs";
 
 interface CalendarEntry {
 	activity: Activity;
@@ -135,6 +136,34 @@ export async function getSchedule(start: Date, end: Date): Promise<ScheduleView>
 		plus,
 		drivers,
 	};
+}
+
+export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook> {
+	const schedule = await getSchedule(start, dayjs(start).add(5, "days").toDate());
+
+	const workbook = new ExcelJS.Workbook();
+
+	const plan = workbook.addWorksheet("Plan", {
+		pageSetup: {
+			paperSize: 9,
+			orientation: "landscape",
+		},
+	});
+
+	plan.columns = [0, 1, 2, 3, 4, 5, 6].map(() => ({
+		width: 15,
+	}));
+
+	plan.insertRow(1, ["", ...[0, 1, 2, 3, 4, 5].map((day) => dayjs(start).add(day, "days").toDate())]);
+	plan.insertRow(2, ["Bezirk", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]);
+
+	const driverMap = new Map((await getDrivers()).map((driver) => [driver.id, driver.name]));
+
+	schedule.districts.forEach(({ district, drivers }, i) => {
+		plan.insertRow(3 + i, [district.customId, ...drivers.map((driver) => driverMap.get(driver.id) || "-")]);
+	});
+
+	return workbook;
 }
 
 export async function updateCalendar(entries: ChangedCalendarEntry[]): Promise<RouteReport> {
