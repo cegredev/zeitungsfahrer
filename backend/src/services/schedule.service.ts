@@ -147,6 +147,7 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 		pageSetup: {
 			paperSize: 9,
 			orientation: "landscape",
+			showGridLines: true,
 		},
 	});
 
@@ -154,14 +155,102 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 		width: 15,
 	}));
 
-	plan.insertRow(1, ["", ...[0, 1, 2, 3, 4, 5].map((day) => dayjs(start).add(day, "days").toDate())]);
-	plan.insertRow(2, ["Bezirk", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]);
+	let currentRow = 1;
+
+	const headerRows = [
+		["", ...[0, 1, 2, 3, 4, 5].map((day) => dayjs(start).add(day, "days").toDate())],
+		["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+	];
+
+	plan.insertRow(currentRow++, headerRows[0]);
+	plan.insertRow(currentRow++, ["Bericht", ...headerRows[1]]);
+	plan.getCell(2, 1).style = { font: { bold: true } };
 
 	const driverMap = new Map((await getDrivers()).map((driver) => [driver.id, driver.name]));
 
-	schedule.districts.forEach(({ district, drivers }, i) => {
-		plan.insertRow(3 + i, [district.customId, ...drivers.map((driver) => driverMap.get(driver.id) || "-")]);
+	schedule.districts.forEach(({ district, drivers }) => {
+		plan.insertRow(currentRow++, [district.customId, ...drivers.map((driver) => driverMap.get(driver.id) || "-")]);
 	});
+
+	const unset = workbook.addWorksheet("Frei", {
+		pageSetup: {
+			paperSize: 9,
+			orientation: "landscape",
+			showGridLines: true,
+		},
+	});
+
+	unset.columns = [0, 1, 2, 3, 4, 5, 6].map(() => ({
+		width: 15,
+	}));
+
+	currentRow = 1;
+
+	unset.insertRow(currentRow++, headerRows[0]);
+	unset.insertRow(currentRow++, ["", ...headerRows[1]]);
+
+	unset.getCell("B1:G2").style = {
+		font: {
+			bold: true,
+		},
+	};
+
+	const addSection = (name: string, color: string, invertTextColor: boolean, row: number, data: number[][]) => {
+		unset.insertRow(row++, [name]);
+
+		unset.getCell(row - 1, 1).style = {
+			font: {
+				color: invertTextColor ? { argb: "FFFFFFFF" } : { argb: "FF000000" },
+				bold: true,
+			},
+			fill: {
+				type: "pattern",
+				pattern: "solid",
+				fgColor: {
+					argb: color,
+				},
+			},
+		};
+
+		const maxDrivers = Math.max(...data.map((column) => column.length));
+
+		const rows = Array(maxDrivers)
+			.fill(null)
+			.map(() => Array<string>(6).fill(""));
+
+		data.forEach((column, i) => {
+			column.forEach((id, j) => {
+				rows[j][i] = driverMap.get(id)!;
+			});
+		});
+
+		for (const rowData of rows) {
+			unset.insertRow(row++, rowData);
+		}
+
+		return row;
+	};
+
+	for (const section of [
+		{ name: "Planfrei", color: "FFFFFF00", invertTextColor: false, data: schedule.free },
+		{ name: "Urlaub", color: "FF00FF00", invertTextColor: false, data: schedule.vacation },
+		{ name: "Krank", color: "FFFF0000", invertTextColor: true, data: schedule.sick },
+		{ name: "Plus", color: "FF0000FF", invertTextColor: true, data: schedule.plus },
+	]) {
+		currentRow = addSection(section.name, section.color, section.invertTextColor, currentRow, section.data);
+	}
+
+	for (let column = 2; column <= 7; column++) {
+		for (let row = 1; row <= 2; row++) {
+			for (const sheet of [plan, unset]) {
+				sheet.getCell(row, column).style = {
+					font: {
+						bold: true,
+					},
+				};
+			}
+		}
+	}
 
 	return workbook;
 }

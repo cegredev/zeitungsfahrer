@@ -51,8 +51,6 @@ function Schedule() {
 								token!
 							);
 
-							console.log(res);
-
 							const fileUrl = URL.createObjectURL(res.data);
 
 							downloadUrl(fileUrl, "Einsatzplan KW " + getKW(date) + ".xlsx");
