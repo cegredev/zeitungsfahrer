@@ -18,7 +18,6 @@ import { daysBetween, getKW } from "../time.js";
 import { Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
-import Puppeteer from "puppeteer";
 import { generatePDF, populateTemplateHtml } from "../pdf.js";
 import { Response } from "express";
 
@@ -33,7 +32,15 @@ function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
-	const dateRange = daysBetween(start, end);
+
+	console.log(
+		"getting report for article",
+		articleId,
+		"from",
+		dayjs(start).format("DD.MM.YYYY"),
+		"to",
+		dayjs(end).format("DD.MM.YYYY")
+	);
 
 	const records = await poolExecute<{ date: Date; supply: number; remissions: number; sales: number }>(
 		`SELECT date, supply, remissions, (supply - remissions) AS sales

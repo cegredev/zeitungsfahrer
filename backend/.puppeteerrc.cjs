@@ -1,9 +1,6 @@
 const { join } = require("path");
 const env = require("ckey");
 
-console.log("own env:", env);
-console.log("process.env", process.env);
-
 /**
  * @type {import("puppeteer").Configuration}
  */
