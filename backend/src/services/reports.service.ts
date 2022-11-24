@@ -45,7 +45,9 @@ export async function getArticleSalesReport(articleId: number, date: Date, invoi
 	const records = await poolExecute<{ date: Date; supply: number; remissions: number; sales: number }>(
 		`SELECT date, supply, remissions, (supply - remissions) AS sales
 		 FROM records WHERE article_id=? AND date BETWEEN ? AND ?
-		 ORDER BY date`,
+		 GROUP BY vendor_id, date
+		 ORDER BY date
+		 `,
 		[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 	);
 
