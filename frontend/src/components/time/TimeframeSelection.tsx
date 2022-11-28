@@ -7,6 +7,7 @@ import WeekSelection from "./WeekSelection";
 import DateSelection from "./DateSelection";
 import ReportButton from "../dashboard/ReportButton";
 import { ReportType } from "backend/src/models/reports.model";
+import InvoiceButton from "../InvoiceButton";
 
 interface Props {
 	onChange: (date: Date) => void;
@@ -62,6 +63,13 @@ function TimeframeSelection({ onChange, startDate, vendor, reportType }: Props) 
 								type={reportType}
 								reportsPath={"vendor/" + vendor.id}
 							/>
+						</td>
+					))}
+				</tr>
+				<tr>
+					{[3, 2, 1, 0].map((invoiceSystem) => (
+						<td key={invoiceSystem} style={{ textAlign: "center" }}>
+							<InvoiceButton date={date} vendor={vendor} system={invoiceSystem} />
 						</td>
 					))}
 				</tr>

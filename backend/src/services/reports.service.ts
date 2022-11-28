@@ -2,15 +2,7 @@ import ExcelJS from "exceljs";
 import Big from "big.js";
 import { getVendorCatalog, getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { applyPrices, getArticleRecords, getDateRange } from "./records.service.js";
-import {
-	Report,
-	ReportDoc,
-	ReportedArticle,
-	ReportedVendor,
-	ReportType,
-	VendorSalesReport,
-	WeeklyBillReport,
-} from "../models/reports.model.js";
+import { Report, ReportDoc, ReportedVendor, WeeklyBillReport } from "../models/reports.model.js";
 import { poolExecute } from "../util.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT, months, twoDecimalFormat } from "../consts.js";
@@ -33,23 +25,16 @@ function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
 
-	console.log(
-		"getting report for article",
-		articleId,
-		"from",
-		dayjs(start).format("DD.MM.YYYY"),
-		"to",
-		dayjs(end).format("DD.MM.YYYY")
-	);
-
-	const records = await poolExecute<{ date: Date; supply: number; remissions: number; sales: number }>(
-		`SELECT date, supply, remissions, (supply - remissions) AS sales
+	const records = (
+		await poolExecute<{ date: Date; supply: string; remissions: string; sales: number }>(
+			`SELECT date, SUM(supply) as supply, SUM(remissions) as remissions, SUM(supply - remissions) AS sales
 		 FROM records WHERE article_id=? AND date BETWEEN ? AND ?
 		 GROUP BY date
 		 ORDER BY date
 		 `,
-		[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
-	);
+			[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
+		)
+	).map((record) => ({ ...record, supply: parseInt(record.supply), remissions: parseInt(record.remissions) }));
 
 	const newRecords: { supply: number; remissions: number; sales: number }[] = [];
 
@@ -484,8 +469,8 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 	return workbook;
 }
 
-export async function createPDFReport(report: ReportDoc, res: Response): Promise<Buffer> {
-	const template = (await fs.readFile("./pdf_report_template.html")).toString();
+export async function createPDFReport(report: ReportDoc): Promise<Buffer> {
+	const template = (await fs.readFile("./templates/report.html")).toString();
 
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",

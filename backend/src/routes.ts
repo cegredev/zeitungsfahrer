@@ -7,6 +7,7 @@ import {
 	putArticleController,
 	getArticleInfoController,
 } from "./controllers/articles.controller.js";
+import { getInvoiceController } from "./controllers/invoices.controller.js";
 import {
 	getAllSalesController,
 	getArticleRecordsController,
@@ -104,12 +105,14 @@ function routes(app: Express) {
 		.put(updateDistrictCalendarController)
 		.delete(deleteDistrictController);
 
+	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
+
 	app.get("/auth/reports/article/:id", getArticleSalesReportController);
 	app.get("/auth/reports/vendor/:id", getVendorSalesReportController);
 	app.get("/auth/reports/all", getAllSalesReportController);
 	app.get("/auth/reports/weeklyBill", getWeeklyBillReportController);
 
-	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
+	app.route("/auth/invoices/:id").get(getInvoiceController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 

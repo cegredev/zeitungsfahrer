@@ -1,5 +1,6 @@
 import { Record } from "backend/src/models/records.model";
 import dayjs from "dayjs";
+import { downloadUrl } from "./files";
 
 export const months = [
 	"Januar",
@@ -87,4 +88,26 @@ export const activityStyles: Map<number, React.CSSProperties & { displayName?: s
 
 export function parseIntOr(input: string, or: number): number {
 	return parseInt(input) || or;
+}
+
+export function openFile(name: string, url: string) {
+	const w = window.open(url, "_blank");
+	if (w) {
+		w.document.write(
+			"<html><head><title>" +
+				name +
+				"</title></head><body>" +
+				'<embed width="100%" height="100%" name="plugin" src="' +
+				url +
+				'" ' +
+				'type="application/pdf" internalinstanceid="21"></body></html>'
+		);
+		w.focus();
+	}
+}
+
+export function openAndDownloadFile(name: string, extension: string, url: string) {
+	openFile(name, url);
+
+	setTimeout(() => downloadUrl(url, name + extension), 1000);
 }

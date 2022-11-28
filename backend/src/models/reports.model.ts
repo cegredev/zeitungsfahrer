@@ -48,8 +48,3 @@ export interface ReportDoc {
 	body?: any[][];
 	summary: string[];
 }
-
-export interface VendorSalesReport {
-	articles: Map<number, string>;
-	amountsByArticle: Map<number, ReportedArticle>;
-}

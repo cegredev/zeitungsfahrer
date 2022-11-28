@@ -54,3 +54,8 @@ export async function downloadExcelHandler(excel: ExcelJS.Workbook, res: Respons
 	res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	excel.xlsx.write(res);
 }
+
+export async function downloadPDFHandler(pdf: Buffer, res: Response) {
+	res.set("Content-Type", "application/pdf");
+	res.send(pdf);
+}

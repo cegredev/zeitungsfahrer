@@ -11,7 +11,7 @@ import {
 	createWeeklyBillReport,
 	getWeeklyBillReport,
 } from "../services/reports.service.js";
-import { downloadExcelHandler } from "./controllers.js";
+import { downloadExcelHandler, downloadPDFHandler } from "./controllers.js";
 
 async function downloadReportHandler(generator: () => Promise<Report>, type: ReportType, res: Response) {
 	const doc = await createReportDoc(await generator());
@@ -19,8 +19,7 @@ async function downloadReportHandler(generator: () => Promise<Report>, type: Rep
 	if (type === "excel") {
 		downloadExcelHandler(await createExcelReport(doc), res);
 	} else {
-		res.set("Content-Type", "application/pdf");
-		res.send(await createPDFReport(doc, res));
+		downloadPDFHandler(await createPDFReport(doc), res);
 	}
 }
 
