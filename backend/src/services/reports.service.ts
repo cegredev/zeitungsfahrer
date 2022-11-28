@@ -203,7 +203,7 @@ export async function createArticleListingReport(
 		columns: [
 			{
 				header: "Datum",
-				width: 20,
+				width: 15,
 				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
 			{

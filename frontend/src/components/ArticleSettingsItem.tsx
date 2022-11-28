@@ -72,7 +72,7 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 				<strong>Verkaufspreis</strong>
 			</div>
 			<div style={gridSpan2}>
-				<strong>Marktpreis</strong>
+				<strong>Warenwert</strong>
 			</div>
 
 			<div style={{ gridColumn: "2 / 4" }}>MwSt</div>
