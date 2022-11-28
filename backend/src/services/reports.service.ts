@@ -176,9 +176,11 @@ export async function getVendorSalesReport(
 
 	const [totalNetto, totalBrutto] = calculateTotalValues(valuesByMwst);
 
+	const vendor = await getVendorSimple(vendorId);
+
 	return {
 		articles: new Map(articles.map((article) => [article.articleId, article.articleName])),
-		owner: (await getVendorSimple(vendorId)).name,
+		owner: `${vendor.name} (Kundennr.: ${vendor.customId})`,
 		recordsByDate,
 		totalSupply,
 		totalRemissions,
@@ -444,6 +446,8 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 		};
 	});
 
+	sheet.mergeCells("A3:C3");
+
 	const rowOffset = 5;
 
 	doc.body?.forEach((row, i) => {
@@ -455,15 +459,17 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 
 	sheet.insertRow(summaryRow, summary);
 
-	for (let column = 1; column <= summary.length; column++) {
-		const cell = sheet.getCell(summaryRow, column);
-		cell.style = {
-			...cell.style,
-			font: {
-				...cell.style.font,
-				bold: true,
-			},
-		};
+	for (const rowNum of [rowOffset, summaryRow]) {
+		for (let column = 1; column <= summary.length; column++) {
+			const cell = sheet.getCell(rowNum, column);
+			cell.style = {
+				...cell.style,
+				font: {
+					...cell.style.font,
+					bold: true,
+				},
+			};
+		}
 	}
 
 	return workbook;

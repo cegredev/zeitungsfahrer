@@ -2,7 +2,7 @@ import { ReportType } from "backend/src/models/reports.model";
 import React from "react";
 import WeekSelection from "../time/WeekSelection";
 import ReportButton from "./ReportButton";
-import ReportTypeSelction from "./ReportTypeSelction";
+import ReportTypeSelection from "./ReportTypeSelection";
 
 const today = new Date();
 
@@ -15,7 +15,7 @@ function WeeklyBillView() {
 			<div style={{ fontWeight: "bold" }}>
 				Alle Händler für KW <WeekSelection date={date} setDate={setDate} /> abrechnen:
 			</div>
-			<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
+			<ReportTypeSelection reportType={reportType} setReportType={setReportType} />
 			<ReportButton
 				date={date}
 				filePrefix={"Abrechnung"}

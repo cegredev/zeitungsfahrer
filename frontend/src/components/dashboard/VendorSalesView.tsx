@@ -12,7 +12,7 @@ import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
 import YearSelection from "../time/YearSelection";
 import ReportButton from "./ReportButton";
-import ReportTypeSelction from "./ReportTypeSelction";
+import ReportTypeSelection from "./ReportTypeSelection";
 
 function VendorSalesView() {
 	const [vendorSales, setVendorSales] = React.useState<VendorSales | undefined>(undefined);
@@ -113,7 +113,7 @@ function VendorSalesView() {
 				</tr>
 				<tr>
 					<td>
-						<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
+						<ReportTypeSelection reportType={reportType} setReportType={setReportType} />
 					</td>
 					{[3, 2, 1, 0].map((invoiceSystem) => (
 						<td key={invoiceSystem} style={{ textAlign: "center" }}>

@@ -67,7 +67,8 @@ function TimeframeSelection({ onChange, startDate, vendor, reportType }: Props) 
 					))}
 				</tr>
 				<tr>
-					{[3, 2, 1, 0].map((invoiceSystem) => (
+					<td />
+					{[2, 1, 0].map((invoiceSystem) => (
 						<td key={invoiceSystem} style={{ textAlign: "center" }}>
 							<InvoiceButton date={date} vendor={vendor} system={invoiceSystem} />
 						</td>

@@ -15,7 +15,7 @@ import { VendorIncludedArticles } from "backend/src/models/vendors.model";
 import { useImmer } from "use-immer";
 import { ChangedRecord } from "backend/src/models/records.model";
 import { ReportType } from "backend/src/models/reports.model";
-import ReportTypeSelction from "../components/dashboard/ReportTypeSelction";
+import ReportTypeSelection from "../components/dashboard/ReportTypeSelection";
 
 const initialEndDate = normalizeDate(new Date());
 
@@ -94,10 +94,10 @@ function Records() {
 									display: "flex",
 									flexDirection: "column",
 									gap: 5,
-									justifyContent: "flex-start",
+									height: "60%",
+									justifyContent: "space-between",
 								}}
 							>
-								<ReportTypeSelction reportType={reportType} setReportType={setReportType} />
 								<YesNoPrompt
 									trigger={<button style={{ color: "green" }}>Speichern</button>}
 									header="Speichern"
@@ -118,6 +118,7 @@ function Records() {
 										});
 									}}
 								/>
+								<ReportTypeSelection reportType={reportType} setReportType={setReportType} />
 							</div>
 						</div>
 						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>

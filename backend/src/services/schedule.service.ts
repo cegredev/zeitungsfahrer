@@ -143,6 +143,8 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 
 	const workbook = new ExcelJS.Workbook();
 
+	const totalColumns = 7;
+
 	const plan = workbook.addWorksheet("Plan", {
 		pageSetup: {
 			paperSize: 9,
@@ -198,19 +200,21 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 	const addSection = (name: string, color: string, invertTextColor: boolean, row: number, data: number[][]) => {
 		unset.insertRow(row++, [name]);
 
-		unset.getCell(row - 1, 1).style = {
-			font: {
-				color: invertTextColor ? { argb: "FFFFFFFF" } : { argb: "FF000000" },
-				bold: true,
-			},
-			fill: {
-				type: "pattern",
-				pattern: "solid",
-				fgColor: {
-					argb: color,
+		for (let i = 1; i <= totalColumns; i++) {
+			unset.getCell(row - 1, i).style = {
+				font: {
+					color: invertTextColor ? { argb: "FFFFFFFF" } : { argb: "FF000000" },
+					bold: true,
 				},
-			},
-		};
+				fill: {
+					type: "pattern",
+					pattern: "solid",
+					fgColor: {
+						argb: color,
+					},
+				},
+			};
+		}
 
 		const maxDrivers = Math.max(...data.map((column) => column.length));
 
@@ -225,7 +229,7 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 		});
 
 		for (const rowData of rows) {
-			unset.insertRow(row++, rowData);
+			unset.insertRow(row++, ["", ...rowData]);
 		}
 
 		return row;
@@ -257,6 +261,13 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 
 export async function updateCalendar(entries: ChangedCalendarEntry[]): Promise<RouteReport> {
 	for (const { date, driverId, activity, districtId } of entries) {
+		if (activity === 0 && districtId === undefined)
+			throw new Error(
+				`Tried to set driver with id ${driverId} to working with no district id at date ${dayjs(date).format(
+					"YYYY-MM-DD"
+				)}`
+			);
+
 		await poolExecute("REPLACE INTO calendar (driver_id, date, activity, district) VALUES (?, ?, ?, ?)", [
 			driverId,
 			date,
@@ -271,6 +282,13 @@ export async function updateCalendar(entries: ChangedCalendarEntry[]): Promise<R
 }
 
 export async function updateCalendarEntry(entry: FullCalendarEntry): Promise<RouteReport> {
+	if (entry.activity === 0 && entry.district === undefined)
+		throw new Error(
+			`Tried to set driver with id ${entry.driverId} to working with no district id at date ${dayjs(
+				entry.date
+			).format("YYYY-MM-DD")}`
+		);
+
 	const sqlDistrict = entry.district || null;
 
 	await poolExecute(

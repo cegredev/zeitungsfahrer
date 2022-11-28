@@ -6,7 +6,7 @@ interface Props {
 	setReportType: (type: ReportType) => void;
 }
 
-function ReportTypeSelction({ reportType, setReportType }: Props) {
+function ReportTypeSelection({ reportType, setReportType }: Props) {
 	return (
 		<select
 			value={reportType}
@@ -21,4 +21,4 @@ function ReportTypeSelction({ reportType, setReportType }: Props) {
 	);
 }
 
-export default ReportTypeSelction;
+export default ReportTypeSelection;
