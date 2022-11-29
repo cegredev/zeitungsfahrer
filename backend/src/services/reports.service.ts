@@ -10,7 +10,7 @@ import { daysBetween, getKW } from "../time.js";
 import { DefiniteRecord, Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
-import { generatePDF, populateTemplateHtml } from "../pdf.js";
+import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
 import { Response } from "express";
 
 function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
@@ -258,7 +258,12 @@ export async function createArticleListingReport(
 			},
 			...sharedColumns,
 		],
-		summaryColumns: [{ header: "Artikel", width: 30 }, ...sharedColumns],
+		summaryColumns: [
+			{ header: "Artikel", width: 30 },
+			...sharedColumns.slice(0, sharedColumns.length - 2),
+			{ header: "Umsatz (Netto)", styler: twoDecimalFormat.format },
+			{ header: "Umsatz (Brutto)", styler: twoDecimalFormat.format },
+		],
 		body: items.map((item) => {
 			let [supply, remissions] = [0, 0];
 			let [sellNetto, marketNetto] = [Big(0), Big(0)];
@@ -565,15 +570,6 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 
 export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 	const template = (await fs.readFile("./templates/report.html")).toString();
-
-	const applyStyler = (row: any[], columns: Column[]) => {
-		const offset = columns.length - row.length;
-
-		return row.map((cell, i) => {
-			const styler = columns[i + offset].styler;
-			return styler === undefined ? cell.toString() : styler(cell);
-		});
-	};
 
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",

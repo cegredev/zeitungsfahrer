@@ -1,5 +1,6 @@
 import Handlebars from "handlebars";
 import Puppeteer from "puppeteer";
+import { Column } from "./models/reports.model";
 
 Handlebars.registerHelper("ifCond", function (v1, operator, v2, options) {
 	// @ts-ignore
@@ -55,3 +56,12 @@ export async function generatePDF(html: string): Promise<Buffer> {
 
 	return buffer;
 }
+
+export const applyStyler = (row: any[], columns: Column[]) => {
+	const offset = columns.length - row.length;
+
+	return row.map((cell, i) => {
+		const styler = columns[i + offset].styler;
+		return styler === undefined ? cell.toString() : styler(cell);
+	});
+};

@@ -23,8 +23,8 @@ export interface ReportedArticle {
 }
 
 export interface Column {
-	header: string;
-	width: number;
+	header?: string;
+	width?: number;
 	style?: any;
 	styler?: (value: any) => string;
 }

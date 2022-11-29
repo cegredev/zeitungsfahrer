@@ -7,10 +7,15 @@
 		<title>Rechnung</title>
 
 		<style>
-			@page {
-				size: A4;
-				margin: 0;
+			/* Restricts tables to tablesPerPage tables on a page */
+			article:nth-of-type({{tablesPerPage}}n) {
+				page-break-after: always;
 			}
+
+			@page {
+				margin: 1cm;
+			}
+
 			body {
 				font-family: Arial, Helvetica, sans-serif;
 				margin: 0;
@@ -18,11 +23,13 @@
 
 				display: grid;
 				grid-template-rows: auto 1fr auto;
+
+				font-size: 10.5pt;
 			}
 
-			body > * {
+			/* body > * {
 				padding: 5%;
-			}
+			} */
 
 			.top {
 				display: flex;
@@ -66,8 +73,7 @@
 			}
 
 			table {
-				width: 90%;
-				margin-left: 5%;
+				width: 100%;
 			}
 		</style>
 	</head>
@@ -76,7 +82,7 @@
 			<h1>Kandemir Vertragsbetreuung</h1>
 		</header>
 
-		<article>
+		<main>
 			<div class="contact">
 				<div>Hamburger Str. 25, 21205 Hamburg</div>
 				<div>Tel.: +490123456789</div>
@@ -84,6 +90,7 @@
 			</div>
 
 			<p></p>
+
 			<div class="info">
 				<div class="vendor">
 					<div>{{vendor.lastName}}, {{vendor.firstName}}</div>
@@ -97,24 +104,74 @@
 			</div>
 
 			<p></p>
-			<table>
+
+			{{#each articles}}
+			<article class="article-section">
+				<h3>{{this.name}}</h3>
+				<table class="article-table">
+					<thead>
+						<th>Datum</th>
+						<th>Lieferung</th>
+						<th>Remission</th>
+						<th>Verkauf</th>
+						<th>Betrag (Netto)</th>
+						<th>Betrag (Brutto)</th>
+						<th>Warenwert (Netto)</th>
+						<th>Warenwert (Brutto)</th>
+					</thead>
+					<tbody>
+						{{#each rows}}
+						<tr>
+							{{#each this}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+						{{/each}}
+						<tr style="font-weight: bold">
+							<td>Zusammenfassung</td>
+							{{#each this.summary}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+					</tbody>
+				</table>
+			</article>
+			{{/each}}
+
+			<p></p>
+
+			<table class="summary-table">
 				<thead>
-					<th>Datum</th>
-					<th>Artikel</th>
-					<th>Stück</th>
-					<th>Preis (Netto)</th>
+					<thead>
+						<th>Artikel</th>
+						<th>Lieferung</th>
+						<th>Remission</th>
+						<th>Verkauf</th>
+						<th>Betrag (Netto)</th>
+						<th>Betrag (Brutto)</th>
+						<th>Umsatz (Netto)</th>
+						<th>Umsatz (Brutto)</th>
+					</thead>
 				</thead>
 				<tbody>
-					{{#each rows}}
+					{{#each articles}}
 					<tr>
-						{{#each this}}
+						<td style="font-weight: bold">{{this.name}}</td>
+						{{#each this.summary}}
 						<td>{{this}}</td>
 						{{/each}}
 					</tr>
 					{{/each}}
+
+					<tr style="font-weight: bold">
+						<td>Zusammenfassung</td>
+						{{#each summary}}
+						<td>{{this}}</td>
+						{{/each}}
+					</tr>
 				</tbody>
 			</table>
-		</article>
+		</main>
 
 		<footer>
 			<div>
@@ -123,23 +180,5 @@
 				<div>IBAN:</div>
 			</div>
 		</footer>
-
-		<script type="text/javascript">
-			window.onload = addPageNumbers;
-
-			function addPageNumbers() {
-				var totalPages = Math.ceil(document.body.scrollHeight / 1123); //842px A4 pageheight for 72dpi, 1123px A4 pageheight for 96dpi,
-				for (var i = 1; i <= totalPages; i++) {
-					var pageNumberDiv = document.createElement("div");
-					var pageNumber = document.createTextNode(i + "/" + totalPages);
-					pageNumberDiv.style.position = "absolute";
-					pageNumberDiv.style.top = "calc((" + i + " * (297mm - 0.5px)) - 130px)"; //297mm A4 pageheight; 0,5px unknown needed necessary correction value; additional wanted 40px margin from bottom(own element height included)
-					pageNumberDiv.style.height = "16px";
-					pageNumberDiv.appendChild(pageNumber);
-					document.body.insertBefore(pageNumberDiv, document.getElementById("content"));
-					pageNumberDiv.style.left = "calc(100% - (" + pageNumberDiv.offsetWidth + "px + 10px))";
-				}
-			}
-		</script>
 	</body>
 </html>
