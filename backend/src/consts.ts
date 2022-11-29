@@ -1,3 +1,5 @@
+import { AddWorksheetOptions } from "exceljs";
+
 export const DATE_FORMAT = "YYYY-MM-DD";
 export const MILlIS_IN_DAY = 24 * 60 * 60 * 1_000;
 
@@ -21,3 +23,11 @@ export const twoDecimalFormat = new Intl.NumberFormat("de-DE", {
 	currency: "EUR",
 	maximumFractionDigits: 2,
 });
+
+export const dinA4ExcelLandscape: Partial<AddWorksheetOptions> = {
+	pageSetup: {
+		paperSize: 9,
+		orientation: "landscape",
+		showGridLines: true,
+	},
+};

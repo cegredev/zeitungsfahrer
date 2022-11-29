@@ -1,3 +1,4 @@
+import Big from "big.js";
 import dayjs from "dayjs";
 import pool from "./database.js";
 
@@ -27,4 +28,8 @@ export function getEnvToken(): string {
 	const token = process.env.TOKEN_SECRET;
 	if (token === undefined) throw new Error("Missing token (private key)!");
 	return token;
+}
+
+export function mulWithMwst(value: Big, mwst: number): Big {
+	return value.mul(1 + mwst / 100.0);
 }

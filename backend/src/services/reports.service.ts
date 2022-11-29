@@ -2,12 +2,12 @@ import ExcelJS from "exceljs";
 import Big from "big.js";
 import { getVendorCatalog, getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { applyPrices, getArticleRecords, getDateRange } from "./records.service.js";
-import { Report, ReportDoc, ReportedVendor, WeeklyBillReport } from "../models/reports.model.js";
-import { poolExecute } from "../util.js";
+import { Column, Report, ReportDoc, ReportedVendor, WeeklyBillReport } from "../models/reports.model.js";
+import { mulWithMwst, poolExecute } from "../util.js";
 import dayjs from "dayjs";
-import { DATE_FORMAT, months, twoDecimalFormat } from "../consts.js";
+import { DATE_FORMAT, dinA4ExcelLandscape, months, twoDecimalFormat } from "../consts.js";
 import { daysBetween, getKW } from "../time.js";
-import { Record } from "../models/records.model.js";
+import { DefiniteRecord, Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 import { generatePDF, populateTemplateHtml } from "../pdf.js";
@@ -78,48 +78,61 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 	const [start] = getDateRange(date, invoiceSystem);
 	const startDate = dayjs(start);
 
-	return {
-		invoiceSystem,
-		itemSpecifier: (await getArticleInfo(articleId)).name,
-		columns: [
-			{
-				header: "Datum",
-				width: 20,
-				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
-			},
-			{
-				header: "Lieferung",
-				width: 10,
-				// styler: (v) => v + " Stk.",
-			},
-			{
-				header: "Remissionen",
-				width: 15,
-				// styler: (v) => v + " Stk.",
-			},
-			{
-				header: "Verkauf",
-				width: 10,
-				// styler: (v) => v + " Stk.",
-			},
-		],
-		date,
-		body:
-			invoiceSystem === 3
-				? undefined
-				: data.records.map((r, i) => [startDate.add(i, "days").toDate(), r.supply, r.remissions, r.sales]),
-		summary: [data.totalSupply, data.totalRemissions, data.totalSales],
-	};
+	throw new Error("Not adapted to new report!");
+
+	// return {
+	// 	invoiceSystem,
+	// 	itemSpecifier: (await getArticleInfo(articleId)).name,
+	// 	columns: [
+	// 		{
+	// 			header: "Datum",
+	// 			width: 20,
+	// 			styler: (value) => dayjs(value).format("DD.MM.YYYY"),
+	// 		},
+	// 		{
+	// 			header: "Lieferung",
+	// 			width: 10,
+	// 			// styler: (v) => v + " Stk.",
+	// 		},
+	// 		{
+	// 			header: "Remissionen",
+	// 			width: 15,
+	// 			// styler: (v) => v + " Stk.",
+	// 		},
+	// 		{
+	// 			header: "Verkauf",
+	// 			width: 10,
+	// 			// styler: (v) => v + " Stk.",
+	// 		},
+	// 	],
+	// 	date,
+	// 	body:
+	// 		invoiceSystem === 3
+	// 			? undefined
+	// 			: data.records.map((r, i) => [startDate.add(i, "days").toDate(), r.supply, r.remissions, r.sales]),
+	// 	summary: [data.totalSupply, data.totalRemissions, data.totalSales],
+	// };
 }
 
 interface ArticleListingReport {
-	articles: Map<number, string>;
 	owner: string;
-	recordsByDate: Record[][];
-	totalSupply: number;
-	totalRemissions: number;
-	totalNetto: Big;
-	totalBrutto: Big;
+	items: ReportItem[];
+}
+
+interface ArticleListingRecord {
+	supply: number;
+	remissions: number;
+	sales: number;
+	sellNetto: Big;
+	sellBrutto: Big;
+	marketNetto: Big;
+	marketBrutto: Big;
+}
+
+interface ReportItem {
+	mwst: number;
+	name: string;
+	rows: DefiniteRecord[];
 }
 
 export async function getVendorSalesReport(
@@ -132,70 +145,92 @@ export async function getVendorSalesReport(
 	const [start, end] = getDateRange(date, invoiceSystem);
 	const numDays = daysBetween(start, end) + 1;
 
-	const recordsByDate: Record[][] = Array(numDays)
-		.fill(null)
-		.map(() => []);
+	const items: ReportItem[] = [];
 
-	let [totalSupply, totalRemissions] = [0, 0];
-	const valuesByMwst = new Map<number, Big>();
+	for (const { articleId, articleName } of articles) {
+		const recordsByMwst = new Map<number, ReportItem>();
 
-	for (const { articleId } of articles) {
-		const plainRecords = (await getArticleRecords(vendorId, articleId, start, end)).records;
-		const records = plainRecords.map((r) =>
-			r.missing
-				? {
-						date: r.date,
-						supply: 0,
-						remissions: 0,
-						articleId,
-						price: r.price!,
-				  }
-				: {
-						date: r.date,
-						supply: r.supply,
-						remissions: r.remissions,
-						articleId,
-						price: r.price!,
-				  }
-		);
+		const records = (await getArticleRecords(vendorId, articleId, start, end)).records.map((r) => {
+			return {
+				date: r.date,
+				price: r.price!,
+				supply: r.missing ? 0 : r.supply,
+				remissions: r.missing ? 0 : r.remissions,
+				sales: r.missing ? 0 : r.supply - r.remissions,
+			};
+		});
 
-		for (let i = 0; i < records.length; i++) {
-			const record = records[i];
+		for (const record of records) {
+			let item = recordsByMwst.get(record.price.mwst);
+			if (item === undefined) {
+				item = {
+					mwst: record.price.mwst,
+					name: articleName,
+					rows: [],
+				};
 
-			recordsByDate[i].push(record);
-			totalSupply += record.supply;
-			totalRemissions += record.remissions;
+				recordsByMwst.set(record.price.mwst, item);
+				items.push(item);
+			}
 
-			const sales = record.supply - record.remissions;
-			if (sales === 0) continue;
-
-			const value = valuesByMwst.get(record.price.mwst) || new Big(0);
-			valuesByMwst.set(record.price.mwst, value.add(Big(sales).mul(record.price.sell)));
+			item.rows.push(record);
 		}
 	}
-
-	const [totalNetto, totalBrutto] = calculateTotalValues(valuesByMwst);
 
 	const vendor = await getVendorSimple(vendorId);
 
 	return {
-		articles: new Map(articles.map((article) => [article.articleId, article.articleName])),
 		owner: `${vendor.name} (Kundennr.: ${vendor.customId})`,
-		recordsByDate,
-		totalSupply,
-		totalRemissions,
-		totalNetto,
-		totalBrutto,
+		items,
 	};
 }
 
 export async function createArticleListingReport(
-	{ articles, owner, recordsByDate, totalSupply, totalRemissions, totalNetto, totalBrutto }: ArticleListingReport,
+	{ items, owner }: ArticleListingReport,
 	date: Date,
 	invoiceSystem: number
 ): Promise<Report> {
-	const [startDate] = getDateRange(date, invoiceSystem);
-	const start = dayjs(startDate);
+	let [totalSupply, totalRemissions] = [0, 0];
+	let [totalSellNetto, totalSellBrutto, totalMarketNetto, totalMarketBrutto] = [Big(0), Big(0), Big(0), Big(0)];
+
+	const sharedColumns = [
+		{
+			header: "Lieferung",
+			width: 10,
+		},
+		{
+			header: "Remission",
+			width: 10,
+		},
+		{
+			header: "Verkauf",
+			width: 10,
+		},
+		{
+			header: "Betrag (Netto)",
+			width: 15,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+		{
+			header: "Betrag (Brutto)",
+			width: 15,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+		{
+			header: "Marktwert (Netto)",
+			width: 15,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+		{
+			header: "Marktwert (Brutto)",
+			width: 15,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+	];
 
 	return {
 		invoiceSystem,
@@ -206,60 +241,75 @@ export async function createArticleListingReport(
 				width: 15,
 				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
-			{
-				header: "Artikel",
-				width: 15,
-			},
-			{
-				header: "Lieferung",
-				width: 10,
-			},
-			{
-				header: "Remission",
-				width: 10,
-			},
-			{
-				header: "Verkauf",
-				width: 10,
-			},
-			{
-				header: "Betrag (Netto)",
-				width: 15,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
-			{
-				header: "Betrag (Brutto)",
-				width: 15,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
+			...sharedColumns,
 		],
+		summaryColumns: [{ header: "Artikel", width: 15 }, ...sharedColumns],
 		body:
 			invoiceSystem === 3
 				? undefined
-				: recordsByDate.flat().map((record, i) => {
-						const sales = record.supply - record.remissions;
-						const value = sales > 0 ? Big(sales).mul(record.price!.sell) : Big(0);
+				: items.map((item) => {
+						let [supply, remissions] = [0, 0];
+						let [sellNetto, marketNetto] = [Big(0), Big(0)];
 
-						return [
-							start.add(Math.floor(i / articles.size), "days").toDate(),
-							articles.get(record.articleId!)!,
-							record.supply,
-							record.remissions,
-							sales,
-							value.toNumber(),
-							value.eq(0) ? 0 : value.mul(1 + record.price!.mwst / 100.0).toNumber(),
+						const rows = item.rows.map((record) => {
+							const sellValue = record.sales > 0 ? Big(record.sales).mul(record.price!.sell) : Big(0);
+							const marketValue =
+								record.sales > 0 ? Big(record.sales).mul(record.price!.marketSell) : Big(0);
+
+							supply += record.supply;
+							remissions += record.remissions;
+
+							sellNetto = sellNetto.add(sellValue);
+							marketNetto = marketNetto.add(marketValue);
+
+							return [
+								record.date,
+								record.supply,
+								record.remissions,
+								record.sales,
+								sellValue.toNumber(),
+								sellValue.eq(0) ? 0 : mulWithMwst(marketValue, item.mwst).toNumber(),
+								marketValue.toNumber(),
+								marketValue.eq(0) ? 0 : mulWithMwst(marketValue, item.mwst).toNumber(),
+							];
+						});
+
+						const [sellBrutto, marketBrutto] = [
+							mulWithMwst(sellNetto, item.mwst),
+							mulWithMwst(marketNetto, item.mwst),
 						];
+
+						totalSupply += supply;
+						totalRemissions += remissions;
+
+						totalSellNetto = totalSellNetto.add(sellNetto);
+						totalSellBrutto = totalSellBrutto.add(sellBrutto);
+						totalMarketNetto = totalMarketNetto.add(marketNetto);
+						totalMarketBrutto = totalMarketBrutto.add(marketBrutto);
+
+						return {
+							name: `${item.name} (${item.mwst}%)`,
+							rows,
+							summary: [
+								supply,
+								remissions,
+								supply - remissions,
+								sellNetto.toNumber(),
+								sellBrutto.toNumber(),
+								marketNetto.toNumber(),
+								marketBrutto.toNumber(),
+							],
+						};
 				  }),
 		date,
 		summary: [
-			"",
 			totalSupply,
 			totalRemissions,
 			totalSupply - totalRemissions,
-			totalNetto.toNumber(),
-			totalBrutto.toNumber(),
+			totalSellNetto.toNumber(),
+			totalSellBrutto.toNumber(),
+			totalMarketNetto.toNumber(),
+			totalMarketBrutto.toNumber(),
 		],
 	};
 }
@@ -325,87 +375,96 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 
 	const [totalNetto, totalBrutto] = calculateTotalValues(valuesByMwst);
 
-	return {
-		articles: new Map(articles.map((article) => [article.id, article.name])),
-		owner: "Gesamt",
-		recordsByDate,
-		totalSupply,
-		totalRemissions,
-		totalNetto,
-		totalBrutto,
-	};
+	throw new Error("Not adapted to new report!");
+
+	// return {
+	// 	articles: new Map(articles.map((article) => [article.id, article.name])),
+	// 	owner: "Gesamt",
+	// 	recordsByDate,
+	// 	totalSupply,
+	// 	totalRemissions,
+	// 	totalNetto,
+	// 	totalBrutto,
+	// };
 }
 
 export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport> {
 	const vendors = await getVendorsSimple();
 
-	let totalNetto = Big(0),
-		totalBrutto = Big(0);
-	const reports: ReportedVendor[] = [];
-	for (const { id, name } of vendors) {
-		const report = await getVendorSalesReport(id, date, 1);
-		reports.push({
-			name,
-			amountNetto: report.totalNetto,
-			amountBrutto: report.totalBrutto,
-		});
+	throw new Error("Not adapted to new report!");
 
-		totalNetto = totalNetto.add(report.totalNetto);
-		totalBrutto = totalBrutto.add(report.totalBrutto);
-	}
+	// let totalNetto = Big(0),
+	// 	totalBrutto = Big(0);
+	// const reports: ReportedVendor[] = [];
+	// for (const { id, name } of vendors) {
+	// 	const report = await getVendorSalesReport(id, date, 1);
+	// 	reports.push({
+	// 		name,
+	// 		amountNetto: report.totalNetto,
+	// 		amountBrutto: report.totalBrutto,
+	// 	});
 
-	return {
-		vendors: reports,
-		totalNetto,
-		totalBrutto,
-	};
+	// 	totalNetto = totalNetto.add(report.totalNetto);
+	// 	totalBrutto = totalBrutto.add(report.totalBrutto);
+	// }
+
+	// return {
+	// 	vendors: reports,
+	// 	totalNetto,
+	// 	totalBrutto,
+	// };
 }
 
 export async function createWeeklyBillReport(report: WeeklyBillReport, date: Date): Promise<Report> {
-	return {
-		date,
-		invoiceSystem: 1,
-		itemSpecifier: "Alle Händler",
-		body: report.vendors.map((vendor) => [
-			vendor.name,
-			vendor.amountNetto.toNumber(),
-			vendor.amountBrutto.toNumber(),
-		]),
-		columns: [
-			{
-				header: "Händler",
-				width: 15,
-			},
-			{
-				header: "Betrag (Netto)",
-				width: 20,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
-			{
-				header: "Betrag (Brutto)",
-				width: 20,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
-		],
-		summary: [report.totalNetto.toNumber(), report.totalBrutto.toNumber()],
-	};
+	throw new Error("Not adapted to new report!");
+
+	// return {
+	// 	date,
+	// 	invoiceSystem: 1,
+	// 	itemSpecifier: "Alle Händler",
+	// 	body: report.vendors.map((vendor) => [
+	// 		vendor.name,
+	// 		vendor.amountNetto.toNumber(),
+	// 		vendor.amountBrutto.toNumber(),
+	// 	]),
+	// 	columns: [
+	// 		{
+	// 			header: "Händler",
+	// 			width: 15,
+	// 		},
+	// 		{
+	// 			header: "Betrag (Netto)",
+	// 			width: 20,
+	// 			style: { numFmt: '#,##0.00 "€"' },
+	// 			styler: twoDecimalFormat.format,
+	// 		},
+	// 		{
+	// 			header: "Betrag (Brutto)",
+	// 			width: 20,
+	// 			style: { numFmt: '#,##0.00 "€"' },
+	// 			styler: twoDecimalFormat.format,
+	// 		},
+	// 	],
+	// 	summary: [report.totalNetto.toNumber(), report.totalBrutto.toNumber()],
+	// };
 }
 
 export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	let top = "Bericht",
 		sub = dayjs(report.date).format("DD.MM.YYYY"),
-		itemSpecifier = report.itemSpecifier || "";
+		itemSpecifier = report.itemSpecifier || "",
+		tablesPerPage = 1;
 
 	switch (report.invoiceSystem) {
 		case 0:
 			top = "Tagesbericht";
 			sub = dayjs(report.date).format("DD.MM.YYYY");
+			tablesPerPage = 6;
 			break;
 		case 1:
 			top = "Wochenbericht";
 			sub = "KW " + getKW(report.date);
+			tablesPerPage = 4;
 			break;
 		case 2:
 			top = "Monatsbericht";
@@ -424,44 +483,33 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 			itemSpecifier,
 		},
 		columns: report.columns,
+		summaryColumns: report.summaryColumns,
 		body: report.body,
+		tablesPerPage,
 		summary: report.summary,
 	};
 }
 
 export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workbook> {
 	const workbook = new ExcelJS.Workbook();
-	const sheet = workbook.addWorksheet("Bericht");
+	const mainSheet = workbook.addWorksheet("Bericht", dinA4ExcelLandscape);
 
-	sheet.columns = doc.columns;
+	mainSheet.columns = doc.summaryColumns;
 
-	sheet.insertRow(1, []);
+	mainSheet.insertRow(1, []);
 
 	[doc.header.top, doc.header.sub, doc.header.itemSpecifier].forEach((text, i) => {
-		sheet.insertRow(i + 1, [text]);
-		sheet.getCell(i + 1, 1).style = {
+		mainSheet.insertRow(i + 1, [text]);
+		mainSheet.getCell(i + 1, 1).style = {
 			font: {
 				bold: true,
 			},
 		};
 	});
 
-	sheet.mergeCells("A3:C3");
-
-	const rowOffset = 5;
-
-	doc.body?.forEach((row, i) => {
-		sheet.insertRow(rowOffset + i + 1, row);
-	});
-
-	const summaryRow = rowOffset + (doc.body?.length || 0) + 1;
-	const summary = ["Zusammenfassung", ...doc.summary];
-
-	sheet.insertRow(summaryRow, summary);
-
-	for (const rowNum of [rowOffset, summaryRow]) {
-		for (let column = 1; column <= summary.length; column++) {
-			const cell = sheet.getCell(rowNum, column);
+	const boldRow = (row: number, sheet: ExcelJS.Worksheet) => {
+		for (let column = 1; column <= doc.columns.length; column++) {
+			const cell = sheet.getCell(row, column);
 			cell.style = {
 				...cell.style,
 				font: {
@@ -470,7 +518,36 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 				},
 			};
 		}
-	}
+	};
+
+	mainSheet.mergeCells("A3:C3");
+
+	const mainSummaryHeaderRow = 5;
+
+	doc.body?.forEach((item, i) => {
+		const itemSheet = workbook.addWorksheet(item.name);
+		itemSheet.columns = doc.columns;
+
+		item.rows.forEach((row, i) => {
+			itemSheet.insertRow(2 + i, row);
+		});
+
+		const summaryRow = 2 + item.rows.length;
+		itemSheet.insertRow(summaryRow, ["Zusammenfassung", ...item.summary]);
+		mainSheet.insertRow(mainSummaryHeaderRow + i + 1, [item.name, ...item.summary]);
+
+		for (const rowNum of [1, summaryRow]) {
+			boldRow(rowNum, itemSheet);
+		}
+	});
+
+	const summaryRow = mainSummaryHeaderRow + (doc.body?.length || 0) + 1;
+	const summary = ["Zusammenfassung", ...doc.summary];
+
+	mainSheet.insertRow(summaryRow, summary);
+
+	boldRow(mainSummaryHeaderRow, mainSheet);
+	boldRow(summaryRow, mainSheet);
 
 	return workbook;
 }
@@ -478,21 +555,30 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 export async function createPDFReport(report: ReportDoc): Promise<Buffer> {
 	const template = (await fs.readFile("./templates/report.html")).toString();
 
+	const applyStyler = (row: any[], columns: Column[]) => {
+		const offset = columns.length - row.length;
+
+		return row.map((cell, i) => {
+			const styler = columns[i + offset].styler;
+			return styler === undefined ? cell.toString() : styler(cell);
+		});
+	};
+
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",
+		tablesPerPage: report.tablesPerPage,
 		header: report.header,
-		columns: report.columns,
-		rows:
-			report.body?.map((row) =>
-				row.map((cell, i) => {
-					const styler = report.columns[i].styler;
-					return styler === undefined ? cell.toString() : styler(cell);
-				})
-			) || [],
-		summary: report.summary.map((cell, i) => {
-			const styler = report.columns[i + (report.columns.length - report.summary.length)].styler;
-			return styler === undefined ? cell.toString() : styler(cell);
-		}),
+		summaryColumns: report.summaryColumns,
+		items:
+			report.body?.map((item) => {
+				return {
+					columns: report.columns,
+					...item,
+					rows: item.rows.map((row) => applyStyler(row, report.columns)),
+					summary: applyStyler(item.summary, report.columns),
+				};
+			}) || [],
+		summary: applyStyler(report.summary, report.summaryColumns),
 	});
 
 	return await generatePDF(html);

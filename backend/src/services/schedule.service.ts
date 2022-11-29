@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { DATE_FORMAT } from "../consts.js";
+import { DATE_FORMAT, dinA4ExcelLandscape } from "../consts.js";
 import pool, { RouteReport } from "../database.js";
 import {
 	Activity,
@@ -145,13 +145,7 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 
 	const totalColumns = 7;
 
-	const plan = workbook.addWorksheet("Plan", {
-		pageSetup: {
-			paperSize: 9,
-			orientation: "landscape",
-			showGridLines: true,
-		},
-	});
+	const plan = workbook.addWorksheet("Plan", dinA4ExcelLandscape);
 
 	plan.columns = [0, 1, 2, 3, 4, 5, 6].map(() => ({
 		width: 15,
@@ -174,13 +168,7 @@ export async function createScheduleExcel(start: Date): Promise<ExcelJS.Workbook
 		plan.insertRow(currentRow++, [district.customId, ...drivers.map((driver) => driverMap.get(driver.id) || "-")]);
 	});
 
-	const unset = workbook.addWorksheet("Frei", {
-		pageSetup: {
-			paperSize: 9,
-			orientation: "landscape",
-			showGridLines: true,
-		},
-	});
+	const unset = workbook.addWorksheet("Frei", dinA4ExcelLandscape);
 
 	unset.columns = [0, 1, 2, 3, 4, 5, 6].map(() => ({
 		width: 15,

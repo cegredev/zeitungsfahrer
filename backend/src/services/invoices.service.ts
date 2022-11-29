@@ -12,13 +12,15 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 	const vendor = await getVendor(vendorId);
 	const report = await getVendorSalesReport(vendorId, date, system);
 
-	return {
-		vendor,
-		date,
-		invoiceNr: date.getFullYear() + "-" + getKW(date) + "-AI",
-		reports: report.recordsByDate,
-		articles: report.articles,
-	};
+	throw new Error("not adapted to new report system");
+
+	// return {
+	// 	vendor,
+	// 	date,
+	// 	invoiceNr: date.getFullYear() + "-" + getKW(date) + "-AI",
+	// 	reports: report.recordsByDate,
+	// 	articles: report.articles,
+	// };
 }
 
 export async function createInvoice(vendorId: number, date: Date, system: number): Promise<Buffer> {
@@ -29,22 +31,24 @@ export async function createInvoice(vendorId: number, date: Date, system: number
 
 	const [start] = getDateRange(date, system);
 
-	const html = populateTemplateHtml(template, {
-		...invoice,
-		date: dayjs(date).format("DD.MM.YYYY"),
-		rows: invoice.reports.flat().map((record, i) => [
-			dayjs(start)
-				.add(Math.floor(i / invoice.articles.size), "days")
-				.format("DD.MM.YYYY"),
-			invoice.articles.get(record.articleId!),
-			record.supply - record.remissions,
-			twoDecimalFormat.format(
-				Big(record.price!.sell)
-					.mul(record.supply - record.remissions)
-					.toNumber()
-			),
-		]),
-	});
+	throw new Error("not adapted to new report system");
 
-	return await generatePDF(html);
+	// const html = populateTemplateHtml(template, {
+	// 	...invoice,
+	// 	date: dayjs(date).format("DD.MM.YYYY"),
+	// 	rows: invoice.reports.flat().map((record, i) => [
+	// 		dayjs(start)
+	// 			.add(Math.floor(i / invoice.articles.size), "days")
+	// 			.format("DD.MM.YYYY"),
+	// 		invoice.articles.get(record.articleId!),
+	// 		record.supply - record.remissions,
+	// 		twoDecimalFormat.format(
+	// 			Big(record.price!.sell)
+	// 				.mul(record.supply - record.remissions)
+	// 				.toNumber()
+	// 		),
+	// 	]),
+	// });
+
+	// return await generatePDF(html);
 }

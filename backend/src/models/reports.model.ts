@@ -22,11 +22,17 @@ export interface ReportedArticle {
 	amountBrutto: Big;
 }
 
-interface Column {
+export interface Column {
 	header: string;
 	width: number;
 	style?: any;
 	styler?: (value: any) => string;
+}
+
+export interface ReportItemDoc {
+	name?: string;
+	rows: any[][];
+	summary: (Big | number)[];
 }
 
 export interface Report {
@@ -34,7 +40,8 @@ export interface Report {
 	date: Date;
 	itemSpecifier?: string;
 	columns: Column[];
-	body?: any[][];
+	summaryColumns: Column[];
+	body?: ReportItemDoc[];
 	summary: any[];
 }
 
@@ -45,6 +52,8 @@ export interface ReportDoc {
 		itemSpecifier: string;
 	};
 	columns: Column[];
-	body?: any[][];
+	summaryColumns: Column[];
+	body?: ReportItemDoc[];
+	tablesPerPage: number;
 	summary: string[];
 }

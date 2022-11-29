@@ -9,8 +9,14 @@
 				margin: 20px;
 			}
 
+			/* Restricts tables to tablesPerPage tables on a page */
+			table:nth-of-type({{tablesPerPage}}n) {
+				page-break-after: always;
+			}
+
 			body {
 				font-size: 10.5pt;
+				margin-bottom: 200px;
 			}
 
 			h1 {
@@ -46,7 +52,10 @@
 			<h1>{{header.top}}</h1>
 			<h3>{{header.sub}} - {{header.itemSpecifier}}</h3>
 		</div>
-		<table>
+
+		{{#each items}}
+		<h3>{{this.name}}</h3>
+		<table class="article-table">
 			<thead>
 				{{#each columns}}
 				<th>{{this.header}}</th>
@@ -56,6 +65,34 @@
 				{{#each rows}}
 				<tr>
 					{{#each this}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+				{{/each}}
+
+				<tr>
+					<td style="font-weight: bold">Zusammenfassung</td>
+					{{#each this.summary}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+			</tbody>
+		</table>
+		{{/each}}
+
+		<p></p>
+
+		<table class="summary-table">
+			<thead>
+				{{#each summaryColumns}}
+				<th>{{this.header}}</th>
+				{{/each}}
+			</thead>
+			<tbody>
+				{{#each items}}
+				<tr>
+					<td style="font-weight: bold">{{this.name}}</td>
+					{{#each this.summary}}
 					<td>{{this}}</td>
 					{{/each}}
 				</tr>

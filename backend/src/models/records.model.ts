@@ -1,5 +1,14 @@
 import { ArticleInfo, Price } from "./articles.model.js";
 
+export interface DefiniteRecord {
+	articleId?: number;
+	date: Date;
+	supply: number;
+	remissions: number;
+	sales: number;
+	price: Price;
+}
+
 export interface Record {
 	articleId?: number;
 	date: Date;
