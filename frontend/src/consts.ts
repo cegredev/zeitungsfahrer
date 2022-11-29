@@ -21,7 +21,7 @@ export const invoiceSystems = ["Tag", "Woche", "Monat", "Jahr"];
 
 export const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
-export const weekdaysShort = ["Mon", "Die", "Mitt", "Don", "Fre", "Sam", "Son"];
+export const weekdaysShort = ["Mon", "Die", "Mitt", "Don", "Frei", "Sam", "Son"];
 
 export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",

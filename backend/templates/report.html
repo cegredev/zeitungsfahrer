@@ -5,18 +5,29 @@
 		<title>{{title}}</title>
 
 		<style>
-			.doc-top {
-				margin: 20px;
+			/* Restricts tables to tablesPerPage tables on a page */
+			article:nth-of-type({{tablesPerPage}}n) {
+				page-break-after: always;
 			}
 
-			/* Restricts tables to tablesPerPage tables on a page */
-			table:nth-of-type({{tablesPerPage}}n) {
-				page-break-after: always;
+			@page {
+				margin: 1cm;
+			}
+
+			.doc-top {
+				margin-bottom: 2rem;
+			}
+
+			.article-section {
+				margin-bottom: 1rem;
+			}
+
+			.article-section h3 {
+				text-decoration: underline;
 			}
 
 			body {
 				font-size: 10.5pt;
-				margin-bottom: 200px;
 			}
 
 			h1 {
@@ -40,11 +51,6 @@
 				padding: 2px;
 				text-align: center;
 			}
-
-			table {
-				width: 90%;
-				margin-left: 5%;
-			}
 		</style>
 	</head>
 	<body>
@@ -54,30 +60,31 @@
 		</div>
 
 		{{#each items}}
-		<h3>{{this.name}}</h3>
-		<table class="article-table">
-			<thead>
-				{{#each columns}}
-				<th>{{this.header}}</th>
-				{{/each}}
-			</thead>
-			<tbody>
-				{{#each rows}}
-				<tr>
-					{{#each this}}
-					<td>{{this}}</td>
+		<article class="article-section">
+			<h3>{{this.name}}</h3>
+			<table class="article-table">
+				<thead>
+					{{#each columns}}
+					<th>{{this.header}}</th>
 					{{/each}}
-				</tr>
-				{{/each}}
-
-				<tr>
-					<td style="font-weight: bold">Zusammenfassung</td>
-					{{#each this.summary}}
-					<td>{{this}}</td>
+				</thead>
+				<tbody>
+					{{#each rows}}
+					<tr>
+						{{#each this}}
+						<td>{{this}}</td>
+						{{/each}}
+					</tr>
 					{{/each}}
-				</tr>
-			</tbody>
-		</table>
+					<tr>
+						<td style="font-weight: bold">Zusammenfassung</td>
+						{{#each this.summary}}
+						<td>{{this}}</td>
+						{{/each}}
+					</tr>
+				</tbody>
+			</table>
+		</article>
 		{{/each}}
 
 		<p></p>

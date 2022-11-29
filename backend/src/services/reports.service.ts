@@ -219,14 +219,14 @@ export async function createArticleListingReport(
 			styler: twoDecimalFormat.format,
 		},
 		{
-			header: "Marktwert (Netto)",
-			width: 15,
+			header: "Warenwert (Netto)",
+			width: 20,
 			style: { numFmt: '#,##0.00 "€"' },
 			styler: twoDecimalFormat.format,
 		},
 		{
-			header: "Marktwert (Brutto)",
-			width: 15,
+			header: "Warenwert (Brutto)",
+			width: 20,
 			style: { numFmt: '#,##0.00 "€"' },
 			styler: twoDecimalFormat.format,
 		},
@@ -238,12 +238,12 @@ export async function createArticleListingReport(
 		columns: [
 			{
 				header: "Datum",
-				width: 15,
+				width: 30,
 				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
 			...sharedColumns,
 		],
-		summaryColumns: [{ header: "Artikel", width: 15 }, ...sharedColumns],
+		summaryColumns: [{ header: "Artikel", width: 30 }, ...sharedColumns],
 		body:
 			invoiceSystem === 3
 				? undefined
@@ -464,7 +464,7 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 		case 1:
 			top = "Wochenbericht";
 			sub = "KW " + getKW(report.date);
-			tablesPerPage = 4;
+			tablesPerPage = 3;
 			break;
 		case 2:
 			top = "Monatsbericht";
@@ -525,7 +525,7 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 	const mainSummaryHeaderRow = 5;
 
 	doc.body?.forEach((item, i) => {
-		const itemSheet = workbook.addWorksheet(item.name);
+		const itemSheet = workbook.addWorksheet(item.name, dinA4ExcelLandscape);
 		itemSheet.columns = doc.columns;
 
 		item.rows.forEach((row, i) => {
