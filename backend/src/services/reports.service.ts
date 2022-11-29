@@ -269,8 +269,8 @@ export async function createArticleListingReport(
 								record.sales,
 								sellValue.toNumber(),
 								sellValue.eq(0) ? 0 : mulWithMwst(marketValue, item.mwst).toNumber(),
-								marketValue.toNumber(),
-								marketValue.eq(0) ? 0 : mulWithMwst(marketValue, item.mwst).toNumber(),
+								record.price.marketSell,
+								mulWithMwst(Big(record.price.marketSell), item.mwst).toNumber(),
 							];
 						});
 
