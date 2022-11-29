@@ -51,6 +51,10 @@
 				padding: 2px;
 				text-align: center;
 			}
+
+			table {
+				width: 100%;
+			}
 		</style>
 	</head>
 	<body>
@@ -85,8 +89,7 @@
 				</tbody>
 			</table>
 		</article>
-		{{/each}}
-
+		{{/each}} {{#ifCond summaryColumns "!==" undefined}}
 		<p></p>
 
 		<table class="summary-table">
@@ -113,5 +116,6 @@
 				</tr>
 			</tbody>
 		</table>
+		{{/ifCond}}
 	</body>
 </html>

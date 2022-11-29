@@ -40,8 +40,8 @@ export interface Report {
 	date: Date;
 	itemSpecifier?: string;
 	columns: Column[];
-	summaryColumns: Column[];
-	body?: ReportItemDoc[];
+	summaryColumns?: Column[];
+	body: ReportItemDoc[];
 	summary: any[];
 }
 
@@ -52,7 +52,7 @@ export interface ReportDoc {
 		itemSpecifier: string;
 	};
 	columns: Column[];
-	summaryColumns: Column[];
+	summaryColumns?: Column[];
 	body?: ReportItemDoc[];
 	tablesPerPage: number;
 	summary: string[];
