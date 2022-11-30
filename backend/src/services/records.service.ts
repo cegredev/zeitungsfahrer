@@ -105,8 +105,6 @@ export async function getArticleRecords(
 
 export async function getAllSales(date: Date): Promise<Big[]> {
 	async function makeRequest(start: Date, end: Date) {
-		console.log(start, "-", end);
-
 		const records = await poolExecute<Record>(
 			"SELECT date, article_id AS articleId, (supply - remissions) AS sales FROM records WHERE date BETWEEN ? AND ?",
 			[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
