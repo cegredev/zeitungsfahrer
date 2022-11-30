@@ -5,9 +5,10 @@ import { DATE_FORMAT, MILlIS_IN_DAY } from "../consts.js";
 import { getIncludedArticles, getVendorCatalog } from "./vendors.service.js";
 import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
-import { getConvertedWeekday, poolExecute } from "../util.js";
+import { getConvertedWeekday, mulWithMwst, poolExecute } from "../util.js";
 import settings from "./settings.service.js";
 import { ArticleInfo } from "../models/articles.model.js";
+import Big from "big.js";
 
 export async function applyPrices(
 	start: Date,
@@ -47,17 +48,17 @@ async function getExistingRecords(
 	).map((r: any) => ({ ...r, missing: false }));
 }
 
-export function calculateSalesValues(records: Record[]): { totalValueNetto: number; totalValueBrutto: number } {
-	const values = records.map((record) => [
-		record.missing ? 0 : (record.supply - record.remissions) * record.price!.sell,
+export function calculateSalesValues(records: Record[]): { totalValueNetto: Big; totalValueBrutto: Big } {
+	const values: [Big, number][] = records.map((record) => [
+		record.missing ? Big(0) : record.price!.sell.mul(record.supply - record.remissions),
 		record.price!.mwst,
 	]);
 
 	return {
-		totalValueNetto: values.map(([price, _mwst]) => price).reduce((prev, current) => prev + current),
+		totalValueNetto: values.map(([price, _mwst]) => price).reduce((prev, current) => prev.add(current), Big(0)),
 		totalValueBrutto: values
-			.map(([price, mwst]) => price * (1.0 + mwst / 100))
-			.reduce((prev, current) => prev + current),
+			.map(([price, mwst]) => mulWithMwst(price, mwst))
+			.reduce((prev, current) => prev.add(current), Big(0)),
 	};
 }
 
@@ -102,8 +103,10 @@ export async function getArticleRecords(
 	return { ...articleRecords, ...calculateSalesValues(articleRecords.records) };
 }
 
-export async function getAllSales(date: Date): Promise<number[]> {
+export async function getAllSales(date: Date): Promise<Big[]> {
 	async function makeRequest(start: Date, end: Date) {
+		console.log(start, "-", end);
+
 		const records = await poolExecute<Record>(
 			"SELECT date, article_id AS articleId, (supply - remissions) AS sales FROM records WHERE date BETWEEN ? AND ?",
 			[dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
@@ -134,9 +137,9 @@ export async function getAllSales(date: Date): Promise<number[]> {
 				// @ts-ignore
 				const sales = r.sales;
 
-				return (r.price!.sell * sales * (100 + r.price!.mwst)) / 100;
+				return mulWithMwst(r.price!.sell.mul(sales), r.price!.mwst);
 			})
-			.reduce((a, b) => a + b, 0);
+			.reduce((a, b) => a.add(b), Big(0));
 	}
 
 	const sales = [];
@@ -191,10 +194,10 @@ export async function getTodaysArticleRecords(vendorId: number): Promise<RouteRe
 	const today = new Date();
 	const [start, end] = getDateRange(today, settings.invoiceSystem);
 
-	let total = 0;
+	let total = Big(0);
 	for (const article of await getIncludedArticles(vendorId)) {
 		const records = await getArticleRecords(vendorId, article.id, start, end);
-		total += records.totalValueBrutto;
+		total = total.add(records.totalValueBrutto);
 	}
 
 	const catalog = await getVendorCatalog(vendorId);
@@ -238,8 +241,8 @@ export async function getArticleSalesRoute(articleId: number, end: Date): Promis
 }
 
 export async function getVendorSales(vendorId: number, date: Date): Promise<VendorSales> {
-	async function makeRequest(start: Date, end: Date): Promise<number> {
-		let total = 0;
+	async function makeRequest(start: Date, end: Date): Promise<Big> {
+		let total = Big(0);
 		for (const entry of catalog.entries) {
 			if (!entry.included) continue;
 
@@ -248,7 +251,7 @@ export async function getVendorSales(vendorId: number, date: Date): Promise<Vend
 
 			await applyPrices(start, end, [{ id: entry.articleId, records }]);
 
-			total += calculateSalesValues(records).totalValueBrutto;
+			total = total.add(calculateSalesValues(records).totalValueBrutto);
 		}
 
 		return total;

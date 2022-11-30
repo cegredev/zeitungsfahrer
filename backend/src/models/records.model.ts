@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { ArticleInfo, Price } from "./articles.model.js";
 
 export interface DefiniteRecord {
@@ -29,8 +30,8 @@ export interface ArticleRecords {
 	id: number;
 	name: string;
 	start: Date;
-	totalValueNetto: number;
-	totalValueBrutto: number;
+	totalValueNetto: Big;
+	totalValueBrutto: Big;
 	/**
 	 * Maps article ID to sales.
 	 */
@@ -56,5 +57,5 @@ export interface ArticleSales {
 }
 
 export interface VendorSales {
-	sales: number[];
+	sales: Big[];
 }

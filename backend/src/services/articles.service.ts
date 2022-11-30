@@ -3,6 +3,16 @@ import pool, { RouteReport } from "../database.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT } from "../consts.js";
 import { getConvertedWeekday, poolExecute } from "../util.js";
+import Big from "big.js";
+
+function fixDBPrice(price: Price): Price {
+	return {
+		...price,
+		purchase: Big(price.purchase),
+		sell: Big(price.sell),
+		marketSell: Big(price.marketSell),
+	};
+}
 
 // FIXME: Make this work with all amounts of days
 export async function getPrices(start: Date, end: Date, articleId: number): Promise<Price[][]> {
@@ -19,7 +29,7 @@ export async function getPrices(start: Date, end: Date, articleId: number): Prom
 		.map(() => []);
 
 	for (const price of prices) {
-		week[price.weekday].push(price);
+		week[price.weekday].push(fixDBPrice(price));
 	}
 
 	const startWeekday = getConvertedWeekday(start);
@@ -32,9 +42,9 @@ export async function getPrices(start: Date, end: Date, articleId: number): Prom
 						weekday: (startWeekday + index) % 7,
 						articleId,
 						mwst: 0,
-						purchase: 0,
-						sell: 0,
-						marketSell: 0,
+						purchase: Big(0),
+						sell: Big(0),
+						marketSell: Big(0),
 					},
 			  ]
 			: prices
@@ -53,15 +63,17 @@ export async function getArticles(atDate: Date): Promise<RouteReport> {
 
 	const articles = new Map<number, Article>();
 
-	for (const { articleId, name, startDate, weekday, mwst, purchase, sell, marketSell, endDate } of prices) {
-		let article = articles.get(articleId);
+	for (let price of prices) {
+		const realPrice = fixDBPrice(price);
+		price = { ...price, ...realPrice };
+
+		let article = articles.get(price.articleId);
 		if (article == null) {
-			article = { id: articleId, name, prices: [] };
-			articles.set(articleId, article);
+			article = { id: price.articleId, name: price.name, prices: [] };
+			articles.set(price.articleId, article);
 		}
 
-		// Create and add price
-		article.prices.push({ startDate, weekday, articleId, mwst, purchase, sell, marketSell, endDate });
+		article.prices.push(realPrice);
 	}
 
 	return {

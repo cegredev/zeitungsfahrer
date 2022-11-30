@@ -1,3 +1,5 @@
+import Big from "big.js";
+
 export interface ArticleInfo {
 	id: number;
 	name: string;
@@ -13,15 +15,15 @@ export interface Price {
 	startDate: Date;
 	weekday: number;
 	articleId?: number;
-	purchase: number;
-	sell: number;
-	marketSell: number;
+	purchase: Big;
+	sell: Big;
+	marketSell: Big;
 	mwst: number;
 	endDate?: Date;
 }
 
-export function validatePrice({ purchase, sell, marketSell: sellTrader, mwst }: Price): boolean {
-	return Math.min(purchase, sell, sellTrader, mwst) >= 0;
+export function validatePrice({ purchase, sell, marketSell, mwst }: Price): boolean {
+	return Math.min(purchase.toNumber(), sell.toNumber(), marketSell.toNumber(), mwst) >= 0;
 }
 
 export function validatePrices(prices: Price[]): boolean {
