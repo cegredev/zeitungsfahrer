@@ -3,20 +3,25 @@ import { createArticleListingReport, getVendorSalesReport } from "./reports.serv
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
-import { getDateRange } from "./records.service.js";
-import Big from "big.js";
 import { twoDecimalFormat } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
+import { Invoice } from "../models/invoices.model.js";
 
-export async function getInvoiceData(vendorId: number, date: Date, system: number) {
+export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
 	const vendor = await getVendor(vendorId);
 	const report = await createArticleListingReport(await getVendorSalesReport(vendorId, date, system), date, system);
 
+	const today = new Date();
+
 	return {
 		vendor,
-		date,
-		invoiceNr: date.getFullYear() + "-" + getKW(date) + "-AI",
+		date: today,
+		nr: {
+			year: today.getFullYear(),
+			week: getKW(today),
+			counter: 1,
+		},
 		articles: report.body,
 		summary: report.summary,
 	};
@@ -24,7 +29,6 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 
 export async function createInvoice(vendorId: number, date: Date, system: number): Promise<Buffer> {
 	const invoice = await getInvoiceData(vendorId, date, system);
-	console.log("invoice:", invoice);
 
 	const template = (await fs.readFile("./templates/invoice.html")).toString();
 
@@ -49,7 +53,7 @@ export async function createInvoice(vendorId: number, date: Date, system: number
 
 	const html = populateTemplateHtml(template, {
 		...invoice,
-		date: dayjs(date).format("DD.MM.YYYY"),
+		date: dayjs(invoice.date).format("DD.MM.YYYY"),
 		tablesPerPage: 3,
 		articles: invoice.articles.map((item) => {
 			return {

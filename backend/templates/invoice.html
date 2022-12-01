@@ -97,9 +97,12 @@
 					<div>{{vendor.address}}</div>
 					<div>{{vendor.city}}, {{vendor.zipCode}}</div>
 				</div>
+
 				<div class="invoice">
+					<div>Kundennr.: {{vendor.customId}}</div>
+					<div>Kunden-Steuernr.: {{vendor.taxId}}</div>
 					<div>Datum: {{date}}</div>
-					<div>Rechnungs-Nr.: {{invoiceNr}}</div>
+					<div>Rechnungsnr.: {{nr.year}}-{{nr.week}}-{{nr.counter}}</div>
 				</div>
 			</div>
 

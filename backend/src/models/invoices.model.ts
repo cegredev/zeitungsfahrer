@@ -1,14 +1,17 @@
 import Big from "big.js";
-import { SimpleVendor } from "./vendors.model";
+import { ReportItemDoc } from "./reports.model";
+import { Vendor } from "./vendors.model";
+
+export interface InvoiceNr {
+	year: number;
+	week: number;
+	counter: number;
+}
 
 export interface Invoice {
+	vendor: Vendor;
 	date: Date;
-	counter: number;
-	vendor: SimpleVendor;
-	sales: {
-		supply: number;
-		remissions: number;
-		valueNetto: Big;
-		valueBrutto: Big;
-	}[];
+	nr: InvoiceNr;
+	articles: ReportItemDoc[];
+	summary: any[];
 }

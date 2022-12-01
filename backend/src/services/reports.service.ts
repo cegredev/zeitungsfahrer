@@ -42,9 +42,6 @@ export async function getArticleSalesReport(articleId: number, date: Date, invoi
 export async function createArticleSalesReport(articleId: number, date: Date, invoiceSystem: number): Promise<Report> {
 	const data = await getArticleSalesReport(articleId, date, invoiceSystem);
 
-	const [start] = getDateRange(date, invoiceSystem);
-	const startDate = dayjs(start);
-
 	return {
 		invoiceSystem,
 		itemSpecifier: (await getArticleInfo(articleId)).name,
@@ -57,17 +54,14 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 			{
 				header: "Lieferung",
 				width: 10,
-				// styler: (v) => v + " Stk.",
 			},
 			{
 				header: "Remissionen",
 				width: 15,
-				// styler: (v) => v + " Stk.",
 			},
 			{
 				header: "Verkauf",
 				width: 10,
-				// styler: (v) => v + " Stk.",
 			},
 		],
 		date,
