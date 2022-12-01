@@ -11,16 +11,6 @@ import { DefiniteRecord, Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
-import { Response } from "express";
-
-function calculateTotalValues(byMwst: Map<number, Big>): [Big, Big] {
-	const totalNetto = [...byMwst.values()].reduce((a, b) => a.add(b), Big(0));
-	const totalBrutto = [...byMwst.entries()]
-		.map(([mwst, value]) => value.mul(1 + mwst / 100))
-		.reduce((a, b) => a.add(b), Big(0));
-
-	return [totalNetto, totalBrutto];
-}
 
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
@@ -36,36 +26,13 @@ export async function getArticleSalesReport(articleId: number, date: Date, invoi
 		)
 	).map((record) => ({ ...record, supply: parseInt(record.supply), remissions: parseInt(record.remissions) }));
 
-	const newRecords: { supply: number; remissions: number; sales: number }[] = [];
-
-	let prev = dayjs(start).subtract(1, "day").toDate();
-	for (const { date, supply, remissions, sales } of records) {
-		const missingDays = daysBetween(prev, date) - 1;
-
-		for (let i = 0; i < missingDays; i++) {
-			newRecords.push({
-				supply: 0,
-				remissions: 0,
-				sales: 0,
-			});
-		}
-
-		newRecords.push({ supply, remissions, sales });
-
-		prev = date;
-	}
-
-	const totalDays = daysBetween(start, end);
-	for (let day = newRecords.length; day <= totalDays; day++) {
-		newRecords.push({ supply: 0, remissions: 0, sales: 0 });
-	}
-
 	const [totalSupply, totalRemissions] = records
+		.filter((r) => r.supply > 0)
 		.map((r) => [r.supply, r.remissions])
 		.reduce(([pSupply, pRem], [cSupply, cRem]) => [pSupply + cSupply, pRem + cRem], [0, 0]);
 
 	return {
-		records: newRecords,
+		records,
 		totalSupply,
 		totalRemissions,
 		totalSales: totalSupply - totalRemissions,
@@ -106,15 +73,7 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 		date,
 		body: [
 			{
-				rows:
-					invoiceSystem === 3
-						? []
-						: data.records.map((r, i) => [
-								startDate.add(i, "days").toDate(),
-								r.supply,
-								r.remissions,
-								r.sales,
-						  ]),
+				rows: invoiceSystem === 3 ? [] : data.records.map((r) => [r.date, r.supply, r.remissions, r.sales]),
 				summary: [data.totalSupply, data.totalRemissions, data.totalSales],
 			},
 		],
@@ -164,15 +123,18 @@ export async function getVendorSalesReport(
 	for (const { articleId, articleName } of articles) {
 		const recordsByMwst = new Map<number, ReportItem>();
 
-		const records = (await getArticleRecords(vendorId, articleId, start, end)).records.map((r) => {
-			return {
-				date: r.date,
-				price: r.price!,
-				supply: r.missing ? 0 : r.supply,
-				remissions: r.missing ? 0 : r.remissions,
-				sales: r.missing ? 0 : r.supply - r.remissions,
-			};
-		});
+		const records = (await getArticleRecords(vendorId, articleId, start, end)).records
+			.filter((r) => !r.missing && r.supply > 0)
+			.map((r) => {
+				return {
+					articleId: r.articleId,
+					date: r.date,
+					supply: r.supply,
+					remissions: r.remissions,
+					sales: r.supply - r.remissions,
+					price: r.price!,
+				};
+			});
 
 		for (const record of records) {
 			let item = recordsByMwst.get(record.price.mwst);
@@ -356,7 +318,8 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 					remissions,
 					sales: supply - remissions,
 				};
-			});
+			})
+			.filter((r) => r.supply > 0);
 
 		const records: Record[] = Array(numDays)
 			.fill(null)
@@ -377,6 +340,8 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 		const definiteRecords: DefiniteRecord[] = records;
 
 		for (const record of definiteRecords) {
+			if (record.supply === 0) continue;
+
 			let item = recordsByMwst.get(record.price.mwst);
 			if (item === undefined) {
 				item = {
