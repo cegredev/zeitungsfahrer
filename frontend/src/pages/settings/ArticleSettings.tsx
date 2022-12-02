@@ -1,4 +1,5 @@
 import { Article } from "backend/src/models/articles.model";
+import Big from "big.js";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -29,9 +30,9 @@ function ArticleSettings() {
 					...article,
 					prices: article.prices.map((price) => ({
 						...price,
-						purchase: parseFloat(String(price.purchase)),
-						sell: parseFloat(String(price.sell)),
-						marketSell: parseFloat(String(price.marketSell)),
+						purchase: Big(price.purchase),
+						sell: Big(price.sell),
+						marketSell: Big(price.marketSell),
 					})),
 				}))
 			);

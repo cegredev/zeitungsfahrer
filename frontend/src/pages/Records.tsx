@@ -16,6 +16,7 @@ import { useImmer } from "use-immer";
 import { ChangedRecord } from "backend/src/models/records.model";
 import { ReportType } from "backend/src/models/reports.model";
 import ReportTypeSelection from "../components/dashboard/ReportTypeSelection";
+import Big from "big.js";
 
 const initialEndDate = normalizeDate(new Date());
 
@@ -126,7 +127,8 @@ function Records() {
 							{twoDecimalsFormat.format(
 								[...recordsMap.values()]
 									.map((r) => calculateTotalValueBrutto(r.records))
-									.reduce((a, b) => a + b, 0)
+									.reduce((a, b) => a.add(b), Big(0))
+									.toNumber()
 							)}
 						</h3>
 						{info.articleIds.map((id) => (

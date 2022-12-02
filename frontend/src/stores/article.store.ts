@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import { Article } from "backend/src/models/articles.model";
+import Big from "big.js";
 
 function createEmptyArticle(): Article {
 	return {
@@ -8,9 +9,9 @@ function createEmptyArticle(): Article {
 			.fill(null)
 			.map((_, index) => ({
 				weekday: index,
-				sell: 0.3,
-				purchase: 0.2,
-				marketSell: 0.4,
+				sell: Big(0.3),
+				purchase: Big(0.2),
+				marketSell: Big(0.4),
 				mwst: 7,
 				startDate: new Date(),
 			})),

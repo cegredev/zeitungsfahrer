@@ -9,6 +9,7 @@ import { ChangedRecord } from "backend/src/models/records.model";
 import { authTokenAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "./util/LoadingPlaceholder";
 import NumberInput from "./util/NumberInput";
+import Big from "big.js";
 
 const todayNormalized = normalizeDate(new Date());
 
@@ -73,6 +74,12 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 						editable: isToday || (r.missing! && !inFuture),
 						edited: isToday,
 						inFuture,
+						price: {
+							...r.price!,
+							purchase: Big(r.price!.purchase),
+							sell: Big(r.price!.sell),
+							marketSell: Big(r.price!.marketSell),
+						},
 					};
 				}),
 			};
@@ -98,7 +105,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 
 	const startDate = records?.start;
 	const weekdayOffset = startDate ? (6 + startDate.getUTCDay()) % 7 : 0; // Sunday is 0 instead of Monday
-	const totalValueBrutto = records ? calculateTotalValueBrutto(records.records) : 0;
+	const totalValueBrutto = calculateTotalValueBrutto(records?.records || []);
 	return (
 		<React.Fragment>
 			{records === undefined ? (
@@ -186,10 +193,15 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 											/>
 										</td>
 										<td>{soldAmount}</td>
-										<td>{twoDecimalsFormat.format(soldAmount * record.price!.sell)}</td>
+										<td>
+											{twoDecimalsFormat.format(record.price!.sell.mul(soldAmount).toNumber())}
+										</td>
 										<td>
 											{twoDecimalsFormat.format(
-												(soldAmount * record.price!.sell * (100 + record.price!.mwst)) / 100
+												record
+													.price!.sell.mul(soldAmount)
+													.mul((100 + record.price!.mwst) / 100)
+													.toNumber()
 											)}
 										</td>
 										<td>
@@ -203,11 +215,17 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 								<td style={{ fontWeight: "bold" }}>
 									{twoDecimalsFormat.format(
 										records.records
-											.map((r) => (!r.missing ? r.price!.sell * (r.supply - r.remissions) : 0))
-											.reduce((a, b) => a + b, 0)
+											.map((r) =>
+												!r.missing ? r.price!.sell.mul(r.supply - r.remissions) : Big(0)
+											)
+											.reduce((a, b) => a.add(b), Big(0))
+											.toNumber()
 									)}
 								</td>
-								<td style={{ fontWeight: "bold" }}> {twoDecimalsFormat.format(totalValueBrutto)}</td>
+								<td style={{ fontWeight: "bold" }}>
+									{" "}
+									{twoDecimalsFormat.format(totalValueBrutto.toNumber())}
+								</td>
 							</tr>
 						</tbody>
 					</table>
