@@ -3,10 +3,12 @@ import { createArticleListingReport, getVendorSalesReport } from "./reports.serv
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
-import { twoDecimalFormat } from "../consts.js";
+import { DATE_FORMAT, twoDecimalFormat } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
 import { Invoice } from "../models/invoices.model.js";
+import pool from "../database.js";
+import { ensureDirExists, fileExists } from "../files.js";
 
 export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
 	const vendor = await getVendor(vendorId);
@@ -14,13 +16,21 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 
 	const today = new Date();
 
+	const response = await pool.execute("INSERT INTO invoices (vendor_id, date) VALUES (?, ?)", [
+		vendorId,
+		dayjs(today).format(DATE_FORMAT),
+	]);
+
+	// @ts-ignore
+	const id: number = response[0].insertId;
+
 	return {
 		vendor,
 		date: today,
 		nr: {
 			year: today.getFullYear(),
 			week: getKW(today),
-			counter: 1,
+			counter: id,
 		},
 		articles: report.body,
 		summary: report.summary,
@@ -65,5 +75,22 @@ export async function createInvoice(vendorId: number, date: Date, system: number
 		summary: applyStyler(invoice.summary, summaryColumns),
 	});
 
-	return await generatePDF(html);
+	const pdf = await generatePDF(html);
+
+	if (await fileExists(await storeInvoice(invoice.nr.counter, vendorId, pdf))) {
+		return pdf;
+	} else {
+		throw new Error("PDF could not be saved!");
+	}
+}
+
+export async function storeInvoice(id: number, vendorId: number, blob: Buffer): Promise<string> {
+	const dir = `./store/invoices/${vendorId}`;
+
+	await ensureDirExists(dir);
+
+	const path = `${dir}/${id}.pdf`;
+	await fs.writeFile(path, blob);
+
+	return path;
 }
