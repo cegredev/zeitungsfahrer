@@ -14,6 +14,7 @@ import { weekdays } from "../consts";
 import dayjs from "dayjs";
 import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
 import NumberInput from "./util/NumberInput";
+import Big from "big.js";
 
 const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
@@ -116,16 +117,16 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 								customProps={{
 									parse: commaFloatParse,
 									allowDecimals: true,
-									startValue: price.purchase,
+									startValue: price.purchase.toNumber(),
 									filter: (value) => {
-										prices[index] = { ...prices[index], purchase: value };
+										prices[index] = { ...prices[index], purchase: Big(value) };
 										setPrices([...prices]);
 									},
 								}}
 							/>
 							€
 						</div>
-						<div style={gridSpan2}>{twoDecimalsFormat.format(price.purchase * mwst)}</div>
+						<div style={gridSpan2}>{twoDecimalsFormat.format(price.purchase.mul(mwst).toNumber())}</div>
 
 						{/*  Sell price */}
 						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
@@ -135,16 +136,16 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 								customProps={{
 									parse: commaFloatParse,
 									allowDecimals: true,
-									startValue: price.sell,
+									startValue: price.sell.toNumber(),
 									filter: (value) => {
-										prices[index] = { ...prices[index], sell: value };
+										prices[index] = { ...prices[index], sell: Big(value) };
 										setPrices([...prices]);
 									},
 								}}
 							/>
 							€
 						</div>
-						<div style={gridSpan2}>{twoDecimalsFormat.format(price.sell * mwst)}</div>
+						<div style={gridSpan2}>{twoDecimalsFormat.format(price.sell.mul(mwst).toNumber())}</div>
 
 						{/*  Market-sell price */}
 						<div className="display-block" style={{ whiteSpace: "nowrap" }}>
@@ -154,16 +155,16 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 								customProps={{
 									parse: commaFloatParse,
 									allowDecimals: true,
-									startValue: price.marketSell,
+									startValue: price.marketSell.toNumber(),
 									filter: (value) => {
-										prices[index] = { ...prices[index], marketSell: value };
+										prices[index] = { ...prices[index], marketSell: Big(value) };
 										setPrices([...prices]);
 									},
 								}}
 							/>
 							€
 						</div>
-						<div>{twoDecimalsFormat.format(price.marketSell * mwst)}</div>
+						<div>{twoDecimalsFormat.format(price.marketSell.mul(mwst).toNumber())}</div>
 					</React.Fragment>
 				);
 			})}

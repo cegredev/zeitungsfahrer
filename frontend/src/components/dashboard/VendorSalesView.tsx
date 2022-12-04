@@ -1,6 +1,7 @@
 import { VendorSales } from "backend/src/models/records.model";
 import { ReportType } from "backend/src/models/reports.model";
 import { SimpleVendor } from "backend/src/models/vendors.model";
+import Big from "big.js";
 import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import React from "react";
@@ -38,9 +39,13 @@ function VendorSalesView() {
 				token!
 			);
 
+			const data = response.data;
+
 			setVendors(newVendors);
 			setVendorId(newVendorId!);
-			setVendorSales(response.data);
+			setVendorSales({
+				sales: data.sales.map((sale) => Big(sale)),
+			});
 
 			setLoading(false);
 		}
@@ -106,7 +111,7 @@ function VendorSalesView() {
 					) : (
 						vendorSales?.sales.map((amount, i) => (
 							<td key={"vendor-sales-" + i} style={{ textAlign: "center" }}>
-								{twoDecimalsFormat.format(amount)}
+								{twoDecimalsFormat.format(amount.toNumber())}
 							</td>
 						))
 					)}

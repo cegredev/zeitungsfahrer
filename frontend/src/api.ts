@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 
-const API_URL =
-	process.env.NODE_ENV === "production" ? "https://zeitungsfahrer.herokuapp.com" : "http://localhost:3001";
+const API_URL = process.env.NODE_ENV === "production" ? "https://cedricgreiten.com:3001" : "http://localhost:3001";
 
 export async function GET<T, D = any>(route: string, token?: string): Promise<AxiosResponse<T, D>> {
 	return await axios.get(API_URL + route, {

@@ -455,22 +455,30 @@ export async function createWeeklyBillReport(report: WeeklyBillReport, date: Dat
 	};
 }
 
+export function tablesPerPageFor(invoiceSystem: number) {
+	switch (invoiceSystem) {
+		case 0:
+			return 6;
+		case 1:
+			return 3;
+	}
+
+	return 1;
+}
+
 export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	let top = "Bericht",
 		sub = dayjs(report.date).format("DD.MM.YYYY"),
-		itemSpecifier = report.itemSpecifier || "",
-		tablesPerPage = 1;
+		itemSpecifier = report.itemSpecifier || "";
 
 	switch (report.invoiceSystem) {
 		case 0:
 			top = "Tagesbericht";
 			sub = dayjs(report.date).format("DD.MM.YYYY");
-			tablesPerPage = 6;
 			break;
 		case 1:
 			top = "Wochenbericht";
 			sub = "KW " + getKW(report.date);
-			tablesPerPage = 3;
 			break;
 		case 2:
 			top = "Monatsbericht";
