@@ -1,5 +1,5 @@
 import Big from "big.js";
-import { ReportItemDoc } from "./reports.model";
+import { Page, ReportItemDoc } from "./reports.model";
 import { Vendor } from "./vendors.model";
 
 export interface InvoiceNr {
@@ -12,6 +12,6 @@ export interface Invoice {
 	vendor: Vendor;
 	date: Date;
 	nr: InvoiceNr;
-	articles: ReportItemDoc[];
+	pages: Page[];
 	summary: any[];
 }
