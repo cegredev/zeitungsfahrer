@@ -2,6 +2,9 @@ import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
 import cors from "cors";
+import https from "https";
+import fs from "fs";
+
 import pool from "./database.js";
 import settings from "./services/settings.service.js"; // Initialize variables
 import logger from "./logger.js";
@@ -14,7 +17,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(
 	cors({
-		origin: ["http://localhost:3000", "https://zeitungsfahrer-test.cedricgreiten.com"],
+		origin: ["http://localhost:3000", "https://touren-fahrer.com"],
 		exposedHeaders: ["Content-Disposition"],
 	})
 );
@@ -29,9 +32,17 @@ const PORT = process.env.PORT || 3001;
 
 routes(app);
 
-const server = app.listen(PORT, () => {
-	logger.info(`Application listening at port ${PORT}`);
-});
+const server = https
+	.createServer(
+		{
+			key: fs.readFileSync("key.pem"),
+			cert: fs.readFileSync("cert.pem"),
+		},
+		app
+	)
+	.listen(PORT, () => {
+		logger.info(`Application listening at port ${PORT}`);
+	});
 
 process.on("exit", () => {
 	logger.info("Shutting down!");
