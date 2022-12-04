@@ -1,5 +1,5 @@
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
-import { createArticleListingReport, getVendorSalesReport } from "./reports.service.js";
+import { createArticleListingReport, getVendorSalesReport, tablesPerPageFor } from "./reports.service.js";
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
@@ -64,7 +64,7 @@ export async function createInvoice(vendorId: number, date: Date, system: number
 	const html = populateTemplateHtml(template, {
 		...invoice,
 		date: dayjs(invoice.date).format("DD.MM.YYYY"),
-		tablesPerPage: 3,
+		tablesPerPage: tablesPerPageFor(system),
 		articles: invoice.articles.map((item) => {
 			return {
 				...item,
