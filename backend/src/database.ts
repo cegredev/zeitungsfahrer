@@ -10,6 +10,7 @@ const pool = mysql.createPool({
 	timezone: "+00:00",
 });
 
+console.log("disrupt");
 console.log(process.env);
 console.log(env);
 
