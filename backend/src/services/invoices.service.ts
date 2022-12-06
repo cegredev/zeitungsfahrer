@@ -24,6 +24,8 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 	// @ts-ignore
 	const id: number = result[0].insertId;
 
+	const pages = itemsToPages(report.body);
+
 	return {
 		vendor,
 		date: today,
@@ -32,7 +34,8 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 			week: getKW(today),
 			counter: id,
 		},
-		pages: itemsToPages(report.body),
+		pages,
+		totalPages: pages.length + 1,
 		summary: report.summary,
 	};
 }
@@ -65,6 +68,7 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 		...invoice,
 		date: dayjs(invoice.date).format("DD.MM.YYYY"),
 		pages: invoice.pages.map((page) => ({
+			...page,
 			items: page.items.map((item) => {
 				return {
 					...item,

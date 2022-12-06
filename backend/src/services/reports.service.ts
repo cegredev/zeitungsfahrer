@@ -395,16 +395,16 @@ export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport>
 export function itemsToPages(items: ReportItemDoc[]): Page[] {
 	const maxRowsPerPage = 40;
 
-	const pages: Page[] = [{ items: [] }];
+	const pages: Page[] = [{ items: [], number: 2 }];
 
 	let currentRows = 0;
 	for (const item of items) {
 		const itemRowCount = item.rows.length + 1;
-		const newRowCount = currentRows + itemRowCount;
+		let newRowCount = currentRows + itemRowCount;
 
 		if (newRowCount > maxRowsPerPage) {
-			pages.push({ items: [] });
-			currentRows = maxRowsPerPage;
+			pages.push({ items: [], number: pages.length + 2 });
+			newRowCount = itemRowCount;
 
 			if (itemRowCount > maxRowsPerPage) {
 				console.error(`Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRowsPerPage})!`);
@@ -455,17 +455,6 @@ export async function createWeeklyBillReport(report: WeeklyBillReport, date: Dat
 	};
 }
 
-export function tablesPerPageFor(invoiceSystem: number) {
-	switch (invoiceSystem) {
-		case 0:
-			return 6;
-		case 1:
-			return 3;
-	}
-
-	return 1;
-}
-
 export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	let top = "Bericht",
 		sub = dayjs(report.date).format("DD.MM.YYYY"),
@@ -490,6 +479,8 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 			break;
 	}
 
+	const pages = itemsToPages(report.body);
+
 	return {
 		header: {
 			top,
@@ -498,7 +489,8 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 		},
 		columns: report.columns,
 		summaryColumns: report.summaryColumns,
-		body: itemsToPages(report.body),
+		body: pages,
+		totalPages: pages.length + 1,
 		summary: report.summary,
 	};
 }

@@ -37,6 +37,7 @@ export interface ReportItemDoc {
 
 export interface Page {
 	items: ReportItemDoc[];
+	number: number;
 }
 
 export interface Report {
@@ -58,5 +59,6 @@ export interface ReportDoc {
 	columns: Column[];
 	summaryColumns?: Column[];
 	body?: Page[];
+	totalPages: number;
 	summary: string[];
 }

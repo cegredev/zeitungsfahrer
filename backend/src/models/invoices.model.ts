@@ -13,5 +13,6 @@ export interface Invoice {
 	date: Date;
 	nr: InvoiceNr;
 	pages: Page[];
+	totalPages: number;
 	summary: any[];
 }
