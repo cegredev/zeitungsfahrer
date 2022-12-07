@@ -1,5 +1,5 @@
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
-import { createArticleListingReport, getVendorSalesReport, tablesPerPageFor } from "./reports.service.js";
+import { createArticleListingReport, getVendorSalesReport, itemsToPages } from "./reports.service.js";
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
@@ -16,13 +16,15 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 
 	const today = new Date();
 
-	const response = await pool.execute("INSERT INTO invoices (vendor_id, date) VALUES (?, ?)", [
+	const result = await pool.execute("INSERT INTO invoices (vendor_id, date) VALUES (?, ?)", [
 		vendorId,
-		dayjs(today).format(DATE_FORMAT),
+		dayjs(today).format("YYYY-MM-DD"),
 	]);
 
 	// @ts-ignore
-	const id: number = response[0].insertId;
+	const id: number = result[0].insertId;
+
+	const pages = itemsToPages(report.body);
 
 	return {
 		vendor,
@@ -32,12 +34,13 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 			week: getKW(today),
 			counter: id,
 		},
-		articles: report.body,
+		pages,
+		totalPages: pages.length + 1,
 		summary: report.summary,
 	};
 }
 
-export async function createInvoice(vendorId: number, date: Date, system: number): Promise<Buffer> {
+export async function createInvoicePDF(vendorId: number, date: Date, system: number): Promise<Buffer> {
 	const invoice = await getInvoiceData(vendorId, date, system);
 
 	const template = (await fs.readFile("./templates/invoice.html")).toString();
@@ -64,14 +67,16 @@ export async function createInvoice(vendorId: number, date: Date, system: number
 	const html = populateTemplateHtml(template, {
 		...invoice,
 		date: dayjs(invoice.date).format("DD.MM.YYYY"),
-		tablesPerPage: tablesPerPageFor(system),
-		articles: invoice.articles.map((item) => {
-			return {
-				...item,
-				rows: item.rows.map((row) => applyStyler(row, columns)),
-				summary: applyStyler(item.summary, summaryColumns),
-			};
-		}),
+		pages: invoice.pages.map((page) => ({
+			...page,
+			items: page.items.map((item) => {
+				return {
+					...item,
+					rows: item.rows.map((row) => applyStyler(row, columns)),
+					summary: applyStyler(item.summary, summaryColumns),
+				};
+			}),
+		})),
 		summary: applyStyler(invoice.summary, summaryColumns),
 	});
 

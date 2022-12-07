@@ -2,14 +2,14 @@ import { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
-import { LoginResult } from "../models/accounts.model.js";
+import { LoginResult, Role } from "../models/accounts.model.js";
 
-function generateAccessToken(name: string) {
-	return jwt.sign({ username: name }, getEnvToken(), { expiresIn: "12h" });
+function generateAccessToken(name: string, role: Role) {
+	return jwt.sign({ username: name, role }, getEnvToken(), { expiresIn: "12h" });
 }
 
 export async function login(name: string, password: string): Promise<LoginResult | undefined> {
-	const response = await poolExecute<{ name: string; password: string; role: number }>(
+	const response = await poolExecute<{ name: string; password: string; role: Role }>(
 		"SELECT name, password, role FROM accounts WHERE name=?",
 		[name]
 	);
@@ -23,11 +23,14 @@ export async function login(name: string, password: string): Promise<LoginResult
 
 	let path;
 	switch (data.role) {
-		case 1:
+		case "main":
 			path = "/dashboard";
 			break;
-		case 2:
+		case "plan":
 			path = "/schedule";
+			break;
+		case "accountAdmin":
+			path = "/accounts";
 			break;
 		default:
 			path = "/badrole";
@@ -35,7 +38,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 	}
 
 	return {
-		token: generateAccessToken(name),
+		token: generateAccessToken(name, data.role),
 		path,
 		role: data.role,
 	};

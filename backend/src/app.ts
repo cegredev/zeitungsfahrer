@@ -10,6 +10,7 @@ import settings from "./services/settings.service.js"; // Initialize variables
 import logger from "./logger.js";
 import { validateTokenHandler } from "./controllers/controllers.js";
 import test from "./lazy_test.js";
+import { Role } from "./models/accounts.model.js";
 test();
 
 const app = express();
@@ -21,7 +22,9 @@ app.use((req, _res, next) => {
 	next();
 });
 
-app.use("/auth/*", validateTokenHandler);
+const roles: Role[] = ["main", "plan", "accountAdmin"];
+for (const role of roles)
+	app.use("/auth/" + role + "/*", async (req, res, next) => await validateTokenHandler(role, req, res, next));
 
 const PORT = 3001;
 

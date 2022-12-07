@@ -6,7 +6,7 @@ export async function ensureDirExists(path: string): Promise<void> {
 
 export async function fileExists(path: string) {
 	return fs
-		.access(path, fs.constants.F_OK)
+		.stat(path)
 		.then(() => true)
 		.catch(() => false);
 }

@@ -2,6 +2,7 @@ import { Record } from "backend/src/models/records.model";
 import dayjs from "dayjs";
 import { downloadUrl } from "./files";
 import Big from "big.js";
+import { Role } from "backend/src/models/accounts.model";
 
 export const months = [
 	"Januar",
@@ -113,4 +114,15 @@ export function openAndDownloadFile(name: string, extension: string, url: string
 	openFile(name, url);
 
 	setTimeout(() => downloadUrl(url, name + extension), 1000);
+}
+
+export function chooseBasedOnRole<T>(role: Role, main: T, plan: T, accountAdmin: T): T {
+	switch (role) {
+		case "main":
+			return main;
+		case "plan":
+			return plan;
+		case "accountAdmin":
+			return accountAdmin;
+	}
 }

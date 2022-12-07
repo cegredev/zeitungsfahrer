@@ -1,10 +1,12 @@
+export type Role = "main" | "plan" | "accountAdmin";
+
 export interface Account {
 	name: string;
-	role: number;
+	role: Role;
 }
 
 export interface LoginResult {
 	token: string;
 	path: string;
-	role: number;
+	role: Role;
 }

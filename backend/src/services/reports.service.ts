@@ -2,7 +2,15 @@ import ExcelJS from "exceljs";
 import Big from "big.js";
 import { getVendorCatalog, getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { applyPrices, getArticleRecords, getDateRange } from "./records.service.js";
-import { Column, Report, ReportDoc, ReportedVendor, WeeklyBillReport } from "../models/reports.model.js";
+import {
+	Column,
+	Page,
+	Report,
+	ReportDoc,
+	ReportedVendor,
+	ReportItemDoc,
+	WeeklyBillReport,
+} from "../models/reports.model.js";
 import { mulWithMwst, poolExecute } from "../util.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT, dinA4ExcelLandscape, MILlIS_IN_DAY, months, twoDecimalFormat } from "../consts.js";
@@ -384,6 +392,32 @@ export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport>
 	};
 }
 
+export function itemsToPages(items: ReportItemDoc[]): Page[] {
+	const maxRowsPerPage = 40;
+
+	const pages: Page[] = [{ items: [], number: 2 }];
+
+	let currentRows = 0;
+	for (const item of items) {
+		const itemRowCount = item.rows.length + 1;
+		let newRowCount = currentRows + itemRowCount;
+
+		if (newRowCount > maxRowsPerPage) {
+			pages.push({ items: [], number: pages.length + 2 });
+			newRowCount = itemRowCount;
+
+			if (itemRowCount > maxRowsPerPage) {
+				console.error(`Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRowsPerPage})!`);
+			}
+		}
+
+		pages[pages.length - 1].items.push(item);
+		currentRows = newRowCount;
+	}
+
+	return pages;
+}
+
 export async function createWeeklyBillReport(report: WeeklyBillReport, date: Date): Promise<Report> {
 	return {
 		date,
@@ -421,17 +455,6 @@ export async function createWeeklyBillReport(report: WeeklyBillReport, date: Dat
 	};
 }
 
-export function tablesPerPageFor(invoiceSystem: number) {
-	switch (invoiceSystem) {
-		case 0:
-			return 6;
-		case 1:
-			return 3;
-	}
-
-	return 1;
-}
-
 export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	let top = "Bericht",
 		sub = dayjs(report.date).format("DD.MM.YYYY"),
@@ -456,6 +479,8 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 			break;
 	}
 
+	const pages = itemsToPages(report.body);
+
 	return {
 		header: {
 			top,
@@ -464,8 +489,8 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 		},
 		columns: report.columns,
 		summaryColumns: report.summaryColumns,
-		body: report.body,
-		tablesPerPage: tablesPerPageFor(report.invoiceSystem),
+		body: pages,
+		totalPages: pages.length + 1,
 		summary: report.summary,
 	};
 }
@@ -506,23 +531,26 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 
 	const mainSummaryHeaderRow = 5;
 
-	doc.body?.forEach((item, i) => {
-		const itemSheet = workbook.addWorksheet(item.name, dinA4ExcelLandscape);
-		itemSheet.columns = doc.columns;
+	doc.body
+		?.map((r) => r.items)
+		.reduce((a, b) => a.concat(b), [])
+		.forEach((item, i) => {
+			const itemSheet = workbook.addWorksheet(item.name, dinA4ExcelLandscape);
+			itemSheet.columns = doc.columns;
 
-		item.rows.forEach((row, i) => {
-			itemSheet.insertRow(2 + i, row);
+			item.rows.forEach((row, i) => {
+				itemSheet.insertRow(2 + i, row);
+			});
+
+			const summaryRow = 2 + item.rows.length;
+			itemSheet.insertRow(summaryRow, ["Zusammenfassung", ...item.summary]);
+
+			if (hasMainSummary) mainSheet.insertRow(mainSummaryHeaderRow + i + 1, [item.name, ...item.summary]);
+
+			for (const rowNum of [1, summaryRow]) {
+				boldRow(rowNum, itemSheet);
+			}
 		});
-
-		const summaryRow = 2 + item.rows.length;
-		itemSheet.insertRow(summaryRow, ["Zusammenfassung", ...item.summary]);
-
-		if (hasMainSummary) mainSheet.insertRow(mainSummaryHeaderRow + i + 1, [item.name, ...item.summary]);
-
-		for (const rowNum of [1, summaryRow]) {
-			boldRow(rowNum, itemSheet);
-		}
-	});
 
 	const summaryRow = mainSummaryHeaderRow + (doc.body?.length || 0) + 1;
 	const summary = ["Zusammenfassung", ...doc.summary];
@@ -540,18 +568,19 @@ export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",
-		tablesPerPage: doc.tablesPerPage,
 		header: doc.header,
 		summaryColumns: doc.summaryColumns,
-		items:
-			doc.body?.map((item) => {
-				return {
-					columns: doc.columns,
-					...item,
-					rows: item.rows.map((row) => applyStyler(row, doc.columns)),
-					summary: applyStyler(item.summary, doc.columns),
-				};
-			}) || [],
+		pages:
+			doc.body?.map((page) => ({
+				items: page.items.map((item) => {
+					return {
+						columns: doc.columns,
+						...item,
+						rows: item.rows.map((row) => applyStyler(row, doc.columns)),
+						summary: applyStyler(item.summary, doc.columns),
+					};
+				}),
+			})) || [],
 		summary: doc.summaryColumns !== undefined && applyStyler(doc.summary, doc.summaryColumns),
 	});
 

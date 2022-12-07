@@ -60,33 +60,33 @@ import logger from "./logger.js";
 function routes(app: Express) {
 	logger.info("Creating routes");
 
-	app.route("/auth/articles").get(getArticlesController).post(postArticleController).put(putArticleController);
+	app.route("/auth/main/articles").get(getArticlesController).post(postArticleController).put(putArticleController);
 
-	app.route("/auth/articles/:id").delete(deleteArticleController);
+	app.route("/auth/main/articles/:id").delete(deleteArticleController);
 
-	app.route("/auth/articles/sales").get(getArticleSalesController);
+	app.route("/auth/main/articles/sales").get(getArticleSalesController);
 
-	app.route("/auth/articles/info").get(getArticleInfoController);
+	app.route("/auth/main/articles/info").get(getArticleInfoController);
 
-	app.route("/auth/vendors").get(getVendorsController).post(postVendorController).put(putVendorController);
+	app.route("/auth/main/vendors").get(getVendorsController).post(postVendorController).put(putVendorController);
 
-	app.route("/auth/vendors/:id")
+	app.route("/auth/main/vendors/:id")
 		.get(getVendorFullController)
 		.post(createOrUpdateVendorController)
 		.delete(deleteVendorController);
 
-	app.route("/auth/vendors/:id/sales").get(getVendorSalesController);
+	app.route("/auth/main/vendors/:id/sales").get(getVendorSalesController);
 
-	app.route("/auth/vendors/:id/includedArticles").get(getIncludedArticlesController);
+	app.route("/auth/main/vendors/:id/includedArticles").get(getIncludedArticlesController);
 
-	app.route("/auth/records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
+	app.route("/auth/main/records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
 
-	app.route("/auth/records/:vendorId/today").get(getTodaysRecordsController);
+	app.route("/auth/main/records/:vendorId/today").get(getTodaysRecordsController);
 
-	app.route("/auth/dashboard/allSales").get(getAllSalesController);
-	app.route("/auth/dashboard/vendors").get(getDashboardVendorsController);
+	app.route("/auth/main/dashboard/allSales").get(getAllSalesController);
+	app.route("/auth/main/dashboard/vendors").get(getDashboardVendorsController);
 
-	app.route("/auth/calendar/view")
+	app.route("/auth/main/calendar/view")
 		.get(getCalendarViewController)
 		.post(updateCalendarEntryController)
 		.delete(deleteCalendarEntryController);
@@ -107,16 +107,16 @@ function routes(app: Express) {
 
 	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
 
-	app.get("/auth/reports/article/:id", getArticleSalesReportController);
-	app.get("/auth/reports/vendor/:id", getVendorSalesReportController);
-	app.get("/auth/reports/all", getAllSalesReportController);
-	app.get("/auth/reports/weeklyBill", getWeeklyBillReportController);
+	app.get("/auth/main/reports/article/:id", getArticleSalesReportController);
+	app.get("/auth/main/reports/vendor/:id", getVendorSalesReportController);
+	app.get("/auth/main/reports/all", getAllSalesReportController);
+	app.get("/auth/main/reports/weeklyBill", getWeeklyBillReportController);
 
-	app.route("/auth/invoices/:id").get(getInvoiceController);
+	app.route("/auth/main/invoices/:id").get(getInvoiceController);
 
 	app.route("/auth/accounts").get(getAccountsController);
 
-	app.route("/auth/settings").get(getSettingsController).put(updateSettingsController);
+	app.route("/auth/main/settings").get(getSettingsController).put(updateSettingsController);
 
 	app.route("/auth/settings/login").get(settingsLoginController);
 

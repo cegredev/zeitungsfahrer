@@ -9,14 +9,18 @@ import path from "path";
 import fs from "fs";
 
 import ExcelJS from "exceljs";
+import { Role } from "../models/accounts.model.js";
 
-export async function validateTokenHandler(req: Request, res: Response, next: NextFunction) {
+export async function validateTokenHandler(role: Role, req: Request, res: Response, next: NextFunction) {
 	const token = req.headers["authorization"];
 
 	if (token == null) return res.sendStatus(401);
 
 	jwt.verify(token, getEnvToken(), (err, decoded) => {
 		if (err) return res.sendStatus(403);
+
+		const data = JSON.parse(decoded?.substring(decoded.indexOf("{")));
+		console.log(data);
 
 		// @ts-ignore
 		req.tokenData = decoded;

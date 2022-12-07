@@ -5,13 +5,21 @@
 		<title>{{title}}</title>
 
 		<style>
-			/* Restricts tables to tablesPerPage tables on a page */
-			article:nth-of-type({{tablesPerPage}}n) {
-				page-break-after: always;
-			}
-
 			@page {
 				margin: 1cm;
+				height: 100vh;
+			}
+
+			div.page {
+				page-break-before: always;
+			}
+
+			div.page:first-of-type {
+				page-break-before: avoid;
+			}
+
+			div.page h3 {
+				margin-top: 0.5cm;
 			}
 
 			.doc-top {
@@ -63,35 +71,7 @@
 			<h3>{{header.sub}} - {{header.itemSpecifier}}</h3>
 		</div>
 
-		{{#each items}}
-		<article class="article-section">
-			<h3>{{this.name}}</h3>
-			<table class="article-table">
-				<thead>
-					{{#each columns}}
-					<th>{{this.header}}</th>
-					{{/each}}
-				</thead>
-				<tbody>
-					{{#each rows}}
-					<tr>
-						{{#each this}}
-						<td>{{this}}</td>
-						{{/each}}
-					</tr>
-					{{/each}}
-					<tr style="font-weight: bold">
-						<td>Zusammenfassung</td>
-						{{#each this.summary}}
-						<td>{{this}}</td>
-						{{/each}}
-					</tr>
-				</tbody>
-			</table>
-		</article>
-		{{/each}} {{#ifCond summaryColumns "!==" undefined}}
-		<p></p>
-
+		{{#ifCond summaryColumns "!==" undefined}}
 		<table class="summary-table">
 			<thead>
 				{{#each summaryColumns}}
@@ -99,14 +79,14 @@
 				{{/each}}
 			</thead>
 			<tbody>
-				{{#each items}}
+				{{#each pages}} {{#each items}}
 				<tr>
 					<td style="font-weight: bold">{{this.name}}</td>
 					{{#each this.summary}}
 					<td>{{this}}</td>
 					{{/each}}
 				</tr>
-				{{/each}}
+				{{/each}} {{/each}}
 
 				<tr style="font-weight: bold">
 					<td>Zusammenfassung</td>
@@ -117,5 +97,37 @@
 			</tbody>
 		</table>
 		{{/ifCond}}
+
+		<article class="article-section">
+			{{#each pages}}
+			<div class="page">
+				{{#each items}}
+				<h3>{{this.name}}</h3>
+				<table class="article-table">
+					<thead>
+						{{#each columns}}
+						<th>{{this.header}}</th>
+						{{/each}}
+					</thead>
+					<tbody>
+						{{#each rows}}
+						<tr>
+							{{#each this}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+						{{/each}}
+						<tr style="font-weight: bold">
+							<td>Zusammenfassung</td>
+							{{#each this.summary}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+					</tbody>
+				</table>
+				{{/each}}
+			</div>
+			{{/each}}
+		</article>
 	</body>
 </html>

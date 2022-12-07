@@ -35,6 +35,11 @@ export interface ReportItemDoc {
 	summary: (Big | number)[];
 }
 
+export interface Page {
+	items: ReportItemDoc[];
+	number: number;
+}
+
 export interface Report {
 	invoiceSystem: number;
 	date: Date;
@@ -53,7 +58,7 @@ export interface ReportDoc {
 	};
 	columns: Column[];
 	summaryColumns?: Column[];
-	body?: ReportItemDoc[];
-	tablesPerPage: number;
+	body?: Page[];
+	totalPages: number;
 	summary: string[];
 }

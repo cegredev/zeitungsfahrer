@@ -7,9 +7,10 @@
 		<title>Rechnung</title>
 
 		<style>
-			/* Restricts tables to tablesPerPage tables on a page */
-			article:nth-of-type({{tablesPerPage}}n) {
-				page-break-after: always;
+			/* Debugging, makes background-color visible */
+			html {
+				-webkit-print-color-adjust: exact;
+				print-color-adjust: exact;
 			}
 
 			@page {
@@ -17,15 +18,34 @@
 				height: 100vh;
 			}
 
+			div.page {
+				page-break-before: always;
+			}
+
+			div.page:first-of-type {
+				page-break-before: avoid;
+			}
+
 			body {
 				font-family: Arial, Helvetica, sans-serif;
 				margin: 0;
-				min-height: 100vh;
-
-				display: grid;
-				grid-template-rows: auto 1fr auto;
-
 				font-size: 10.5pt;
+			}
+
+			div.page {
+				height: 90vh;
+				position: relative;
+			}
+
+			div.payment-info,
+			.page-counter {
+				position: absolute;
+				bottom: 0;
+			}
+
+			.page-counter {
+				text-align: right;
+				width: 100%;
 			}
 
 			.top {
@@ -42,9 +62,8 @@
 				text-align: right;
 			}
 
-			.footer {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
+			.summary-table {
+				margin-top: 1cm;
 			}
 
 			h1 {
@@ -71,11 +90,7 @@
 
 			table {
 				width: 100%;
-			}
-
-			footer {
-				page-break-before: always;
-				top: 50%;
+				margin-bottom: 0.5cm;
 			}
 		</style>
 	</head>
@@ -85,105 +100,107 @@
 		</header>
 
 		<main>
-			<div class="contact">
-				<div>Hamburger Str. 25, 21205 Hamburg</div>
-				<div>Tel.: +490123456789</div>
-				<div>E-Mail: info@handverkauf.com</div>
-			</div>
-
-			<p></p>
-
-			<div class="info">
-				<div class="vendor">
-					<div>{{vendor.lastName}}, {{vendor.firstName}}</div>
-					<div>{{vendor.address}}</div>
-					<div>{{vendor.city}}, {{vendor.zipCode}}</div>
+			<div class="page">
+				<div class="contact">
+					<div>Hamburger Str. 25, 21205 Hamburg</div>
+					<div>Tel.: +490123456789</div>
+					<div>E-Mail: info@handverkauf.com</div>
+				</div>
+				<p></p>
+				<div class="info">
+					<div class="vendor">
+						<div>{{vendor.lastName}}, {{vendor.firstName}}</div>
+						<div>{{vendor.address}}</div>
+						<div>{{vendor.city}}, {{vendor.zipCode}}</div>
+					</div>
+					<div class="invoice">
+						<div>Kundennr.: {{vendor.customId}}</div>
+						<div>Kunden-Steuernr.: {{vendor.taxId}}</div>
+						<div>Datum: {{date}}</div>
+						<div>Rechnungsnr.: {{nr.year}}-{{nr.week}}-{{nr.counter}}</div>
+					</div>
 				</div>
 
-				<div class="invoice">
-					<div>Kundennr.: {{vendor.customId}}</div>
-					<div>Kunden-Steuernr.: {{vendor.taxId}}</div>
-					<div>Datum: {{date}}</div>
-					<div>Rechnungsnr.: {{nr.year}}-{{nr.week}}-{{nr.counter}}</div>
-				</div>
-			</div>
+				<p></p>
 
-			<p></p>
-
-			{{#each articles}}
-			<article class="article-section">
-				<h3>{{this.name}}</h3>
-				<table class="article-table">
+				<table class="summary-table">
 					<thead>
-						<th>Datum</th>
-						<th>Lieferung</th>
-						<th>Remission</th>
-						<th>Verkauf</th>
-						<th>Betrag (Netto)</th>
-						<th>Betrag (Brutto)</th>
-						<th>Warenwert (Netto)</th>
-						<th>Warenwert (Brutto)</th>
+						<thead>
+							<th>Artikel</th>
+							<th>Lieferung</th>
+							<th>Remission</th>
+							<th>Verkauf</th>
+							<th>Betrag (Netto)</th>
+							<th>Betrag (Brutto)</th>
+							<th>Umsatz (Netto)</th>
+							<th>Umsatz (Brutto)</th>
+						</thead>
 					</thead>
 					<tbody>
-						{{#each rows}}
+						{{#each pages}} {{#each items}}
 						<tr>
-							{{#each this}}
+							<td style="font-weight: bold">{{this.name}}</td>
+							{{#each this.summary}}
 							<td>{{this}}</td>
 							{{/each}}
 						</tr>
-						{{/each}}
+						{{/each}} {{/each}}
 						<tr style="font-weight: bold">
 							<td>Zusammenfassung</td>
-							{{#each this.summary}}
+							{{#each summary}}
 							<td>{{this}}</td>
 							{{/each}}
 						</tr>
 					</tbody>
 				</table>
-			</article>
-			{{/each}}
 
-			<p></p>
+				<div class="payment-info">
+					<div>Bankverbindung:</div>
+					<div>Kasse</div>
+					<div>IBAN:</div>
+				</div>
 
-			<table class="summary-table">
-				<thead>
-					<thead>
-						<th>Artikel</th>
-						<th>Lieferung</th>
-						<th>Remission</th>
-						<th>Verkauf</th>
-						<th>Betrag (Netto)</th>
-						<th>Betrag (Brutto)</th>
-						<th>Umsatz (Netto)</th>
-						<th>Umsatz (Brutto)</th>
-					</thead>
-				</thead>
-				<tbody>
-					{{#each articles}}
-					<tr>
-						<td style="font-weight: bold">{{this.name}}</td>
-						{{#each this.summary}}
-						<td>{{this}}</td>
-						{{/each}}
-					</tr>
-					{{/each}}
-
-					<tr style="font-weight: bold">
-						<td>Zusammenfassung</td>
-						{{#each summary}}
-						<td>{{this}}</td>
-						{{/each}}
-					</tr>
-				</tbody>
-			</table>
-		</main>
-
-		<footer>
-			<div>
-				<div>Bankverbindung:</div>
-				<div>Kasse</div>
-				<div>IBAN:</div>
+				<div class="page-counter">1/{{totalPages}}</div>
 			</div>
-		</footer>
+
+			{{#each pages}}
+			<div class="page">
+				{{#each items}}
+				<article class="article-section">
+					<h3>{{this.name}}</h3>
+					<table class="article-table">
+						<thead>
+							<th>Datum</th>
+							<th>Lieferung</th>
+							<th>Remission</th>
+							<th>Verkauf</th>
+							<th>Betrag (Netto)</th>
+							<th>Betrag (Brutto)</th>
+							<th>Warenwert (Netto)</th>
+							<th>Warenwert (Brutto)</th>
+						</thead>
+						<tbody>
+							{{#each rows}}
+							<tr>
+								{{#each this}}
+								<td>{{this}}</td>
+								{{/each}}
+							</tr>
+							{{/each}}
+							<tr style="font-weight: bold">
+								<td>Zusammenfassung</td>
+								{{#each this.summary}}
+								<td>{{this}}</td>
+								{{/each}}
+							</tr>
+						</tbody>
+					</table>
+				</article>
+				{{/each}}
+
+				<div class="page-counter">{{this.number}}/{{../totalPages}}</div>
+			</div>
+			{{/each}}
+		</main>
 	</body>
 </html>
