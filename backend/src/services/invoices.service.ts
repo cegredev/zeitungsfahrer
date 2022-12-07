@@ -3,12 +3,29 @@ import { createArticleListingReport, getVendorSalesReport, itemsToPages } from "
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
-import { DATE_FORMAT, twoDecimalFormat } from "../consts.js";
+import { twoDecimalFormat } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
-import { Invoice } from "../models/invoices.model.js";
+import { Invoice, InvoiceLink } from "../models/invoices.model.js";
 import pool from "../database.js";
-import { ensureDirExists, fileExists } from "../files.js";
+import { poolExecute } from "../util.js";
+import { getDateRange } from "./records.service.js";
+
+export async function getInvoices(vendorId: number, date: Date, system: number): Promise<InvoiceLink[]> {
+	const dateRange = getDateRange(date, system);
+
+	const data = await poolExecute<InvoiceLink>(
+		"SELECT id, date FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC",
+		[vendorId, ...dateRange]
+	);
+
+	return data;
+}
+
+export async function getInvoice(id: number): Promise<Buffer> {
+	const response = await poolExecute<{ pdf: Buffer }>("SELECT pdf FROM invoices WHERE id=?", [id]);
+	return response[0].pdf;
+}
 
 export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
 	const vendor = await getVendor(vendorId);
@@ -82,20 +99,11 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 
 	const pdf = await generatePDF(html);
 
-	if (await fileExists(await storeInvoice(invoice.nr.counter, vendorId, pdf))) {
-		return pdf;
-	} else {
-		throw new Error("PDF could not be saved!");
-	}
+	await storeInvoice(invoice.nr.counter, pdf);
+
+	return pdf;
 }
 
-export async function storeInvoice(id: number, vendorId: number, blob: Buffer): Promise<string> {
-	const dir = `./store/invoices/${vendorId}`;
-
-	await ensureDirExists(dir);
-
-	const path = `${dir}/${id}.pdf`;
-	await fs.writeFile(path, blob);
-
-	return path;
+export async function storeInvoice(id: number, blob: Buffer): Promise<void> {
+	await poolExecute("UPDATE invoices SET pdf=? WHERE id=?", [blob, id]);
 }

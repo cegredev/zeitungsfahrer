@@ -51,10 +51,10 @@ function VendorSettings() {
 					active: true,
 				};
 
-				const response = await GET<VendorCatalog>("/auth/main/vendors/" + id + "?catalogOnly=true", token!);
+				const response = await GET<VendorCatalog>("/auth/main/vendors/" + id + "?mode=catalog", token!);
 				data = { ...template, catalog: response.data };
 			} else {
-				const response = await GET<Vendor>("/auth/main/vendors/" + id, token!);
+				const response = await GET<Vendor>("/auth/main/vendors/" + id + "?mode=full", token!);
 				data = response.data;
 			}
 

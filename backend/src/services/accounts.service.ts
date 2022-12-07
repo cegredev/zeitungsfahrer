@@ -32,6 +32,10 @@ export async function login(name: string, password: string): Promise<LoginResult
 		case "accountAdmin":
 			path = "/accounts";
 			break;
+		case "vendor":
+			const res = await poolExecute<{ id: number }>("SELECT id FROM vendors WHERE custom_id=?", [data.name]);
+			path = "/invoices/" + res[0].id;
+			break;
 		default:
 			path = "/badrole";
 			break;

@@ -8,7 +8,11 @@ import {
 	putArticleController,
 	getArticleInfoController,
 } from "./controllers/articles.controller.js";
-import { getInvoiceController } from "./controllers/invoices.controller.js";
+import {
+	createInvoiceController,
+	getInvoiceController,
+	getInvoicesController,
+} from "./controllers/invoices.controller.js";
 import {
 	getAllSalesController,
 	getArticleRecordsController,
@@ -108,16 +112,16 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "main", "articles/sales").get(getArticleSalesController);
 	singleGuardedRoute(app, "main", "articles/info").get(getArticleInfoController);
 
-	singleGuardedRoute(app, "main", "vendors")
+	guardedRoute(app, ["main", "vendor"], "vendors")
 		.get(getVendorsController)
 		.post(postVendorController)
 		.put(putVendorController);
-	singleGuardedRoute(app, "main", "vendors/:id")
+	guardedRoute(app, ["main", "vendor"], "vendors/:id")
 		.get(getVendorFullController)
 		.post(createOrUpdateVendorController)
 		.delete(deleteVendorController);
-	singleGuardedRoute(app, "main", "vendors/:id/sales").get(getVendorSalesController);
-	singleGuardedRoute(app, "main", "vendors/:id/includedArticles").get(getIncludedArticlesController);
+	guardedRoute(app, ["main", "vendor"], "vendors/:id/sales").get(getVendorSalesController);
+	guardedRoute(app, ["main", "vendor"], "vendors/:id/includedArticles").get(getIncludedArticlesController);
 
 	singleGuardedRoute(app, "main", "records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
 	singleGuardedRoute(app, "main", "records/:vendorId/today").get(getTodaysRecordsController);
@@ -129,8 +133,6 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "main", "reports/vendor/:id").get(getVendorSalesReportController);
 	singleGuardedRoute(app, "main", "reports/all").get(getAllSalesReportController);
 	singleGuardedRoute(app, "main", "reports/weeklyBill").get(getWeeklyBillReportController);
-
-	singleGuardedRoute(app, "main", "invoices/:id").get(getInvoiceController);
 
 	singleGuardedRoute(app, "main", "settings").get(getSettingsController).put(updateSettingsController);
 	singleGuardedRoute(app, "main", "settings/login").get(settingsLoginController);
@@ -156,6 +158,10 @@ function routes(app: Express) {
 
 	// Accounts
 	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
+
+	// Invoices
+	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController).post(createInvoiceController);
+	guardedRoute(app, ["main", "vendor"], "invoices/download/:id").get(getInvoiceController);
 }
 
 export default routes;

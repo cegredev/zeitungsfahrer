@@ -23,9 +23,15 @@ function VendorItem({ vendor }: { vendor: Vendor }) {
 				<div>Telefon: {vendor.phone}</div>
 			</div>
 
-			<Link style={{ float: "right" }} to={"" + vendor.id}>
-				Einstellungen
-			</Link>
+			<div>
+				<Link style={{ float: "left" }} to={"/invoices/" + vendor.id}>
+					Rechnungen
+				</Link>
+
+				<Link style={{ float: "right" }} to={"" + vendor.id}>
+					Einstellungen
+				</Link>
+			</div>
 		</div>
 	);
 }

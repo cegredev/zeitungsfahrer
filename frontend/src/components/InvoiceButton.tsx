@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useAtom } from "jotai";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import { authTokenAtom } from "../stores/utility.store";
-import { GET_BLOB } from "../api";
+import { GET_BLOB, POST_BLOB } from "../api";
 import { getKW } from "./time/WeekSelection";
 import { months, openAndDownloadFile } from "../consts";
 import { downloadUrl } from "../files";
@@ -19,7 +19,7 @@ function InvoiceButton({ system, vendor, date }: Props) {
 	return (
 		<button
 			onClick={async () => {
-				const report = await GET_BLOB(
+				const report = await POST_BLOB(
 					`/auth/main/invoices/${vendor.id}?date=${dayjs(date).format("YYYY-MM-DD")}&system=${system}`,
 					token!
 				);

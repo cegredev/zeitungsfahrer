@@ -30,6 +30,16 @@ export async function POST<T, D = any>(route: string, body: any, token: string):
 	});
 }
 
+export async function POST_BLOB(route: string, token?: string): Promise<AxiosResponse<Blob>> {
+	return await axios.post(API_URL + route, undefined, {
+		headers: {
+			"Content-Type": "application/json",
+			authorization: token,
+		},
+		responseType: "blob",
+	});
+}
+
 export async function PUT<T, D = any>(route: string, body: any, token: string): Promise<AxiosResponse<T, D>> {
 	return await axios.put(API_URL + route, body, {
 		headers: {

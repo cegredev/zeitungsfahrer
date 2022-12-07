@@ -9,6 +9,7 @@ import {
 	getVendorCatalogRoute,
 	getVendorFullRoute,
 	getVendors,
+	getVendorSimple,
 	getVendorsSimple,
 	updateVendor,
 } from "../services/vendors.service.js";
@@ -52,13 +53,22 @@ export async function deleteVendorController(req: Request<{ id: string }>, res: 
 }
 
 export async function getVendorFullController(
-	req: Request<{ id: number }, any, any, { catalogOnly: "false" | "true" }>,
+	req: Request<{ id: string }, any, any, { mode: "simple" | "full" | "catalog" }>,
 	res: Response
 ) {
-	if (req.query.catalogOnly === "true") {
-		await handler(async () => await getVendorCatalogRoute(req.params.id), res);
-	} else {
-		await handler(async () => await getVendorFullRoute(req.params.id), res);
+	switch (req.query.mode) {
+		case "simple":
+			return await handler(
+				async () => ({
+					code: 200,
+					body: await getVendorSimple(parseInt(req.params.id)),
+				}),
+				res
+			);
+		case "full":
+			return await handler(async () => await getVendorFullRoute(parseInt(req.params.id)), res);
+		case "catalog":
+			return await handler(async () => await getVendorCatalogRoute(parseInt(req.params.id)), res);
 	}
 }
 

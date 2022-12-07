@@ -2,6 +2,11 @@ import Big from "big.js";
 import { Page, ReportItemDoc } from "./reports.model";
 import { Vendor } from "./vendors.model";
 
+export interface InvoiceLink {
+	id: number;
+	date: Date;
+}
+
 export interface InvoiceNr {
 	year: number;
 	week: number;

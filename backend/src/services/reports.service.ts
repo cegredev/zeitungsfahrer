@@ -395,9 +395,9 @@ export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport>
 export function itemsToPages(items: ReportItemDoc[]): Page[] {
 	const maxRowsPerPage = 40;
 
-	const pages: Page[] = [{ items: [], number: 2 }];
+	const pages: Page[] = [];
 
-	let currentRows = 0;
+	let currentRows = maxRowsPerPage + 1; // Make sure to instantly generate a new page
 	for (const item of items) {
 		const itemRowCount = item.rows.length + 1;
 		let newRowCount = currentRows + itemRowCount;
@@ -407,7 +407,9 @@ export function itemsToPages(items: ReportItemDoc[]): Page[] {
 			newRowCount = itemRowCount;
 
 			if (itemRowCount > maxRowsPerPage) {
-				console.error(`Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRowsPerPage})!`);
+				console.error(
+					`Warning: Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRowsPerPage})!`
+				);
 			}
 		}
 

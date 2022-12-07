@@ -5,6 +5,6 @@ export const errorMessageAtom = atom("", (_get, set, message: string) => {
 });
 
 export const authTokenAtom = atom<string | undefined>(undefined);
-export const userRoleAtom = atom<"main" | "plan" | "accountAdmin" | undefined>(undefined);
+export const userRoleAtom = atom<"main" | "plan" | "accountAdmin" | "vendor" | undefined>(undefined);
 
 export const settingsLoggedInAtom = atom(true);

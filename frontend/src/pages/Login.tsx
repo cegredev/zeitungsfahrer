@@ -20,8 +20,6 @@ function Login() {
 		try {
 			const response = await GET<LoginResult>(`/login?name=${username}&password=${password}`);
 
-			console.log("response:", response.data);
-
 			setToken(response.data.token);
 			setRole(response.data.role);
 

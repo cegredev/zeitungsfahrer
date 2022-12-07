@@ -145,6 +145,11 @@ a:visited {
 	width: 100%;
 }
 
+.download-link:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+
 .page {
 	display: flex;
 	flex-direction: column;

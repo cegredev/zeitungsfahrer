@@ -21,6 +21,7 @@ import { Settings as SettingsInterface } from "backend/src/models/settings.model
 import Login from "./pages/Login";
 import DistrictCalendar from "./pages/settings/DistrictCalendar";
 import { chooseBasedOnRole } from "./consts";
+import Invoices from "./pages/Invoices";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -78,6 +79,7 @@ function AppContentWrapper() {
 								{ name: "Kalender", url: "/calendar" },
 								{ name: "Bezirke", url: "/districts" },
 							],
+							[],
 							[]
 						)}
 					/>
@@ -91,6 +93,7 @@ function AppContentWrapper() {
 						<>
 							<Route path="/dashboard" element={<Dashboard />} />
 							<Route path="/records/:id" element={<Records />} />
+							<Route path="/invoices/:id" element={<Invoices />} />
 							<Route
 								path="/articles"
 								element={
@@ -106,7 +109,7 @@ function AppContentWrapper() {
 										<Vendors />
 									</SettingsPage>
 								}
-							/>{" "}
+							/>
 							<Route
 								path="/vendors/:id"
 								element={
@@ -131,6 +134,9 @@ function AppContentWrapper() {
 						</>,
 						<>
 							<Route path="/HALP" element={<div />} />
+						</>,
+						<>
+							<Route path="/HALP_BUTFORVENDORS" element={<div />} />
 						</>
 					)}
 					<Route path="*" element={<Error404 />} />
