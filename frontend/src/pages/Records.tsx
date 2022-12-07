@@ -54,7 +54,10 @@ function Records() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const response = await GET<VendorIncludedArticles>(`/auth/vendors/${vendorId}/includedArticles`, token!);
+			const response = await GET<VendorIncludedArticles>(
+				`/auth/main/vendors/${vendorId}/includedArticles`,
+				token!
+			);
 			setInfo(response.data);
 		}
 
@@ -104,7 +107,7 @@ function Records() {
 									header="Speichern"
 									content={`Wollen Sie das gewählte Element wirklich speichern?`}
 									onYes={async () => {
-										await POST(`/auth/records/${vendorId}`, changedRecords, token!);
+										await POST(`/auth/main/records/${vendorId}`, changedRecords, token!);
 										setChangedRecords([]);
 										setRecordsMap((draft) => {
 											draft!.forEach(

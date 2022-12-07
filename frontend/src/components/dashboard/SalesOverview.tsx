@@ -19,12 +19,12 @@ function SalesOverview() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET<DashboardVendor[]>("/auth/dashboard/vendors", token!);
+			const res = await GET<DashboardVendor[]>("/auth/main/dashboard/vendors", token!);
 			const vendors = res.data;
 			setVendors(vendors);
 
 			if (vendors.length > 0) {
-				const articleRes = await GET<DashboardRecords>(`/auth/records/${vendors[0].id}/today`, token!);
+				const articleRes = await GET<DashboardRecords>(`/auth/main/records/${vendors[0].id}/today`, token!);
 				setArticles(articleRes.data);
 			}
 		}
@@ -71,7 +71,7 @@ function SalesOverview() {
 											totalValueBrutto: 0,
 										});
 										const articles = await GET<DashboardRecords>(
-											`/auth/records/${vendors[i].id}/today`,
+											`/auth/main/records/${vendors[i].id}/today`,
 											token!
 										);
 										setArticles(articles.data);

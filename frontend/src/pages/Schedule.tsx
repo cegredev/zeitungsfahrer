@@ -21,7 +21,7 @@ function Schedule() {
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET<Driver[]>("/auth/calendar/drivers", token!);
+			const res = await GET<Driver[]>("/auth/plan/calendar/drivers", token!);
 			setDrivers(res.data);
 		}
 
@@ -47,7 +47,7 @@ function Schedule() {
 					<button
 						onClick={async () => {
 							const res = await GET_BLOB(
-								"/auth/calendar/view/excel?start=" + dayjs(date).format("YYYY-MM-DD"),
+								"/auth/plan/calendar/view/excel?start=" + dayjs(date).format("YYYY-MM-DD"),
 								token!
 							);
 

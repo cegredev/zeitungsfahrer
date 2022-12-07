@@ -30,11 +30,11 @@ function ArticleSalesView() {
 			setLoading(true);
 
 			const response = await GET<ArticleSales>(
-				"/auth/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
+				"/auth/main/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 
-			const info = await GET<ArticleInfo[]>("/auth/articles/info", token!);
+			const info = await GET<ArticleInfo[]>("/auth/main/articles/info", token!);
 			setArticleSales(response.data);
 
 			setArticleInfo(info.data);

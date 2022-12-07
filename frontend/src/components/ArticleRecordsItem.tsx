@@ -52,7 +52,12 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 	React.useEffect(() => {
 		async function fetchData() {
 			const response = await GET<ArticleRecords>(
-				"/auth/records/" + vendorId + "?articleId=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
+				"/auth/main/records/" +
+					vendorId +
+					"?articleId=" +
+					articleId +
+					"&end=" +
+					dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 			const data = response.data;

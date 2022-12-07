@@ -21,7 +21,7 @@ function Calendar() {
 	React.useEffect(() => {
 		async function fetchData() {
 			const calendarRes = await GET<ScheduleEdit>(
-				"/auth/calendar/edit?start=" +
+				"/auth/plan/calendar/edit?start=" +
 					dayjs(date).format("YYYY-MM-DD") +
 					"&end=" +
 					dayjs(date).add(1, "year").subtract(1, "day").format("YYYY-MM-DD"),
@@ -55,7 +55,7 @@ function Calendar() {
 							content="Wollen Sie wirklich speichern?"
 							onYes={async () => {
 								await POST(
-									"/auth/calendar/edit?date=" + dayjs(start).format("YYYY-MM-DD"),
+									"/auth/plan/calendar/edit?date=" + dayjs(start).format("YYYY-MM-DD"),
 									changedEntries,
 									token!
 								);

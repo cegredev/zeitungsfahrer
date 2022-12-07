@@ -59,7 +59,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 	React.useEffect(() => {
 		async function fetchData() {
 			const calendarRes = await GET<ScheduleView>(
-				"/auth/calendar/view?start=" +
+				"/auth/plan/calendar/view?start=" +
 					dayjs(date).set("day", 1).format("YYYY-MM-DD") +
 					"&end=" +
 					dayjs(date).set("day", 6).format("YYYY-MM-DD"),
@@ -155,7 +155,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 														// Restore previous driver to original activity
 														if (oldDriver.id !== -1 && oldDriver.id !== -2) {
 															await POST(
-																"/auth/calendar/view",
+																"/auth/plan/calendar/view",
 																{
 																	...timestamp,
 																	driverId: oldDriver.id,
@@ -168,7 +168,7 @@ function ScheduleTable({ drivers, date, setDate }: Props) {
 														// Update current driver
 														if (id !== -1) {
 															await POST(
-																"/auth/calendar/view",
+																"/auth/plan/calendar/view",
 																{
 																	...timestamp,
 																	driverId: id,

@@ -38,7 +38,7 @@ function AppContentWrapper() {
 			return navigate("/login" + (location.pathname === "/" ? "" : "?target=" + location.pathname));
 
 		async function fetchSettings() {
-			const response = await GET<SettingsInterface>("/auth/settings", token!);
+			const response = await GET<SettingsInterface>("/auth/main/settings", token!);
 
 			const data = response.data;
 			setSettings(data);

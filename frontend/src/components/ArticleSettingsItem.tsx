@@ -177,7 +177,7 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 					if (article.id == null) {
 						cancelDraft();
 					} else {
-						await DELETE("/auth/articles/" + article.id, token!);
+						await DELETE("/auth/main/articles/" + article.id, token!);
 						removeArticle(article.id!);
 					}
 				}}
@@ -193,7 +193,7 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 					if (isDraft) {
 						try {
 							const res = await POST<{ id: number }>(
-								"/auth/articles",
+								"/auth/main/articles",
 								{ ...info, startDate: new Date() },
 								token!
 							);
@@ -209,7 +209,7 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 						}
 					} else {
 						await PUT(
-							"/auth/articles",
+							"/auth/main/articles",
 							{
 								startDate: dayjs(new Date()).format("YYYY-MM-DD"),
 								article: info,

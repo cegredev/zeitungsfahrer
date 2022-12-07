@@ -29,13 +29,13 @@ function VendorSalesView() {
 	React.useEffect(() => {
 		async function fetchData() {
 			setLoading(true);
-			const info = await GET<SimpleVendor[]>("/auth/vendors?simple=true", token!);
+			const info = await GET<SimpleVendor[]>("/auth/main/vendors?simple=true", token!);
 			const newVendors = info.data;
 
 			const newVendorId = vendorId === -1 ? (newVendors.length > 0 ? newVendors[0].id : -1) : vendorId;
 
 			const response = await GET<VendorSales>(
-				"/auth/vendors/" + newVendorId + "/sales?date=" + dayjs(date).format("YYYY-MM-DD"),
+				"/auth/main/vendors/" + newVendorId + "/sales?date=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 

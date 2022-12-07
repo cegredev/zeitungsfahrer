@@ -1,4 +1,5 @@
-import { Express } from "express";
+import { Express, IRoute, RequestHandler } from "express";
+import { allRoles } from "./consts.js";
 import { getAccountsController, loginController } from "./controllers/accounts.controller.js";
 import {
 	getArticlesController,
@@ -56,71 +57,105 @@ import {
 } from "./controllers/vendors.controller.js";
 
 import logger from "./logger.js";
+import { Role } from "./models/accounts.model.js";
+
+interface FakeRoute {
+	get: (handler: any) => FakeRoute;
+	post: (handler: any) => FakeRoute;
+	put: (handler: any) => FakeRoute;
+	delete: (handler: any) => FakeRoute;
+}
+
+function guardedRoute(app: Express, roles: Role[], path: string): FakeRoute {
+	const routes = roles.map((role) => app.route("/auth/" + role + "/" + path));
+
+	return {
+		get: function (this: FakeRoute, handler: any) {
+			routes.forEach((route) => route.get(handler));
+			return this;
+		},
+		post: function (this: FakeRoute, handler: any) {
+			routes.forEach((route) => route.post(handler));
+			return this;
+		},
+		put: function (this: FakeRoute, handler: any) {
+			routes.forEach((route) => route.put(handler));
+			return this;
+		},
+		delete: function (this: FakeRoute, handler: any) {
+			routes.forEach((route) => route.delete(handler));
+			return this;
+		},
+	};
+}
+
+function singleGuardedRoute(app: Express, role: Role, path: string) {
+	return guardedRoute(app, [role], path);
+}
 
 function routes(app: Express) {
-	logger.info("Creating routes");
+	logger.info("Creating routes!");
 
-	app.route("/auth/main/articles").get(getArticlesController).post(postArticleController).put(putArticleController);
+	// Login
+	app.route("/login").get(loginController);
 
-	app.route("/auth/main/articles/:id").delete(deleteArticleController);
+	// Main
+	singleGuardedRoute(app, "main", "articles")
+		.get(getArticlesController)
+		.post(postArticleController)
+		.put(putArticleController);
+	singleGuardedRoute(app, "main", "articles/:id").delete(deleteArticleController);
+	singleGuardedRoute(app, "main", "articles/sales").get(getArticleSalesController);
+	singleGuardedRoute(app, "main", "articles/info").get(getArticleInfoController);
 
-	app.route("/auth/main/articles/sales").get(getArticleSalesController);
-
-	app.route("/auth/main/articles/info").get(getArticleInfoController);
-
-	app.route("/auth/main/vendors").get(getVendorsController).post(postVendorController).put(putVendorController);
-
-	app.route("/auth/main/vendors/:id")
+	singleGuardedRoute(app, "main", "vendors")
+		.get(getVendorsController)
+		.post(postVendorController)
+		.put(putVendorController);
+	singleGuardedRoute(app, "main", "vendors/:id")
 		.get(getVendorFullController)
 		.post(createOrUpdateVendorController)
 		.delete(deleteVendorController);
+	singleGuardedRoute(app, "main", "vendors/:id/sales").get(getVendorSalesController);
+	singleGuardedRoute(app, "main", "vendors/:id/includedArticles").get(getIncludedArticlesController);
 
-	app.route("/auth/main/vendors/:id/sales").get(getVendorSalesController);
+	singleGuardedRoute(app, "main", "records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
+	singleGuardedRoute(app, "main", "records/:vendorId/today").get(getTodaysRecordsController);
 
-	app.route("/auth/main/vendors/:id/includedArticles").get(getIncludedArticlesController);
+	singleGuardedRoute(app, "main", "dashboard/allSales").get(getAllSalesController);
+	singleGuardedRoute(app, "main", "dashboard/vendors").get(getDashboardVendorsController);
 
-	app.route("/auth/main/records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
+	singleGuardedRoute(app, "main", "reports/article/:id").get(getArticleSalesReportController);
+	singleGuardedRoute(app, "main", "reports/vendor/:id").get(getVendorSalesReportController);
+	singleGuardedRoute(app, "main", "reports/all").get(getAllSalesReportController);
+	singleGuardedRoute(app, "main", "reports/weeklyBill").get(getWeeklyBillReportController);
 
-	app.route("/auth/main/records/:vendorId/today").get(getTodaysRecordsController);
+	singleGuardedRoute(app, "main", "invoices/:id").get(getInvoiceController);
 
-	app.route("/auth/main/dashboard/allSales").get(getAllSalesController);
-	app.route("/auth/main/dashboard/vendors").get(getDashboardVendorsController);
+	singleGuardedRoute(app, "main", "settings").get(getSettingsController).put(updateSettingsController);
+	singleGuardedRoute(app, "main", "settings/login").get(settingsLoginController);
 
-	app.route("/auth/main/calendar/view")
+	// Plan
+	singleGuardedRoute(app, "plan", "calendar/view")
 		.get(getCalendarViewController)
 		.post(updateCalendarEntryController)
 		.delete(deleteCalendarEntryController);
-
-	app.route("/auth/calendar/view/excel").get(getScheduleExcelController);
-
-	app.route("/auth/calendar/edit").get(getCalendarEditController).post(updateCalendarController);
-
-	app.route("/auth/calendar/drivers").get(getDriversController).post(addDriverController).put(updateDriverController);
-
-	app.route("/auth/calendar/drivers/:id").delete(deleteDriverController);
-
-	app.route("/auth/calendar/districts")
+	singleGuardedRoute(app, "plan", "calendar/view/excel").get(getScheduleExcelController);
+	singleGuardedRoute(app, "plan", "calendar/edit").get(getCalendarEditController).post(updateCalendarController);
+	singleGuardedRoute(app, "plan", "calendar/drivers")
+		.get(getDriversController)
+		.post(addDriverController)
+		.put(updateDriverController);
+	singleGuardedRoute(app, "plan", "calendar/drivers/:id").delete(deleteDriverController);
+	singleGuardedRoute(app, "plan", "calendar/districts")
 		.get(getDistrictsCalendarController)
 		.post(addDistrictController)
 		.put(updateDistrictCalendarController)
 		.delete(deleteDistrictController);
+	singleGuardedRoute(app, "plan", "calendar/districts/:id").put(updateDistrictController);
 
-	app.route("/auth/calendar/districts/:id").put(updateDistrictController);
-
-	app.get("/auth/main/reports/article/:id", getArticleSalesReportController);
-	app.get("/auth/main/reports/vendor/:id", getVendorSalesReportController);
-	app.get("/auth/main/reports/all", getAllSalesReportController);
-	app.get("/auth/main/reports/weeklyBill", getWeeklyBillReportController);
-
-	app.route("/auth/main/invoices/:id").get(getInvoiceController);
-
-	app.route("/auth/accounts").get(getAccountsController);
-
-	app.route("/auth/main/settings").get(getSettingsController).put(updateSettingsController);
-
-	app.route("/auth/settings/login").get(settingsLoginController);
-
-	app.route("/login").get(loginController);
+	// Accounts
+	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
 }
 
 export default routes;

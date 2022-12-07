@@ -26,7 +26,7 @@ function DistrictCalendar() {
 	React.useEffect(() => {
 		async function fetchData() {
 			const response = await GET<DistrictCalendarInfo>(
-				"/auth/calendar/districts?start=" +
+				"/auth/plan/calendar/districts?start=" +
 					dayjs(date).format("YYYY-MM-DD") +
 					"&end=" +
 					dayjs(date).add(1, "year").subtract(1, "day").format("YYYY-MM-DD"),
@@ -58,7 +58,7 @@ function DistrictCalendar() {
 							header="Speichern"
 							content="Wollen Sie wirklich speichern?"
 							onYes={async () => {
-								await PUT("/auth/calendar/districts", changedEntries, token!);
+								await PUT("/auth/plan/calendar/districts", changedEntries, token!);
 							}}
 						/>
 					</div>

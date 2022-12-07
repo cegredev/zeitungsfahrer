@@ -51,10 +51,10 @@ function VendorSettings() {
 					active: true,
 				};
 
-				const response = await GET<VendorCatalog>("/auth/vendors/" + id + "?catalogOnly=true", token!);
+				const response = await GET<VendorCatalog>("/auth/main/vendors/" + id + "?catalogOnly=true", token!);
 				data = { ...template, catalog: response.data };
 			} else {
-				const response = await GET<Vendor>("/auth/vendors/" + id, token!);
+				const response = await GET<Vendor>("/auth/main/vendors/" + id, token!);
 				data = response.data;
 			}
 
@@ -197,13 +197,13 @@ function VendorSettings() {
 							}
 							try {
 								if (isDraft) {
-									const response = await POST<{ id: number }>("/auth/vendors", vendor, token!);
+									const response = await POST<{ id: number }>("/auth/main/vendors", vendor, token!);
 									const data = response.data;
 									setId(String(data.id));
 									setVendor({ ...vendor, id: data.id });
 									navigate(`/vendors/${data.id}`);
 								} else {
-									await PUT("/auth/vendors", vendor, token!);
+									await PUT("/auth/main/vendors", vendor, token!);
 								}
 							} catch (e) {
 								if (axios.isAxiosError(e)) {
@@ -230,7 +230,7 @@ function VendorSettings() {
 										vendor.firstName + " " + vendor.lastName
 									}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
 									onYes={async () => {
-										await DELETE("/auth/vendors/" + vendor.id!, token!);
+										await DELETE("/auth/main/vendors/" + vendor.id!, token!);
 										navigate("/vendors");
 									}}
 								/>

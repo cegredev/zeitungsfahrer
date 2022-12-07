@@ -55,7 +55,7 @@ function DistrictEdit({
 						{!isDraft && (
 							<button
 								onClick={async () => {
-									await DELETE("/auth/calendar/districts?id=" + district.id, token!);
+									await DELETE("/auth/plan/calendar/districts?id=" + district.id, token!);
 
 									setCalendar((draft) => {
 										const index = draft?.districts.findIndex((d) => d.id === district.id)!;
@@ -87,7 +87,7 @@ function DistrictEdit({
 							onClick={async () => {
 								if (!isDraft) {
 									await PUT(
-										"/auth/calendar/districts/" + district.id,
+										"/auth/plan/calendar/districts/" + district.id,
 										{ customId: districtEdit.customId },
 										token!
 									);
@@ -98,7 +98,7 @@ function DistrictEdit({
 									});
 								} else {
 									const response = await POST<{ id: number }>(
-										"/auth/calendar/districts",
+										"/auth/plan/calendar/districts",
 										{ customId: districtEdit.customId },
 										token!
 									);

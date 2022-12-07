@@ -2,15 +2,13 @@ import express from "express";
 import routes from "./routes.js";
 import helmet from "helmet";
 import cors from "cors";
-import https from "https";
-import fs from "fs";
 
 import pool from "./database.js";
 import settings from "./services/settings.service.js"; // Initialize variables
 import logger from "./logger.js";
 import { validateTokenHandler } from "./controllers/controllers.js";
 import test from "./lazy_test.js";
-import { Role } from "./models/accounts.model.js";
+import { allRoles } from "./consts.js";
 test();
 
 const app = express();
@@ -22,8 +20,7 @@ app.use((req, _res, next) => {
 	next();
 });
 
-const roles: Role[] = ["main", "plan", "accountAdmin"];
-for (const role of roles)
+for (const role of allRoles)
 	app.use("/auth/" + role + "/*", async (req, res, next) => await validateTokenHandler(role, req, res, next));
 
 const PORT = 3001;

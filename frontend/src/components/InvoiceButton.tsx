@@ -20,7 +20,7 @@ function InvoiceButton({ system, vendor, date }: Props) {
 		<button
 			onClick={async () => {
 				const report = await GET_BLOB(
-					`/auth/invoices/${vendor.id}?date=${dayjs(date).format("YYYY-MM-DD")}&system=${system}`,
+					`/auth/main/invoices/${vendor.id}?date=${dayjs(date).format("YYYY-MM-DD")}&system=${system}`,
 					token!
 				);
 

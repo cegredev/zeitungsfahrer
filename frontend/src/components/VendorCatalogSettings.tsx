@@ -34,7 +34,7 @@ function VendorCatalogSettings({ vendorId, catalog: _catalog }: { vendorId: numb
 									});
 
 									POST(
-										"/auth/vendors/" + vendorId,
+										"/auth/main/vendors/" + vendorId,
 										{
 											vendorId,
 											entries: newEntries,
@@ -75,7 +75,8 @@ function VendorCatalogSettings({ vendorId, catalog: _catalog }: { vendorId: numb
 														entries: newEntries,
 													});
 
-													if (isValid) POST("/auth/vendors/" + vendorId, catalog, token!);
+													if (isValid)
+														POST("/auth/main/vendors/" + vendorId, catalog, token!);
 												}}
 											/>
 										</div>

@@ -25,7 +25,7 @@ function AllSalesView() {
 			setLoading(true);
 
 			const response = await GET<number[]>(
-				"/auth/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"),
+				"/auth/main/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"),
 				token!
 			);
 			setAllSales(response.data);

@@ -19,8 +19,12 @@ export async function validateTokenHandler(role: Role, req: Request, res: Respon
 	jwt.verify(token, getEnvToken(), (err, decoded) => {
 		if (err) return res.sendStatus(403);
 
-		const data = JSON.parse(decoded?.substring(decoded.indexOf("{")));
-		console.log(data);
+		// Javascript makes sense
+		const data = JSON.parse(JSON.stringify(decoded));
+
+		if (data.role !== role) {
+			return res.sendStatus(403);
+		}
 
 		// @ts-ignore
 		req.tokenData = decoded;

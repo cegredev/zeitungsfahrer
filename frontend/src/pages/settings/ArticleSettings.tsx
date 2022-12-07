@@ -20,7 +20,7 @@ function ArticleSettings() {
 	React.useEffect(() => {
 		async function fetchArticles() {
 			const response = await GET<Article[]>(
-				"/auth/articles?atDate=" + dayjs(new Date()).format("YYYY-MM-DD"),
+				"/auth/main/articles?atDate=" + dayjs(new Date()).format("YYYY-MM-DD"),
 				token!
 			);
 			const articles = response.data;

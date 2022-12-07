@@ -98,7 +98,7 @@ function DriverEdit({
 								header="Fahrer löschen"
 								content={`Wollen Sie den Fahrer "${originalDriver.name}" wirklich löschen?`}
 								onYes={async () => {
-									await DELETE("/auth/calendar/drivers/" + originalDriver.id, token!);
+									await DELETE("/auth/plan/calendar/drivers/" + originalDriver.id, token!);
 
 									setSchedule((draft) => {
 										const index = draft?.drivers.findIndex(
@@ -128,7 +128,7 @@ function DriverEdit({
 
 								if (editedDriver.id === -1) {
 									const res = await POST<{ id: number }>(
-										"/auth/calendar/drivers",
+										"/auth/plan/calendar/drivers",
 										editedDriver,
 										token!
 									);
@@ -157,7 +157,7 @@ function DriverEdit({
 											? undefined
 											: originalDriver.defaultDistrict;
 
-									await PUT("/auth/calendar/drivers", { ...editedDriver, oldDefault }, token!);
+									await PUT("/auth/plan/calendar/drivers", { ...editedDriver, oldDefault }, token!);
 
 									setSchedule((draft) => {
 										const index = draft?.drivers.findIndex((d) => d.id === editedDriver.id)!;

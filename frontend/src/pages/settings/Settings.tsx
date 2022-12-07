@@ -13,7 +13,7 @@ function Settings() {
 
 	React.useEffect(() => {
 		async function fetchSettings() {
-			const response = await GET<SettingsInterface>("/auth/settings", token!);
+			const response = await GET<SettingsInterface>("/auth/main/settings", token!);
 			setSettings(response.data);
 		}
 
@@ -43,7 +43,7 @@ function Settings() {
 						onChange={async (evt) => {
 							const newSettings = { ...settings!, invoiceSystem: parseInt(evt.target.value) };
 
-							await PUT("/auth/settings", newSettings, token!);
+							await PUT("/auth/main/settings", newSettings, token!);
 
 							setSettings(newSettings);
 						}}

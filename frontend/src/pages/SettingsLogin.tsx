@@ -13,7 +13,7 @@ function SettingsLogin() {
 		setWaiting(true);
 
 		try {
-			const response = await GET("/auth/settings/login?password=" + password, token);
+			const response = await GET("/auth/main/settings/login?password=" + password, token);
 			setSettingsLoggedIn(true);
 		} catch (e) {
 			console.error(e);
