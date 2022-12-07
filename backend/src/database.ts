@@ -10,9 +10,6 @@ const pool = mysql.createPool({
 	timezone: "+00:00",
 });
 
-// Was needed on one of my testing machines idk
-pool.execute("SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-
 export interface RouteReport {
 	code: number;
 	body?: any;

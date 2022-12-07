@@ -15,12 +15,7 @@ test();
 const app = express();
 app.use(helmet());
 app.use(express.json());
-app.use(
-	cors({
-		origin: ["http://localhost:3000", "https://touren-fahrer.com"],
-		exposedHeaders: ["Content-Disposition"],
-	})
-);
+app.use(cors());
 app.use((req, _res, next) => {
 	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
 	next();
@@ -28,21 +23,13 @@ app.use((req, _res, next) => {
 
 app.use("/auth/*", validateTokenHandler);
 
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 
 routes(app);
 
-const server = https
-	.createServer(
-		{
-			key: fs.readFileSync("key.pem"),
-			cert: fs.readFileSync("cert.pem"),
-		},
-		app
-	)
-	.listen(PORT, () => {
-		logger.info(`Application listening at port ${PORT}`);
-	});
+const server = app.listen(PORT, () => {
+	logger.info(`Application listening at port ${PORT}`);
+});
 
 process.on("exit", () => {
 	logger.info("Shutting down!");
