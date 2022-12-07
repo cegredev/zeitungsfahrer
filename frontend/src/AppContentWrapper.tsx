@@ -20,6 +20,7 @@ import Calendar from "./pages/Calendar";
 import { Settings as SettingsInterface } from "backend/src/models/settings.model";
 import Login from "./pages/Login";
 import DistrictCalendar from "./pages/settings/DistrictCalendar";
+import { chooseBasedOnRole } from "./consts";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -66,25 +67,27 @@ function AppContentWrapper() {
 			<div style={{ flex: 1, display: "flex", flexDirection: "column", maxWidth: "100%" }}>
 				{token && (
 					<Navbar
-						links={
-							role === 1
-								? [
-										{ name: "Dashboard", url: "/" },
-										{ name: "Einstellungen", url: "/settings" },
-								  ]
-								: [
-										{ name: "Einsatzplan", url: "/schedule" },
-										{ name: "Kalender", url: "/calendar" },
-										{ name: "Bezirke", url: "/districts" },
-								  ]
-						}
+						links={chooseBasedOnRole(
+							role!,
+							[
+								{ name: "Dashboard", url: "/" },
+								{ name: "Einstellungen", url: "/settings" },
+							],
+							[
+								{ name: "Einsatzplan", url: "/schedule" },
+								{ name: "Kalender", url: "/calendar" },
+								{ name: "Bezirke", url: "/districts" },
+							],
+							[]
+						)}
 					/>
 				)}
 
 				<Routes>
 					<Route path="/login" element={<Login />} />
-					<Route path="/" element={<Navigate to={role === 1 ? "/dashboard" : "/schedule"} />} />
-					{role === 1 && (
+					<Route path="/" element={<Navigate to={role === "main" ? "/dashboard" : "/schedule"} />} />
+					{chooseBasedOnRole(
+						role!,
 						<>
 							<Route path="/dashboard" element={<Dashboard />} />
 							<Route path="/records/:id" element={<Records />} />
@@ -120,13 +123,14 @@ function AppContentWrapper() {
 									</SettingsPage>
 								}
 							/>
-						</>
-					)}
-					{role === 2 && (
+						</>,
 						<>
 							<Route path="/calendar" element={<Calendar />} />
 							<Route path="/schedule" element={<Schedule />} />
 							<Route path="/districts" element={<DistrictCalendar />} />
+						</>,
+						<>
+							<Route path="/HALP" element={<div />} />
 						</>
 					)}
 					<Route path="*" element={<Error404 />} />
