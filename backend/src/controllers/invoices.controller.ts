@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createInvoicePDF, getInvoice, getInvoices } from "../services/invoices.service.js";
+import { createInvoicePDF, deleteInvoice, getInvoice, getInvoices } from "../services/invoices.service.js";
 import { downloadPDFHandler, handler } from "./controllers.js";
 
 export async function getInvoiceController(req: Request<{ id: string }>, res: Response) {
@@ -27,4 +27,8 @@ export async function createInvoiceController(
 		await createInvoicePDF(parseInt(req.params.id), new Date(req.query.date), parseInt(req.query.system)),
 		res
 	);
+}
+
+export async function deleteInvoiceController(req: Request<{ id: string }>, res: Response) {
+	await handler(async () => await deleteInvoice(parseInt(req.params.id)), res);
 }

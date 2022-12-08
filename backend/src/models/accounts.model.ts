@@ -7,6 +7,10 @@ export interface Account {
 
 export interface LoginResult {
 	token: string;
-	path: string;
+	home: string;
 	role: Role;
+	/**
+	 * Only present if role === "vendor"
+	 */
+	vendorId?: number;
 }

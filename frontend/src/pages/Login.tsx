@@ -2,12 +2,12 @@ import { useAtom } from "jotai";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GET } from "../api";
-import { authTokenAtom, userRoleAtom } from "../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
 import { LoginResult } from "backend/src/models/accounts.model";
 
 function Login() {
 	const [, setToken] = useAtom(authTokenAtom);
-	const [, setRole] = useAtom(userRoleAtom);
+	const [, setUserInfo] = useAtom(userInfoAtom);
 	const [password, setPassword] = React.useState("");
 	const [username, setUsername] = React.useState("");
 	const [waiting, setWaiting] = React.useState(false);
@@ -20,17 +20,16 @@ function Login() {
 		try {
 			const response = await GET<LoginResult>(`/login?name=${username}&password=${password}`);
 
-			setToken(response.data.token);
-			setRole(response.data.role);
+			setUserInfo(response.data);
 
 			const target = searchParams.get("target");
-			navigate(target === null ? response.data.path : target);
+			navigate(target === null ? response.data.home : target);
 		} catch {
 			setPassword("");
 		}
 
 		setWaiting(false);
-	}, [password, navigate, searchParams, setToken, setRole, username]);
+	}, [password, navigate, searchParams, setToken, setUserInfo, username]);
 
 	return (
 		<div className="page" style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>

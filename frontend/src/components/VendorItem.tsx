@@ -24,12 +24,12 @@ function VendorItem({ vendor }: { vendor: Vendor }) {
 			</div>
 
 			<div>
-				<Link style={{ float: "left" }} to={"/invoices/" + vendor.id}>
-					Rechnungen
+				<Link style={{ float: "left" }} to={"" + vendor.id}>
+					Einstellungen
 				</Link>
 
-				<Link style={{ float: "right" }} to={"" + vendor.id}>
-					Einstellungen
+				<Link style={{ float: "right" }} to={"/invoices/" + vendor.id}>
+					Rechnungen
 				</Link>
 			</div>
 		</div>

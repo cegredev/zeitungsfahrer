@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Popup from "reactjs-popup";
-import { authTokenAtom, errorMessageAtom, userRoleAtom } from "./stores/utility.store";
+import { authTokenAtom, errorMessageAtom, userInfoAtom } from "./stores/utility.store";
 import { settingsAtom } from "./stores/settings.store";
 
 import Navbar from "./components/Navbar";
@@ -26,8 +26,7 @@ import Invoices from "./pages/Invoices";
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
 	const [, setSettings] = useAtom(settingsAtom);
-	const [token] = useAtom(authTokenAtom);
-	const [role] = useAtom(userRoleAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -35,11 +34,11 @@ function AppContentWrapper() {
 
 	React.useEffect(() => {
 		if (location.pathname === "/login") return;
-		if (token === undefined)
+		if (userInfo === undefined)
 			return navigate("/login" + (location.pathname === "/" ? "" : "?target=" + location.pathname));
 
 		async function fetchSettings() {
-			const response = await GET<SettingsInterface>("/auth/main/settings", token!);
+			const response = await GET<SettingsInterface>("/auth/" + userInfo!.role + "/settings", userInfo!.token!);
 
 			const data = response.data;
 			setSettings(data);
@@ -49,7 +48,7 @@ function AppContentWrapper() {
 
 		// It wants location.pathname to be a dependency but that would lead to login always targeting login
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [token, navigate, setSettings]);
+	}, [userInfo, navigate, setSettings]);
 
 	return (
 		<React.Fragment>
@@ -66,10 +65,10 @@ function AppContentWrapper() {
 			</Popup>
 
 			<div style={{ flex: 1, display: "flex", flexDirection: "column", maxWidth: "100%" }}>
-				{token && (
+				{userInfo && (
 					<Navbar
 						links={chooseBasedOnRole(
-							role!,
+							userInfo!.role,
 							[
 								{ name: "Dashboard", url: "/" },
 								{ name: "Einstellungen", url: "/settings" },
@@ -80,64 +79,72 @@ function AppContentWrapper() {
 								{ name: "Bezirke", url: "/districts" },
 							],
 							[],
-							[]
+							[{ name: "Rechnungen", url: "/invoices/" + userInfo.vendorId }]
 						)}
 					/>
 				)}
 
 				<Routes>
 					<Route path="/login" element={<Login />} />
-					<Route path="/" element={<Navigate to={role === "main" ? "/dashboard" : "/schedule"} />} />
-					{chooseBasedOnRole(
-						role!,
-						<>
-							<Route path="/dashboard" element={<Dashboard />} />
-							<Route path="/records/:id" element={<Records />} />
-							<Route path="/invoices/:id" element={<Invoices />} />
+
+					{userInfo && (
+						<React.Fragment>
 							<Route
-								path="/articles"
-								element={
-									<SettingsPage route="/articles">
-										<ArticleSettings />
-									</SettingsPage>
-								}
-							/>{" "}
-							<Route
-								path="/vendors"
-								element={
-									<SettingsPage route="/vendors">
-										<Vendors />
-									</SettingsPage>
-								}
+								path="/"
+								element={<Navigate to={userInfo?.role === "main" ? "/dashboard" : "/schedule"} />}
 							/>
-							<Route
-								path="/vendors/:id"
-								element={
-									<SettingsPage route="/vendors">
-										<VendorSettings />
-									</SettingsPage>
-								}
-							/>
-							<Route
-								path="/settings"
-								element={
-									<SettingsPage route="/settings">
-										<Settings />
-									</SettingsPage>
-								}
-							/>
-						</>,
-						<>
-							<Route path="/calendar" element={<Calendar />} />
-							<Route path="/schedule" element={<Schedule />} />
-							<Route path="/districts" element={<DistrictCalendar />} />
-						</>,
-						<>
-							<Route path="/HALP" element={<div />} />
-						</>,
-						<>
-							<Route path="/HALP_BUTFORVENDORS" element={<div />} />
-						</>
+							{chooseBasedOnRole(
+								userInfo?.role,
+								<>
+									<Route path="/dashboard" element={<Dashboard />} />
+									<Route path="/records/:id" element={<Records />} />
+									<Route path="/invoices/:id" element={<Invoices />} />
+									<Route
+										path="/articles"
+										element={
+											<SettingsPage route="/articles">
+												<ArticleSettings />
+											</SettingsPage>
+										}
+									/>{" "}
+									<Route
+										path="/vendors"
+										element={
+											<SettingsPage route="/vendors">
+												<Vendors />
+											</SettingsPage>
+										}
+									/>
+									<Route
+										path="/vendors/:id"
+										element={
+											<SettingsPage route="/vendors">
+												<VendorSettings />
+											</SettingsPage>
+										}
+									/>
+									<Route
+										path="/settings"
+										element={
+											<SettingsPage route="/settings">
+												<Settings />
+											</SettingsPage>
+										}
+									/>
+								</>,
+								<>
+									<Route path="/calendar" element={<Calendar />} />
+									<Route path="/schedule" element={<Schedule />} />
+									<Route path="/districts" element={<DistrictCalendar />} />
+								</>,
+								<>
+									<Route path="/HALP" element={<div />} />
+								</>,
+								<>
+									<Route path={"/invoices/:id"} element={<Invoices />} />
+								</>
+							)}
+						</React.Fragment>
 					)}
 					<Route path="*" element={<Error404 />} />
 				</Routes>

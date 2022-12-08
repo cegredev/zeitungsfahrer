@@ -7,7 +7,7 @@ import { twoDecimalFormat } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
 import { Invoice, InvoiceLink } from "../models/invoices.model.js";
-import pool from "../database.js";
+import pool, { RouteReport } from "../database.js";
 import { poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
 
@@ -15,7 +15,7 @@ export async function getInvoices(vendorId: number, date: Date, system: number):
 	const dateRange = getDateRange(date, system);
 
 	const data = await poolExecute<InvoiceLink>(
-		"SELECT id, date FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC",
+		"SELECT id, date FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, id DESC",
 		[vendorId, ...dateRange]
 	);
 
@@ -106,4 +106,10 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 
 export async function storeInvoice(id: number, blob: Buffer): Promise<void> {
 	await poolExecute("UPDATE invoices SET pdf=? WHERE id=?", [blob, id]);
+}
+
+export async function deleteInvoice(id: number): Promise<RouteReport> {
+	await poolExecute("DELETE FROM invoices WHERE id=?", [id]);
+
+	return { code: 200 };
 }

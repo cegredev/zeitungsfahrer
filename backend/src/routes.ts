@@ -10,6 +10,7 @@ import {
 } from "./controllers/articles.controller.js";
 import {
 	createInvoiceController,
+	deleteInvoiceController,
 	getInvoiceController,
 	getInvoicesController,
 } from "./controllers/invoices.controller.js";
@@ -97,6 +98,10 @@ function singleGuardedRoute(app: Express, role: Role, path: string) {
 	return guardedRoute(app, [role], path);
 }
 
+function unguardedRoute(app: Express, path: string) {
+	return guardedRoute(app, allRoles, path);
+}
+
 function routes(app: Express) {
 	logger.info("Creating routes!");
 
@@ -134,9 +139,6 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "main", "reports/all").get(getAllSalesReportController);
 	singleGuardedRoute(app, "main", "reports/weeklyBill").get(getWeeklyBillReportController);
 
-	singleGuardedRoute(app, "main", "settings").get(getSettingsController).put(updateSettingsController);
-	singleGuardedRoute(app, "main", "settings/login").get(settingsLoginController);
-
 	// Plan
 	singleGuardedRoute(app, "plan", "calendar/view")
 		.get(getCalendarViewController)
@@ -160,8 +162,14 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
 
 	// Invoices
+	singleGuardedRoute(app, "main", "invoices/:id").delete(deleteInvoiceController);
 	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController).post(createInvoiceController);
 	guardedRoute(app, ["main", "vendor"], "invoices/download/:id").get(getInvoiceController);
+
+	// Settings
+	unguardedRoute(app, "settings").get(getSettingsController);
+	singleGuardedRoute(app, "main", "settings").put(updateSettingsController);
+	singleGuardedRoute(app, "main", "settings/login").get(settingsLoginController);
 }
 
 export default routes;

@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import { Link, useNavigate } from "react-router-dom";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 function Navbar({ links }: Props) {
-	const [, setToken] = useAtom(authTokenAtom);
+	const [, setUserInfo] = useAtom(userInfoAtom);
 	const navigate = useNavigate();
 
 	return (
@@ -41,7 +41,7 @@ function Navbar({ links }: Props) {
 				header="Ausloggen?"
 				content="Wollen Sie sich wirklich ausloggen?"
 				onYes={() => {
-					setToken(undefined);
+					setUserInfo(undefined);
 					navigate("/login");
 				}}
 			/>
