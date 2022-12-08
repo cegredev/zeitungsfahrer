@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
-const API_URL = process.env.NODE_ENV === "production" ? "https://181.215.68.14" : "http://localhost:3001";
+const API_URL =
+	process.env.NODE_ENV === "production" ? "https://touren-fahrer-api.online/api" : "http://localhost:3001/api";
 
 export async function GET<T, D = any>(route: string, token?: string): Promise<AxiosResponse<T, D>> {
 	return await axios.get(API_URL + route, {

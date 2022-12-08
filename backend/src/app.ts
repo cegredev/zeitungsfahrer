@@ -21,7 +21,7 @@ app.use((req, _res, next) => {
 });
 
 for (const role of allRoles)
-	app.use("/auth/" + role + "/*", async (req, res, next) => await validateTokenHandler(role, req, res, next));
+	app.use("/api/auth/" + role + "/*", async (req, res, next) => await validateTokenHandler(role, req, res, next));
 
 const PORT = 3001;
 

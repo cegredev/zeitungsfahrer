@@ -72,7 +72,7 @@ interface FakeRoute {
 }
 
 function guardedRoute(app: Express, roles: Role[], path: string): FakeRoute {
-	const routes = roles.map((role) => app.route("/auth/" + role + "/" + path));
+	const routes = roles.map((role) => app.route("/api/auth/" + role + "/" + path));
 
 	return {
 		get: function (this: FakeRoute, handler: any) {
@@ -106,7 +106,7 @@ function routes(app: Express) {
 	logger.info("Creating routes!");
 
 	// Login
-	app.route("/login").get(loginController);
+	app.route("/api/login").get(loginController);
 
 	// Main
 	singleGuardedRoute(app, "main", "articles")
