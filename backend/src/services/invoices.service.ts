@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { twoDecimalFormat } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
-import { Invoice, InvoiceLink } from "../models/invoices.model.js";
+import { CustomInvoiceText, Invoice, InvoiceLink } from "../models/invoices.model.js";
 import pool, { RouteReport } from "../database.js";
 import { poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
@@ -60,6 +60,7 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 export async function createInvoicePDF(vendorId: number, date: Date, system: number): Promise<Buffer> {
 	const invoice = await getInvoiceData(vendorId, date, system);
 
+	const customText = await getCustomText();
 	const template = (await fs.readFile("./templates/invoice.html")).toString();
 
 	const sharedColumns: Column[] = [
@@ -95,6 +96,7 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 			}),
 		})),
 		summary: applyStyler(invoice.summary, summaryColumns),
+		...customText,
 	});
 
 	const pdf = await generatePDF(html);
@@ -106,6 +108,30 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 
 export async function storeInvoice(id: number, blob: Buffer): Promise<void> {
 	await poolExecute("UPDATE invoices SET pdf=? WHERE id=?", [blob, id]);
+}
+
+export async function getCustomText(): Promise<CustomInvoiceText> {
+	const res = await poolExecute<{ contact: string; byeText: string; payment: string }>(
+		"SELECT contact, bye_text as byeText, payment FROM invoice_profiles"
+	);
+
+	console.log(res[0]);
+
+	return res[0];
+}
+
+export async function modifyText({ contact, byeText, payment }: CustomInvoiceText) {
+	await poolExecute("UPDATE invoice_profiles SET contact=?, bye_text=?, payment=? WHERE id=1", [
+		contact,
+		byeText,
+		payment,
+	]);
+
+	console.log(contact, byeText, payment);
+
+	return {
+		code: 200,
+	};
 }
 
 export async function deleteInvoice(id: number): Promise<RouteReport> {

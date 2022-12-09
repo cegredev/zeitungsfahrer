@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
-import { createInvoicePDF, deleteInvoice, getInvoice, getInvoices } from "../services/invoices.service.js";
+import { CustomInvoiceText } from "../models/invoices.model.js";
+import {
+	createInvoicePDF,
+	deleteInvoice,
+	getCustomText,
+	getInvoice,
+	getInvoices,
+	modifyText,
+} from "../services/invoices.service.js";
 import { downloadPDFHandler, handler, validateVendorAccess } from "./controllers.js";
 
 export async function getInvoiceController(req: Request<{ id: string }>, res: Response) {
@@ -31,6 +39,20 @@ export async function createInvoiceController(
 		await createInvoicePDF(parseInt(req.params.id), new Date(req.query.date), parseInt(req.query.system)),
 		res
 	);
+}
+
+export async function getCustomInvoiceTextController(req: Request, res: Response) {
+	await handler(
+		async () => ({
+			code: 200,
+			body: await getCustomText(),
+		}),
+		res
+	);
+}
+
+export async function modifyTextController(req: Request<any, any, CustomInvoiceText>, res: Response) {
+	await handler(async () => await modifyText(req.body), res);
 }
 
 export async function deleteInvoiceController(req: Request<{ id: string }>, res: Response) {

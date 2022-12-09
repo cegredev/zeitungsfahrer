@@ -22,6 +22,7 @@ import Login from "./pages/Login";
 import DistrictCalendar from "./pages/settings/DistrictCalendar";
 import { chooseBasedOnRole } from "./consts";
 import Invoices from "./pages/Invoices";
+import InvoiceSettings from "./pages/settings/InvoiceSettings";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -131,6 +132,14 @@ function AppContentWrapper() {
 											</SettingsPage>
 										}
 									/>
+									<Route
+										path="/invoiceSettings"
+										element={
+											<SettingsPage route="/invoiceSettings">
+												<InvoiceSettings />
+											</SettingsPage>
+										}
+									/>
 								</>,
 								<>
 									<Route path="/calendar" element={<Calendar />} />
@@ -138,7 +147,7 @@ function AppContentWrapper() {
 									<Route path="/districts" element={<DistrictCalendar />} />
 								</>,
 								<>
-									<Route path="/HALP" element={<div />} />
+									<Route path="/ADMIN STUFF HELp" element={<div />} />
 								</>,
 								<>
 									<Route path={"/invoices/:id"} element={<Invoices />} />

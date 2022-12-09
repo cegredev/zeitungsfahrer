@@ -7,9 +7,7 @@ import pool from "./database.js";
 import settings from "./services/settings.service.js"; // Initialize variables
 import logger from "./logger.js";
 import { validateTokenHandler } from "./controllers/controllers.js";
-import test from "./lazy_test.js";
 import { allRoles } from "./consts.js";
-test();
 
 const app = express();
 app.use(helmet());

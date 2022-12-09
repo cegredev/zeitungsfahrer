@@ -13,10 +13,11 @@ const links = [
 	["/settings", "Allgemein"],
 	["/articles", "Artikel"],
 	["/vendors", "Händler"],
+	["/invoiceSettings", "Rechnungen"],
 ];
 
 function SettingsNav({ route: activeRoute, children }: Props) {
-	const leftNavWidth = 120;
+	const leftNavWidth = 135;
 
 	const navigate = useNavigate();
 	const [settingsLoggedIn] = useAtom(settingsLoggedInAtom);

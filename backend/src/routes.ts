@@ -11,8 +11,10 @@ import {
 import {
 	createInvoiceController,
 	deleteInvoiceController,
+	getCustomInvoiceTextController,
 	getInvoiceController,
 	getInvoicesController,
+	modifyTextController,
 } from "./controllers/invoices.controller.js";
 import {
 	getAllSalesController,
@@ -163,6 +165,7 @@ function routes(app: Express) {
 
 	// Invoices
 	singleGuardedRoute(app, "main", "invoices/:id").delete(deleteInvoiceController).post(createInvoiceController);
+	singleGuardedRoute(app, "main", "invoices/modify").get(getCustomInvoiceTextController).put(modifyTextController);
 	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController);
 	guardedRoute(app, ["main", "vendor"], "invoices/download/:id").get(getInvoiceController);
 

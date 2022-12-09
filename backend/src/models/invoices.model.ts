@@ -21,3 +21,9 @@ export interface Invoice {
 	totalPages: number;
 	summary: any[];
 }
+
+export interface CustomInvoiceText {
+	contact: string;
+	byeText: string;
+	payment: string;
+}

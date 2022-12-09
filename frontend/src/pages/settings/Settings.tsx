@@ -23,11 +23,9 @@ function Settings() {
 	return (
 		<div className="page">
 			<div
-				className="settings-left"
+				className="panel settings-left"
 				style={{
-					padding: 30,
-					backgroundColor: "lightgray",
-					borderRadius: 10,
+					padding: 20,
 					display: "flex",
 					flexDirection: "column",
 					alignItems: "center",

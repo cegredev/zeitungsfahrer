@@ -92,20 +92,24 @@
 				width: 100%;
 				margin-bottom: 0.5cm;
 			}
+
+			.custom-text {
+				white-space: pre-wrap;
+			}
+
+			.bye-text {
+				margin-left: 0.5cm;
+			}
 		</style>
 	</head>
 	<body>
 		<header>
-			<h1>Kandemir Vertragsbetreuung</h1>
+			<h1>Kandemir Verlagsbetreuung</h1>
 		</header>
 
 		<main>
 			<div class="page">
-				<div class="contact">
-					<div>Hamburger Str. 25, 21205 Hamburg</div>
-					<div>Tel.: +490123456789</div>
-					<div>E-Mail: info@handverkauf.com</div>
-				</div>
+				<div class="contact custom-text">{{contact}}</div>
 				<p></p>
 				<div class="info">
 					<div class="vendor">
@@ -154,11 +158,9 @@
 					</tbody>
 				</table>
 
-				<div class="payment-info">
-					<div>Bankverbindung:</div>
-					<div>Kasse</div>
-					<div>IBAN:</div>
-				</div>
+				<div class="bye-text custom-text">{{byeText}}</div>
+
+				<div class="payment-info custom-text">{{payment}}</div>
 
 				<div class="page-counter">1/{{totalPages}}</div>
 			</div>
