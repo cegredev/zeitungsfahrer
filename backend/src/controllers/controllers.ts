@@ -9,7 +9,18 @@ import path from "path";
 import fs from "fs";
 
 import ExcelJS from "exceljs";
-import { Role } from "../models/accounts.model.js";
+import { LoginResult, Role } from "../models/accounts.model.js";
+import { getIdFromCustomId } from "../services/vendors.service.js";
+
+export function getTokenData(req: Request): LoginResult | undefined {
+	// @ts-ignore
+	return req.tokenData;
+}
+
+export function validateVendorAccess(req: Request, vendorId: number): boolean {
+	const tokenData = getTokenData(req);
+	return tokenData?.role !== "vendor" || tokenData?.vendorId === vendorId;
+}
 
 export async function validateTokenHandler(role: Role, req: Request, res: Response, next: NextFunction) {
 	const token = req.headers["authorization"];
@@ -26,7 +37,8 @@ export async function validateTokenHandler(role: Role, req: Request, res: Respon
 		}
 
 		// @ts-ignore
-		req.tokenData = decoded;
+		req.tokenData = data;
+
 		next();
 	});
 }

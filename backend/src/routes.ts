@@ -162,8 +162,8 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
 
 	// Invoices
-	singleGuardedRoute(app, "main", "invoices/:id").delete(deleteInvoiceController);
-	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController).post(createInvoiceController);
+	singleGuardedRoute(app, "main", "invoices/:id").delete(deleteInvoiceController).post(createInvoiceController);
+	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController);
 	guardedRoute(app, ["main", "vendor"], "invoices/download/:id").get(getInvoiceController);
 
 	// Settings

@@ -6,6 +6,12 @@ import { ArticleInfo } from "../models/articles.model.js";
 import { DATE_FORMAT } from "../consts.js";
 import dayjs from "dayjs";
 
+export async function getIdFromCustomId(cid: string): Promise<number | undefined> {
+	const res = await poolExecute<{ id: number }>("SELECT id FROM vendors WHERE custom_id=?", [cid]);
+
+	return res.length === 0 ? undefined : res[0].id;
+}
+
 export async function getVendors(includeInactive: boolean): Promise<Vendor[]> {
 	return await poolExecute<Vendor>(
 		`SELECT id, first_name as firstName, last_name as lastName, address, zip_code as zipCode,

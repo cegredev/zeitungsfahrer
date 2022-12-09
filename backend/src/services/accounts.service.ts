@@ -3,6 +3,7 @@ import { RouteReport } from "../database.js";
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
 import { LoginResult, Role } from "../models/accounts.model.js";
+import { getIdFromCustomId } from "./vendors.service.js";
 
 function generateAccessToken(name: string, role: Role, vendorId?: number) {
 	return jwt.sign({ username: name, role, vendorId }, getEnvToken(), { expiresIn: "12h" });
@@ -16,10 +17,9 @@ export async function login(name: string, password: string): Promise<LoginResult
 
 	let data = response[0];
 	if (response.length === 0) {
-		const idRes = await poolExecute<{ id: number }>("SELECT id FROM vendors WHERE custom_id=?", [name]);
-		if (idRes.length === 0) return;
+		const id = await getIdFromCustomId(name);
+		if (id === undefined) return;
 
-		const id = idRes[0].id;
 		const parsedName = "vendor:" + id;
 
 		const passRes = await poolExecute<{ password: string }>("SELECT password FROM accounts WHERE name=?", [

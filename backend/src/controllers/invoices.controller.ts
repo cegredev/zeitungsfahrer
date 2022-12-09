@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { createInvoicePDF, deleteInvoice, getInvoice, getInvoices } from "../services/invoices.service.js";
-import { downloadPDFHandler, handler } from "./controllers.js";
+import { downloadPDFHandler, handler, validateVendorAccess } from "./controllers.js";
 
 export async function getInvoiceController(req: Request<{ id: string }>, res: Response) {
+	if (!validateVendorAccess(req, parseInt(req.params.id))) return res.sendStatus(403);
+
 	await downloadPDFHandler(await getInvoice(parseInt(req.params.id)), res);
 }
 
@@ -10,6 +12,8 @@ export async function getInvoicesController(
 	req: Request<{ id: string }, any, any, { date: string; system: string }>,
 	res: Response
 ) {
+	if (!validateVendorAccess(req, parseInt(req.params.id))) return res.sendStatus(403);
+
 	await handler(
 		async () => ({
 			code: 200,
