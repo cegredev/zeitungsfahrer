@@ -48,6 +48,8 @@ export async function generatePDF(html: string): Promise<Buffer> {
 		waitUntil: "networkidle0",
 	});
 
+	await page.addStyleTag({ path: "./templates/shared_styles.css" });
+
 	const buffer = await page.pdf({
 		format: "A4",
 	});

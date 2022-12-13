@@ -10,6 +10,7 @@ import { CustomInvoiceText, Invoice, InvoiceLink } from "../models/invoices.mode
 import pool, { RouteReport } from "../database.js";
 import { poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
+import Big from "big.js";
 
 export async function getInvoices(vendorId: number, date: Date, system: number): Promise<InvoiceLink[]> {
 	const dateRange = getDateRange(date, system);
@@ -29,7 +30,7 @@ export async function getInvoice(id: number): Promise<Buffer> {
 
 export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
 	const vendor = await getVendor(vendorId);
-	const report = await createArticleListingReport(await getVendorSalesReport(vendorId, date, system), date, system);
+	const report = await getVendorSalesReport(vendorId, date, system);
 
 	const today = new Date();
 
@@ -41,7 +42,34 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 	// @ts-ignore
 	const id: number = result[0].insertId;
 
-	const pages = itemsToPages(report.body);
+	let totalNetto = Big(0),
+		totalBrutto = Big(0),
+		totalSales = 0;
+
+	const newItems = report.items.map((item) => ({
+		name: item.name,
+		rows: item.rows.map((row) => {
+			const netto = row.price.sell.mul(row.sales);
+			const brutto = netto.mul(row.price.mwst);
+
+			totalSales += row.sales;
+			totalNetto = totalNetto.add(netto);
+			totalBrutto = totalBrutto.add(brutto);
+
+			return [
+				row.date,
+				row.price.sell.toNumber(),
+				row.price.sell.mul(row.price.mwst).toNumber(),
+				row.sales,
+				row.price.mwst,
+				netto.toNumber(),
+				brutto.toNumber(),
+			];
+		}),
+		summary: ["", "", totalSales, "", totalNetto, totalBrutto],
+	}));
+
+	const pages = itemsToPages(newItems);
 
 	return {
 		vendor,
@@ -53,7 +81,7 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 		},
 		pages,
 		totalPages: pages.length + 1,
-		summary: report.summary,
+		summary: [],
 	};
 }
 
@@ -61,7 +89,7 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 	const invoice = await getInvoiceData(vendorId, date, system);
 
 	const customText = await getCustomText();
-	const template = (await fs.readFile("./templates/invoice.html")).toString();
+	const template = (await fs.readFile("./templates/new_invoice.html")).toString();
 
 	const sharedColumns: Column[] = [
 		{},

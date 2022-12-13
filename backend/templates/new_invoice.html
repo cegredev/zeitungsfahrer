@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Rechnung</title>
+
+		<link rel="stylesheet" href="shared_styles.css" />
+
+		<style>
+			header {
+				display: grid;
+				grid-template-columns: auto 1fr auto;
+				margin-bottom: 1cm;
+			}
+
+			div#id {
+				display: table;
+			}
+
+			div#customer {
+				text-align: left;
+			}
+
+			.meta-row {
+				width: 100%;
+			}
+
+			.meta-row td {
+				text-align: center;
+			}
+
+			.article-table {
+				width: 100%;
+				border: none;
+				border-collapse: collapse;
+			}
+
+			.article-table thead,
+			.article-table tfoot {
+				border: thin solid black;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div id="contact custom-text">{{contact}}</div>
+
+			<div></div>
+
+			<div id="id">
+				<table>
+					<thead>
+						<tr>
+							<th>Rechnung</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Nr.:</td>
+							<td>{{invoiceIdentifier}}</td>
+						</tr>
+						<tr>
+							<td>Datum:</td>
+							<td>{{date}}</td>
+						</tr>
+						<tr>
+							<td>Kundennr.:</td>
+							<td>{{vendor.customId}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div id="customer">
+				<table>
+					<thead>
+						<tr>
+							<th>Leistungsempfänger</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>{{vendor.firstName}} {{vendor.lastName}}</td>
+						</tr>
+						<tr>
+							<td>{{vendor.address}}</td>
+						</tr>
+						<tr>
+							<td>{{vendor.zipCode}} {{vendor.city}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</header>
+
+		<main>
+			{{#each pages}}
+			<div class="page">
+				<div style="font-size: 8pt">
+					Diese Abkürzungen werden im Folgenden verwendet: Lieferdatum = LD, Stückpreis = SP
+				</div>
+				<div>Nachfolgende Lieferungen wurden durchgeführt:</div>
+				<table class="meta-row">
+					<tbody>
+						<tr>
+							<td>Seite: {{number}}</td>
+							<td>{{../invoice.identifier}}</td>
+							<td>Vom: {{../date}}</td>
+							<td>Kd.-Nr.: {{../vendor.customId}}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<table class="article-table">
+					<thead>
+						<tr>
+							<th>LD</th>
+							<th>SP (Netto)</th>
+							<th>SP (Brutto)</th>
+							<th>Menge</th>
+							<th>MwSt</th>
+							<th>Betrag (Netto)</th>
+							<th>Betrag (Brutto)</th>
+						</tr>
+						<tr>
+							<th></th>
+							<th>EUR</th>
+							<th>EUR</th>
+							<th></th>
+							<th>%</th>
+							<th>EUR</th>
+							<th>EUR</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#each rows}}
+						<tr>
+							{{#each this}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+						{{/each}}
+					</tbody>
+					<tfoot>
+						<tr>
+							<td>Gesamtlieferung</td>
+							{{#each summary}}
+							<td>{{this}}</td>
+							{{/each}}
+						</tr>
+					</tfoot>
+				</table>
+			</div>
+			{{/each}}
+		</main>
+	</body>
+</html>

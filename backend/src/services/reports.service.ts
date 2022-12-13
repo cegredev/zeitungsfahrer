@@ -3,11 +3,13 @@ import Big from "big.js";
 import { getVendorCatalog, getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { applyPrices, getArticleRecords, getDateRange } from "./records.service.js";
 import {
+	ArticleListingReport,
 	Column,
 	Page,
 	Report,
 	ReportDoc,
 	ReportedVendor,
+	ReportItem,
 	ReportItemDoc,
 	WeeklyBillReport,
 } from "../models/reports.model.js";
@@ -81,19 +83,6 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 		],
 		summary: [data.totalSupply, data.totalRemissions, data.totalSales],
 	};
-}
-
-interface ArticleListingReport {
-	owner: string;
-	items: ReportItem[];
-	totalSellNetto: Big;
-	totalSellBrutto: Big;
-}
-
-interface ReportItem {
-	mwst: number;
-	name: string;
-	rows: DefiniteRecord[];
 }
 
 function generateTotalSellOfItems(items: ReportItem[]) {

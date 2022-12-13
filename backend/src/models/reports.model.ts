@@ -1,4 +1,5 @@
 import Big from "big.js";
+import { DefiniteRecord } from "./records.model";
 import { SimpleVendor } from "./vendors.model";
 
 export type ReportType = "pdf" | "excel";
@@ -61,4 +62,17 @@ export interface ReportDoc {
 	body?: Page[];
 	totalPages: number;
 	summary: string[];
+}
+
+export interface ArticleListingReport {
+	owner: string;
+	items: ReportItem[];
+	totalSellNetto: Big;
+	totalSellBrutto: Big;
+}
+
+export interface ReportItem {
+	mwst: number;
+	name: string;
+	rows: DefiniteRecord[];
 }

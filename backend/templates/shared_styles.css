@@ -1,0 +1,39 @@
+/* Debugging, makes background-color visible */
+html {
+	-webkit-print-color-adjust: exact;
+	print-color-adjust: exact;
+}
+
+@page {
+	margin: 1cm;
+	height: 100vh;
+}
+
+div.page {
+	page-break-before: always;
+}
+
+div.page:first-of-type {
+	page-break-before: avoid;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0;
+	font-size: 10pt;
+}
+
+div.page {
+	height: 90vh;
+	position: relative;
+}
+
+h1 {
+	margin: 5px;
+	margin-bottom: 10px;
+}
+
+h3 {
+	margin: 5px;
+	font-weight: inherit;
+}
