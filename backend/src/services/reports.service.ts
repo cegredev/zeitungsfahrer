@@ -200,6 +200,12 @@ export async function createArticleListingReport(
 		},
 	];
 
+	const mulitMwstItems = new Set(
+		items
+			.filter((item) => items.findIndex((other) => other.name === item.name && other.mwst !== item.mwst) !== -1)
+			.map((item) => item.name)
+	);
+
 	return {
 		invoiceSystem,
 		itemSpecifier: owner,
@@ -254,7 +260,7 @@ export async function createArticleListingReport(
 			totalMarketBrutto = totalMarketBrutto.add(marketBrutto);
 
 			return {
-				name: `${item.name} (${item.mwst}%)`,
+				name: mulitMwstItems.has(item.name) ? `${item.name} (${item.mwst}%)` : item.name,
 				rows: invoiceSystem === 3 ? [] : rows,
 				summary: [
 					supply,

@@ -15,6 +15,10 @@
 				margin-bottom: 1cm;
 			}
 
+			div#contact {
+				text-align: left;
+			}
+
 			div#id {
 				display: table;
 			}
@@ -38,15 +42,26 @@
 			}
 
 			.article-table thead,
-			.article-table tfoot {
+			.article-table tbody tr:last-of-type {
 				border: thin solid black;
 				text-align: left;
+			}
+
+			tr.spacer-row {
+				padding-top: 1cm;
+			}
+
+			.article-name-cell {
+				padding-left: 0.5cm;
 			}
 		</style>
 	</head>
 	<body>
 		<header>
-			<div id="contact custom-text">{{contact}}</div>
+			<div id="contact">
+				<div style="margin: 0; font-weight: bold">Rechnungsaussteller</div>
+				<div class="custom-text">{{contact}}</div>
+			</div>
 
 			<div></div>
 
@@ -135,7 +150,14 @@
 							<th>EUR</th>
 						</tr>
 					</thead>
+
+					{{#each items}}
 					<tbody>
+						<tr>
+							<td colspan="100%" class="article-name-cell">
+								Beginn Lieferausstellung für <span style="font-weight: bold">{{name}}</span>
+							</td>
+						</tr>
 						{{#each rows}}
 						<tr>
 							{{#each this}}
@@ -143,15 +165,14 @@
 							{{/each}}
 						</tr>
 						{{/each}}
-					</tbody>
-					<tfoot>
 						<tr>
-							<td>Gesamtlieferung</td>
+							<td>Gesamtlieferung {{name}}</td>
 							{{#each summary}}
 							<td>{{this}}</td>
 							{{/each}}
 						</tr>
-					</tfoot>
+					</tbody>
+					{{/each}}
 				</table>
 			</div>
 			{{/each}}

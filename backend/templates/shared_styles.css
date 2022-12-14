@@ -10,22 +10,20 @@ html {
 }
 
 div.page {
+	height: 90vh;
+	position: relative;
 	page-break-before: always;
 }
 
 div.page:first-of-type {
 	page-break-before: avoid;
+	height: 70vh;
 }
 
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	margin: 0;
 	font-size: 10pt;
-}
-
-div.page {
-	height: 90vh;
-	position: relative;
 }
 
 h1 {
@@ -36,4 +34,8 @@ h1 {
 h3 {
 	margin: 5px;
 	font-weight: inherit;
+}
+
+.custom-text {
+	white-space: pre-wrap;
 }

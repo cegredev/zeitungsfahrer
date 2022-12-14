@@ -8,9 +8,9 @@ export interface InvoiceLink {
 }
 
 export interface InvoiceNr {
-	year: number;
-	week: number;
+	date: Date;
 	counter: number;
+	description: string;
 }
 
 export interface Invoice {

@@ -25,6 +25,15 @@ export const twoDecimalFormat = new Intl.NumberFormat("de-DE", {
 	maximumFractionDigits: 2,
 });
 
+export const twoDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {
+	maximumFractionDigits: 2,
+});
+
+export const fourDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {
+	maximumFractionDigits: 4,
+	minimumFractionDigits: 4,
+});
+
 export const dinA4ExcelLandscape: Partial<AddWorksheetOptions> = {
 	pageSetup: {
 		paperSize: 9,

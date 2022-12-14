@@ -3,12 +3,12 @@ import { createArticleListingReport, getVendorSalesReport, itemsToPages } from "
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
-import { twoDecimalFormat } from "../consts.js";
+import { twoDecimalFormatNoCurrency, fourDecimalFormatNoCurrency } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
 import { CustomInvoiceText, Invoice, InvoiceLink } from "../models/invoices.model.js";
 import pool, { RouteReport } from "../database.js";
-import { poolExecute } from "../util.js";
+import { mulWithMwst, poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
 import Big from "big.js";
 
@@ -33,51 +33,64 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 	const report = await getVendorSalesReport(vendorId, date, system);
 
 	const today = new Date();
-
-	const result = await pool.execute("INSERT INTO invoices (vendor_id, date) VALUES (?, ?)", [
+	let description = "" + date.getFullYear();
+	switch (system) {
+		case 0:
+			description += "-" + date.getMonth() + "-" + date.getDate();
+			break;
+		case 1:
+			description += "-" + getKW(date);
+			break;
+	}
+	const result = await pool.execute("INSERT INTO invoices (vendor_id, date, description) VALUES (?, ?, ?)", [
 		vendorId,
 		dayjs(today).format("YYYY-MM-DD"),
+		description,
 	]);
 
 	// @ts-ignore
 	const id: number = result[0].insertId;
 
-	let totalNetto = Big(0),
-		totalBrutto = Big(0),
-		totalSales = 0;
+	const newItems = report.items.map((item) => {
+		let totalNetto = Big(0),
+			totalBrutto = Big(0),
+			totalSales = 0;
 
-	const newItems = report.items.map((item) => ({
-		name: item.name,
-		rows: item.rows.map((row) => {
-			const netto = row.price.sell.mul(row.sales);
-			const brutto = netto.mul(row.price.mwst);
+		return {
+			name: item.name,
+			rows: item.rows.map((row) => {
+				const netto = row.price.sell.mul(row.sales);
+				const brutto = mulWithMwst(netto, row.price.mwst);
 
-			totalSales += row.sales;
-			totalNetto = totalNetto.add(netto);
-			totalBrutto = totalBrutto.add(brutto);
+				totalSales += row.sales;
+				totalNetto = totalNetto.add(netto);
+				totalBrutto = totalBrutto.add(brutto);
 
-			return [
-				row.date,
-				row.price.sell.toNumber(),
-				row.price.sell.mul(row.price.mwst).toNumber(),
-				row.sales,
-				row.price.mwst,
-				netto.toNumber(),
-				brutto.toNumber(),
-			];
-		}),
-		summary: ["", "", totalSales, "", totalNetto, totalBrutto],
-	}));
+				return [
+					row.date,
+					row.price.sell.toNumber(),
+					mulWithMwst(row.price.sell, row.price.mwst).toNumber(),
+					row.sales,
+					row.price.mwst,
+					netto.toNumber(),
+					brutto.toNumber(),
+				];
+			}),
+			summary: ["", "", totalSales, "", totalNetto, totalBrutto],
+		};
+	});
 
 	const pages = itemsToPages(newItems);
+
+	console.log(pages);
 
 	return {
 		vendor,
 		date: today,
 		nr: {
-			year: today.getFullYear(),
-			week: getKW(today),
+			date,
 			counter: id,
+			description,
 		},
 		pages,
 		totalPages: pages.length + 1,
@@ -92,27 +105,25 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 	const template = (await fs.readFile("./templates/new_invoice.html")).toString();
 
 	const sharedColumns: Column[] = [
-		{},
-		{},
-		{},
-		{ styler: twoDecimalFormat.format },
-		{ styler: twoDecimalFormat.format },
-		{ styler: twoDecimalFormat.format },
-		{ styler: twoDecimalFormat.format },
+		{ styler: twoDecimalFormatNoCurrency.format },
+		{ styler: twoDecimalFormatNoCurrency.format },
 	];
 
 	const columns = [
-		{
-			styler: (date: Date) => dayjs(date).format("DD.MM.YYYY"),
-		},
+		{ styler: (date: Date) => dayjs(date).format("DD.MM.YYYY") },
+		{ styler: fourDecimalFormatNoCurrency.format },
+		{ styler: fourDecimalFormatNoCurrency.format },
+		{},
+		{},
 		...sharedColumns,
 	];
 
-	const summaryColumns = [{}, ...sharedColumns];
+	const summaryColumns = [{}, {}, {}, {}, ...sharedColumns];
 
 	const html = populateTemplateHtml(template, {
 		...invoice,
 		date: dayjs(invoice.date).format("DD.MM.YYYY"),
+		invoiceIdentifier: invoice.nr.counter + "-" + invoice.nr.description,
 		pages: invoice.pages.map((page) => ({
 			...page,
 			items: page.items.map((item) => {
@@ -135,7 +146,7 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 }
 
 export async function storeInvoice(id: number, blob: Buffer): Promise<void> {
-	await poolExecute("UPDATE invoices SET pdf=? WHERE id=?", [blob, id]);
+	await poolExecute("UPDATE invoices SET  pdf=? WHERE id=?", [blob, id]);
 }
 
 export async function getCustomText(): Promise<CustomInvoiceText> {
@@ -154,8 +165,6 @@ export async function modifyText({ contact, byeText, payment }: CustomInvoiceTex
 		byeText,
 		payment,
 	]);
-
-	console.log(contact, byeText, payment);
 
 	return {
 		code: 200,

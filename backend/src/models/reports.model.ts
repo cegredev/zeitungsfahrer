@@ -33,7 +33,7 @@ export interface Column {
 export interface ReportItemDoc {
 	name?: string;
 	rows: any[][];
-	summary: (Big | number)[];
+	summary: (Big | number | string)[];
 }
 
 export interface Page {
