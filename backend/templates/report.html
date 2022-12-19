@@ -63,6 +63,10 @@
 			table {
 				width: 100%;
 			}
+
+			.summary-table {
+				margin-top: 1cm;
+			}
 		</style>
 	</head>
 	<body>
@@ -70,33 +74,6 @@
 			<h1>{{header.top}}</h1>
 			<h3>{{header.sub}} - {{header.itemSpecifier}}</h3>
 		</div>
-
-		{{#ifCond summaryColumns "!==" undefined}}
-		<table class="summary-table">
-			<thead>
-				{{#each summaryColumns}}
-				<th>{{this.header}}</th>
-				{{/each}}
-			</thead>
-			<tbody>
-				{{#each pages}} {{#each items}}
-				<tr>
-					<td style="font-weight: bold">{{this.name}}</td>
-					{{#each this.summary}}
-					<td>{{this}}</td>
-					{{/each}}
-				</tr>
-				{{/each}} {{/each}}
-
-				<tr style="font-weight: bold">
-					<td>Zusammenfassung</td>
-					{{#each summary}}
-					<td>{{this}}</td>
-					{{/each}}
-				</tr>
-			</tbody>
-		</table>
-		{{/ifCond}}
 
 		<article class="article-section">
 			{{#each pages}}
@@ -125,7 +102,33 @@
 						</tr>
 					</tbody>
 				</table>
-				{{/each}}
+				{{/each}} {{#if this.isLast}} {{#if ../summaryColumns}}
+
+				<table class="summary-table">
+					<thead>
+						{{#each ../summaryColumns}} {{#if this.header}}
+						<th>{{this.header}}</th>
+						{{/if}} {{/each}}
+					</thead>
+					<tbody>
+						{{#each ../pages}} {{#each items}}
+						<tr>
+							<td style="font-weight: bold">{{this.name}}</td>
+							{{#each this.summary}} {{#if this}}
+							<td>{{this}}</td>
+							{{/if}} {{/each}}
+						</tr>
+						{{/each}} {{/each}}
+
+						<tr style="font-weight: bold">
+							<td>Zusammenfassung</td>
+							{{#each ../summary}} {{#if this}}
+							<td>{{this}}</td>
+							{{/if}} {{/each}}
+						</tr>
+					</tbody>
+				</table>
+				{{/if}} {{/if}}
 			</div>
 			{{/each}}
 		</article>

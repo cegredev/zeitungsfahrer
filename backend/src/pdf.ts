@@ -32,6 +32,15 @@ Handlebars.registerHelper("ifCond", function (v1, operator, v2, options) {
 	}
 });
 
+Handlebars.registerHelper("print", function (v1, operator, v2, options) {
+	// @ts-ignore
+	const dis = this;
+
+	console.log(v1);
+
+	return v1.toString();
+});
+
 export function populateTemplateHtml(template: string, data: any, options?: any) {
 	const html = Handlebars.compile(template);
 	return encodeURIComponent(html(data));

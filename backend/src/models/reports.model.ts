@@ -39,6 +39,8 @@ export interface ReportItemDoc {
 export interface Page {
 	items: ReportItemDoc[];
 	number: number;
+	rowCount: number;
+	isLast?: boolean;
 }
 
 export interface Report {
@@ -46,6 +48,7 @@ export interface Report {
 	date: Date;
 	itemSpecifier?: string;
 	columns: Column[];
+	summaryRowColumns?: Column[];
 	summaryColumns?: Column[];
 	body: ReportItemDoc[];
 	summary: any[];
@@ -58,6 +61,7 @@ export interface ReportDoc {
 		itemSpecifier: string;
 	};
 	columns: Column[];
+	summaryRowColumns?: Column[];
 	summaryColumns?: Column[];
 	body?: Page[];
 	totalPages: number;
@@ -71,8 +75,11 @@ export interface ArticleListingReport {
 	totalSellBrutto: Big;
 }
 
+export interface VendorSalesReport extends ArticleListingReport {
+	nettoByMwst: Map<number, Big>;
+}
+
 export interface ReportItem {
-	mwst: number;
 	name: string;
 	rows: DefiniteRecord[];
 }

@@ -11,6 +11,7 @@ import {
 	ReportedVendor,
 	ReportItem,
 	ReportItemDoc,
+	VendorSalesReport,
 	WeeklyBillReport,
 } from "../models/reports.model.js";
 import { mulWithMwst, poolExecute } from "../util.js";
@@ -89,12 +90,12 @@ function generateTotalSellOfItems(items: ReportItem[]) {
 	let [totalSellNetto, totalSellBrutto] = [Big(0), Big(0)];
 
 	for (const item of items) {
-		const netto = item.rows
-			.map((record) => Big(record.sales).mul(record.price.sell))
-			.reduce((a, b) => a.add(b), Big(0));
+		for (const record of item.rows) {
+			const netto = record.price.sell.mul(record.sales);
 
-		totalSellNetto = totalSellNetto.add(netto);
-		totalSellBrutto = totalSellBrutto.add(mulWithMwst(netto, item.mwst));
+			totalSellNetto = totalSellNetto.add(netto);
+			totalSellBrutto = totalSellBrutto.add(mulWithMwst(netto, record.price.mwst));
+		}
 	}
 
 	return { totalSellNetto, totalSellBrutto };
@@ -104,15 +105,20 @@ export async function getVendorSalesReport(
 	vendorId: number,
 	date: Date,
 	invoiceSystem: number
-): Promise<ArticleListingReport> {
+): Promise<VendorSalesReport> {
 	const catalog = await getVendorCatalog(vendorId);
 	const articles = catalog.entries.filter((entry) => entry.included);
 	const [start, end] = getDateRange(date, invoiceSystem);
 
 	const items: ReportItem[] = [];
+	const nettoByMwst: Map<number, Big> = new Map();
 
 	for (const { articleId, articleName } of articles) {
-		const recordsByMwst = new Map<number, ReportItem>();
+		const item: ReportItem = {
+			name: articleName,
+			rows: [],
+		};
+		items.push(item);
 
 		const records = (await getArticleRecords(vendorId, articleId, start, end)).records
 			.filter((r) => !r.missing && r.supply > 0)
@@ -128,19 +134,16 @@ export async function getVendorSalesReport(
 			});
 
 		for (const record of records) {
-			let item = recordsByMwst.get(record.price.mwst);
-			if (item === undefined) {
-				item = {
-					mwst: record.price.mwst,
-					name: articleName,
-					rows: [],
-				};
+			let nettoPrice = nettoByMwst.get(record.price.mwst);
+			if (nettoPrice === undefined) {
+				nettoPrice = Big(0);
 
-				recordsByMwst.set(record.price.mwst, item);
-				items.push(item);
+				nettoByMwst.set(record.price.mwst, nettoPrice);
 			}
 
 			item.rows.push(record);
+
+			nettoByMwst.set(record.price.mwst, nettoPrice.add(record.price.sell.mul(record.sales)));
 		}
 	}
 
@@ -149,6 +152,7 @@ export async function getVendorSalesReport(
 	return {
 		owner: `${vendor.name} (Kundennr.: ${vendor.customId})`,
 		items,
+		nettoByMwst,
 		...generateTotalSellOfItems(items),
 	};
 }
@@ -161,7 +165,7 @@ export async function createArticleListingReport(
 	let [totalSupply, totalRemissions] = [0, 0];
 	let [totalSellNetto, totalSellBrutto, totalMarketNetto, totalMarketBrutto] = [Big(0), Big(0), Big(0), Big(0)];
 
-	const sharedColumns = [
+	const sharedColumnsA = [
 		{
 			header: "Lieferung",
 			width: 10,
@@ -174,6 +178,8 @@ export async function createArticleListingReport(
 			header: "Verkauf",
 			width: 10,
 		},
+	];
+	const sharedColumnsB = [
 		{
 			header: "Betrag (Netto)",
 			width: 15,
@@ -200,12 +206,6 @@ export async function createArticleListingReport(
 		},
 	];
 
-	const mulitMwstItems = new Set(
-		items
-			.filter((item) => items.findIndex((other) => other.name === item.name && other.mwst !== item.mwst) !== -1)
-			.map((item) => item.name)
-	);
-
 	return {
 		invoiceSystem,
 		itemSpecifier: owner,
@@ -215,41 +215,57 @@ export async function createArticleListingReport(
 				width: 30,
 				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
-			...sharedColumns,
+			...sharedColumnsA,
+			{ header: "MwSt", width: 5, style: { numFmt: '#0 "%"' }, styler: (num: any) => (num ? num + " %" : "") },
+			...sharedColumnsB,
+		],
+		summaryRowColumns: [
+			{ header: "Artikel", width: 30 },
+			...sharedColumnsA,
+			{ header: "MwSt", width: 5, style: { numFmt: '#0 "%"' }, styler: (num: any) => (num ? num + " %" : "") },
+			...sharedColumnsB.slice(0, sharedColumnsB.length - 2),
+			{ header: "Umsatz (Netto)", styler: twoDecimalFormat.format },
+			{ header: "Umsatz (Brutto)", styler: twoDecimalFormat.format },
 		],
 		summaryColumns: [
 			{ header: "Artikel", width: 30 },
-			...sharedColumns.slice(0, sharedColumns.length - 2),
+			...sharedColumnsA,
+			{ header: "", width: 0, style: { numFmt: "" }, styler: (num: any) => "" },
+			...sharedColumnsB.slice(0, sharedColumnsB.length - 2),
 			{ header: "Umsatz (Netto)", styler: twoDecimalFormat.format },
 			{ header: "Umsatz (Brutto)", styler: twoDecimalFormat.format },
 		],
 		body: items.map((item) => {
 			let [supply, remissions] = [0, 0];
 			let [sellNetto, marketNetto] = [Big(0), Big(0)];
+			let [sellBrutto, marketBrutto] = [Big(0), Big(0)];
 
 			const rows = item.rows.map((record) => {
 				const sellValue = record.sales > 0 ? Big(record.sales).mul(record.price!.sell) : Big(0);
 				const marketValue = record.sales > 0 ? Big(record.sales).mul(record.price!.marketSell) : Big(0);
+				const sellValueBrutto = mulWithMwst(sellValue, record.price.mwst);
+				const marketValueBrutto = mulWithMwst(marketValue, record.price.mwst);
 
 				supply += record.supply;
 				remissions += record.remissions;
 
 				sellNetto = sellNetto.add(sellValue);
 				marketNetto = marketNetto.add(marketValue);
+				sellBrutto = sellBrutto.add(sellValueBrutto);
+				marketBrutto = marketBrutto.add(marketValueBrutto);
 
 				return [
 					record.date,
 					record.supply,
 					record.remissions,
 					record.sales,
+					record.price.mwst,
 					sellValue.toNumber(),
-					sellValue.eq(0) ? 0 : mulWithMwst(marketValue, item.mwst).toNumber(),
+					sellValue.eq(0) ? 0 : mulWithMwst(sellValue, record.price.mwst).toNumber(),
 					record.price.marketSell,
-					mulWithMwst(Big(record.price.marketSell), item.mwst).toNumber(),
+					mulWithMwst(Big(record.price.marketSell), record.price.mwst).toNumber(),
 				];
 			});
-
-			const [sellBrutto, marketBrutto] = [mulWithMwst(sellNetto, item.mwst), mulWithMwst(marketNetto, item.mwst)];
 
 			totalSupply += supply;
 			totalRemissions += remissions;
@@ -260,12 +276,13 @@ export async function createArticleListingReport(
 			totalMarketBrutto = totalMarketBrutto.add(marketBrutto);
 
 			return {
-				name: mulitMwstItems.has(item.name) ? `${item.name} (${item.mwst}%)` : item.name,
+				name: item.name,
 				rows: invoiceSystem === 3 ? [] : rows,
 				summary: [
 					supply,
 					remissions,
 					supply - remissions,
+					"",
 					sellNetto.toNumber(),
 					sellBrutto.toNumber(),
 					marketNetto.toNumber(),
@@ -278,6 +295,7 @@ export async function createArticleListingReport(
 			totalSupply,
 			totalRemissions,
 			totalSupply - totalRemissions,
+			"",
 			totalSellNetto.toNumber(),
 			totalSellBrutto.toNumber(),
 			totalMarketNetto.toNumber(),
@@ -294,7 +312,10 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 	const items: ReportItem[] = [];
 
 	for (const { id, name } of articles) {
-		const recordsByMwst = new Map<number, ReportItem>();
+		const item: ReportItem = {
+			name,
+			rows: [],
+		};
 
 		const existingRecords = (
 			await poolExecute<Record>(
@@ -339,18 +360,6 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 		for (const record of definiteRecords) {
 			if (record.supply === 0) continue;
 
-			let item = recordsByMwst.get(record.price.mwst);
-			if (item === undefined) {
-				item = {
-					mwst: record.price.mwst,
-					name,
-					rows: [],
-				};
-
-				recordsByMwst.set(record.price.mwst, item);
-				items.push(item);
-			}
-
 			item.rows.push(record);
 		}
 	}
@@ -387,8 +396,11 @@ export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport>
 	};
 }
 
-export function itemsToPages(items: ReportItemDoc[]): Page[] {
+export function itemsToPages(items: ReportItemDoc[], invoice: boolean): Page[] {
 	const maxRowsPerPage = 40;
+
+	const maxRowsFirstPage = maxRowsPerPage - (invoice ? 10 : 2);
+	const maxRowsLastPage = maxRowsPerPage - (invoice ? items.length * 4 : items.length + 1);
 
 	const pages: Page[] = [];
 
@@ -397,19 +409,27 @@ export function itemsToPages(items: ReportItemDoc[]): Page[] {
 		const itemRowCount = item.rows.length + 1;
 		let newRowCount = currentRows + itemRowCount;
 
-		if (newRowCount > maxRowsPerPage) {
-			pages.push({ items: [], number: pages.length + 2 });
+		let maxRows = pages.length > 1 ? maxRowsPerPage : maxRowsFirstPage;
+
+		if (newRowCount > maxRows) {
+			pages.push({ items: [], number: pages.length + 1, isLast: false, rowCount: 0 });
 			newRowCount = itemRowCount;
 
-			if (itemRowCount > maxRowsPerPage) {
-				console.error(
-					`Warning: Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRowsPerPage})!`
-				);
+			if (itemRowCount > maxRows) {
+				console.error(`Warning: Item ${item.name} has more rows(${itemRowCount}) than allowed(${maxRows})!`);
 			}
 		}
 
-		pages[pages.length - 1].items.push(item);
-		currentRows = newRowCount;
+		const page = pages[pages.length - 1];
+		page.items.push(item);
+		page.rowCount = currentRows = newRowCount;
+	}
+
+	const lastPage = pages[pages.length - 1];
+	if (lastPage.rowCount <= maxRowsLastPage) {
+		lastPage.isLast = true;
+	} else {
+		pages.push({ items: [], number: lastPage.number + 1, rowCount: 0, isLast: true });
 	}
 
 	return pages;
@@ -476,7 +496,7 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 			break;
 	}
 
-	const pages = itemsToPages(report.body);
+	const pages = itemsToPages(report.body, false);
 
 	return {
 		header: {
@@ -485,6 +505,7 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 			itemSpecifier,
 		},
 		columns: report.columns,
+		summaryRowColumns: report.summaryRowColumns,
 		summaryColumns: report.summaryColumns,
 		body: pages,
 		totalPages: pages.length + 1,
@@ -563,18 +584,21 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 	const template = (await fs.readFile("./templates/report.html")).toString();
 
+	console.log(doc);
+
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",
 		header: doc.header,
 		summaryColumns: doc.summaryColumns,
 		pages:
 			doc.body?.map((page) => ({
+				...page,
 				items: page.items.map((item) => {
 					return {
 						columns: doc.columns,
 						...item,
 						rows: item.rows.map((row) => applyStyler(row, doc.columns)),
-						summary: applyStyler(item.summary, doc.columns),
+						summary: applyStyler(item.summary, doc.summaryRowColumns!),
 					};
 				}),
 			})) || [],

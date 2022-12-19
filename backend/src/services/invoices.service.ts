@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { twoDecimalFormatNoCurrency, fourDecimalFormatNoCurrency } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
-import { CustomInvoiceText, Invoice, InvoiceLink } from "../models/invoices.model.js";
+import { CustomInvoiceText, Invoice, InvoiceLink, SingleMwstSummary } from "../models/invoices.model.js";
 import pool, { RouteReport } from "../database.js";
 import { mulWithMwst, poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
@@ -80,9 +80,21 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 		};
 	});
 
-	const pages = itemsToPages(newItems);
+	let entireBrutto = Big(0);
 
-	console.log(pages);
+	const mwstSummaries: SingleMwstSummary[] = [...report.nettoByMwst.entries()].map(([mwst, nettoTotal]) => {
+		const bruttoTotal = mulWithMwst(nettoTotal, mwst);
+		entireBrutto = entireBrutto.add(bruttoTotal);
+
+		return {
+			mwst,
+			nettoTotal,
+			mwstCut: bruttoTotal.sub(nettoTotal),
+			bruttoTotal,
+		};
+	});
+
+	const pages = itemsToPages(newItems, true);
 
 	return {
 		vendor,
@@ -92,6 +104,10 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 			counter: id,
 			description,
 		},
+		mwstSummary: {
+			totalBrutto: entireBrutto,
+			summaries: mwstSummaries,
+		},
 		pages,
 		totalPages: pages.length + 1,
 		summary: [],
@@ -100,6 +116,8 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 
 export async function createInvoicePDF(vendorId: number, date: Date, system: number): Promise<Buffer> {
 	const invoice = await getInvoiceData(vendorId, date, system);
+
+	console.log(invoice);
 
 	const customText = await getCustomText();
 	const template = (await fs.readFile("./templates/new_invoice.html")).toString();
@@ -135,6 +153,16 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 			}),
 		})),
 		summary: applyStyler(invoice.summary, summaryColumns),
+		mwstSummary: {
+			...invoice.mwstSummary,
+			totalBrutto: twoDecimalFormatNoCurrency.format(invoice.mwstSummary.totalBrutto.toNumber()),
+			summaries: invoice.mwstSummary.summaries.map((summary) => ({
+				...summary,
+				nettoTotal: twoDecimalFormatNoCurrency.format(summary.nettoTotal.toNumber()),
+				mwstCut: twoDecimalFormatNoCurrency.format(summary.mwstCut.toNumber()),
+				bruttoTotal: twoDecimalFormatNoCurrency.format(summary.bruttoTotal.toNumber()),
+			})),
+		},
 		...customText,
 	});
 

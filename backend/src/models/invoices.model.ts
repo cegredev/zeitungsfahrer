@@ -13,10 +13,23 @@ export interface InvoiceNr {
 	description: string;
 }
 
+export interface SingleMwstSummary {
+	mwst: number;
+	nettoTotal: Big;
+	mwstCut: Big;
+	bruttoTotal: Big;
+}
+
+export interface MwstSummary {
+	totalBrutto: Big;
+	summaries: SingleMwstSummary[];
+}
+
 export interface Invoice {
 	vendor: Vendor;
 	date: Date;
 	nr: InvoiceNr;
+	mwstSummary: MwstSummary;
 	pages: Page[];
 	totalPages: number;
 	summary: any[];

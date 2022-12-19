@@ -35,7 +35,7 @@
 				text-align: center;
 			}
 
-			.article-table {
+			table {
 				width: 100%;
 				border: none;
 				border-collapse: collapse;
@@ -53,6 +53,15 @@
 
 			.article-name-cell {
 				padding-left: 0.5cm;
+			}
+
+			.summary-region {
+				width: 90%;
+				display: grid;
+				grid-template-columns: 3fr 1fr 0.5fr 1fr;
+				margin: 0.3cm;
+				border: black 1px solid;
+				padding: 0.1cm;
 			}
 		</style>
 	</head>
@@ -174,8 +183,42 @@
 					</tbody>
 					{{/each}}
 				</table>
+
+				{{#if isLast}}
+				<div>
+					{{#each ../mwstSummary.summaries}}
+					<div class="summary-region">
+						<div>Zusammenstellung für {{mwst}} % MwSt</div>
+						<div>Netto</div>
+						<div>EUR</div>
+						<div>{{nettoTotal}}</div>
+
+						<div></div>
+						<div>+ {{mwst}} % MwSt</div>
+						<div>EUR</div>
+						<div>{{mwstCut}}</div>
+
+						<div></div>
+						<div>Brutto</div>
+						<div>EUR</div>
+						<div>{{bruttoTotal}}</div>
+					</div>
+					{{/each}}
+
+					<div class="summary-region">
+						<div>Rechnungsgesamtbetrag</div>
+						<div></div>
+						<div>EUR</div>
+						<div>{{../mwstSummary.totalBrutto}}</div>
+					</div>
+				</div>
+
+				<div id="bye-text" class="custom-text">{{../byeText}}</div>
+				{{/if}}
 			</div>
 			{{/each}}
+
+			<div id="payment" class="custom-text">{{payment}}</div>
 		</main>
 	</body>
 </html>
