@@ -20,7 +20,14 @@ function firstWeekStart(year: number): Date {
 export function getKW(date: Date): number {
 	const firstWeek = firstWeekStart(date.getFullYear());
 
+	// If it's Sunday, subtract one week
+	if (date.getDay() === 0) date = dayjs(date).subtract(1, "week").toDate();
+
 	date = dayjs(normalizeDate(date)).set("day", 4).toDate();
+
+	if (firstWeek.getTime() > date.getTime()) {
+		return getKW(dayjs(firstWeek).subtract(1, "week").toDate());
+	}
 
 	return Math.ceil(dayjs(date).diff(firstWeek, "weeks")) + 1;
 }
