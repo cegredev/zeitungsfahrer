@@ -11,6 +11,7 @@ function YearSelection({ date, setDate }: Props) {
 		<NumberInput
 			style={{ maxWidth: "3rem" }}
 			min={1971}
+			value={date.getFullYear()}
 			customProps={{
 				parse: parseInt,
 				startValue: date.getFullYear(),
