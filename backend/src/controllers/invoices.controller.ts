@@ -5,15 +5,20 @@ import {
 	deleteInvoice,
 	getCustomText,
 	getInvoice,
+	getInvoiceMeta,
 	getInvoices,
 	modifyText,
 } from "../services/invoices.service.js";
 import { downloadPDFHandler, handler, validateVendorAccess } from "./controllers.js";
 
 export async function getInvoiceController(req: Request<{ id: string }>, res: Response) {
-	if (!validateVendorAccess(req, parseInt(req.params.id))) return res.sendStatus(403);
+	const invoiceId = parseInt(req.params.id);
 
-	await downloadPDFHandler(await getInvoice(parseInt(req.params.id)), res);
+	const invoiceMeta = await getInvoiceMeta(invoiceId);
+
+	if (!validateVendorAccess(req, invoiceMeta.vendorId)) return res.sendStatus(403);
+
+	await downloadPDFHandler(await getInvoice(invoiceId), res);
 }
 
 export async function getInvoicesController(

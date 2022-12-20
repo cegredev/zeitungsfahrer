@@ -20,7 +20,7 @@ function WeeklyBillView() {
 				date={date}
 				filePrefix={"Abrechnung"}
 				invoiceSystem={1}
-				reportsPath={"weeklyBIll"}
+				reportsPath={"weeklyBill"}
 				type={reportType}
 			/>
 		</div>

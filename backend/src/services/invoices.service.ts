@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { twoDecimalFormatNoCurrency, fourDecimalFormatNoCurrency } from "../consts.js";
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
-import { CustomInvoiceText, Invoice, InvoiceLink, SingleMwstSummary } from "../models/invoices.model.js";
+import { CustomInvoiceText, Invoice, InvoiceLink, InvoiceMeta, SingleMwstSummary } from "../models/invoices.model.js";
 import pool, { RouteReport } from "../database.js";
 import { mulWithMwst, poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
@@ -16,7 +16,7 @@ export async function getInvoices(vendorId: number, date: Date, system: number):
 	const dateRange = getDateRange(date, system);
 
 	const data = await poolExecute<InvoiceLink>(
-		"SELECT id, date FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, id DESC",
+		"SELECT id, date, description FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, id DESC",
 		[vendorId, ...dateRange]
 	);
 
@@ -26,6 +26,11 @@ export async function getInvoices(vendorId: number, date: Date, system: number):
 export async function getInvoice(id: number): Promise<Buffer> {
 	const response = await poolExecute<{ pdf: Buffer }>("SELECT pdf FROM invoices WHERE id=?", [id]);
 	return response[0].pdf;
+}
+
+export async function getInvoiceMeta(id: number): Promise<InvoiceMeta> {
+	const response = await poolExecute<InvoiceMeta>("SELECT id, vendor_id as vendorId FROM invoices WHERE id=?", [id]);
+	return response[0];
 }
 
 export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
@@ -120,7 +125,7 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 	console.log(invoice);
 
 	const customText = await getCustomText();
-	const template = (await fs.readFile("./templates/new_invoice.html")).toString();
+	const template = (await fs.readFile("./templates/invoice.html")).toString();
 
 	const sharedColumns: Column[] = [
 		{ styler: twoDecimalFormatNoCurrency.format },
