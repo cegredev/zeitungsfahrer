@@ -6,18 +6,27 @@ import {
 	createArticleListingReport,
 	getVendorSalesReport,
 	getAllSalesReport,
-	createExcelReport,
+	createMultiPageExcelReport,
 	createPDFReport,
 	createWeeklyBillReport,
 	getWeeklyBillReport,
+	createSinglePageExcelReport,
 } from "../services/reports.service.js";
 import { downloadExcelHandler, downloadPDFHandler } from "./controllers.js";
 
-async function downloadReportHandler(generator: () => Promise<Report>, type: ReportType, res: Response) {
+async function downloadReportHandler(
+	generator: () => Promise<Report>,
+	type: ReportType,
+	res: Response,
+	singlePage?: boolean
+) {
 	const doc = await createReportDoc(await generator());
 
 	if (type === "excel") {
-		downloadExcelHandler(await createExcelReport(doc), res);
+		downloadExcelHandler(
+			singlePage ? await createSinglePageExcelReport(doc) : await createMultiPageExcelReport(doc),
+			res
+		);
 	} else {
 		downloadPDFHandler(await createPDFReport(doc), res);
 	}
@@ -35,7 +44,8 @@ export async function getArticleSalesReportController(
 				parseInt(req.query.invoiceSystem)
 			),
 		req.query.type,
-		res
+		res,
+		true
 	);
 }
 
@@ -81,6 +91,7 @@ export async function getWeeklyBillReportController(
 	await downloadReportHandler(
 		async () => await createWeeklyBillReport(await getWeeklyBillReport(date), date),
 		req.query.type,
-		res
+		res,
+		true
 	);
 }

@@ -122,8 +122,6 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 export async function createInvoicePDF(vendorId: number, date: Date, system: number): Promise<Buffer> {
 	const invoice = await getInvoiceData(vendorId, date, system);
 
-	console.log(invoice);
-
 	const customText = await getCustomText();
 	const template = (await fs.readFile("./templates/invoice.html")).toString();
 
@@ -186,8 +184,6 @@ export async function getCustomText(): Promise<CustomInvoiceText> {
 	const res = await poolExecute<{ contact: string; byeText: string; payment: string }>(
 		"SELECT contact, bye_text as byeText, payment FROM invoice_profiles"
 	);
-
-	console.log(res[0]);
 
 	return res[0];
 }

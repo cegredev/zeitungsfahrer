@@ -22,12 +22,13 @@ import { DefiniteRecord, Record } from "../models/records.model.js";
 import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
+import { boldRow } from "../excel.js";
 
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
 
 	const records = (
-		await poolExecute<{ date: Date; supply: string; remissions: string; sales: number }>(
+		await poolExecute<{ date: Date; supply: string; remissions: string; sales: string }>(
 			`SELECT date, SUM(supply) as supply, SUM(remissions) as remissions, SUM(supply - remissions) AS sales
 		 FROM records WHERE article_id=? AND date BETWEEN ? AND ?
 		 GROUP BY date
@@ -35,7 +36,12 @@ export async function getArticleSalesReport(articleId: number, date: Date, invoi
 		 `,
 			[articleId, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
 		)
-	).map((record) => ({ ...record, supply: parseInt(record.supply), remissions: parseInt(record.remissions) }));
+	).map((record) => ({
+		...record,
+		supply: parseInt(record.supply),
+		remissions: parseInt(record.remissions),
+		sales: parseInt(record.sales),
+	}));
 
 	const [totalSupply, totalRemissions] = records
 		.filter((r) => r.supply > 0)
@@ -53,6 +59,21 @@ export async function getArticleSalesReport(articleId: number, date: Date, invoi
 export async function createArticleSalesReport(articleId: number, date: Date, invoiceSystem: number): Promise<Report> {
 	const data = await getArticleSalesReport(articleId, date, invoiceSystem);
 
+	const sharedColumns = [
+		{
+			header: "Lieferung",
+			width: 10,
+		},
+		{
+			header: "Remissionen",
+			width: 15,
+		},
+		{
+			header: "Verkauf",
+			width: 10,
+		},
+	];
+
 	return {
 		invoiceSystem,
 		itemSpecifier: (await getArticleInfo(articleId)).name,
@@ -62,19 +83,9 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 				width: 20,
 				styler: (value) => dayjs(value).format("DD.MM.YYYY"),
 			},
-			{
-				header: "Lieferung",
-				width: 10,
-			},
-			{
-				header: "Remissionen",
-				width: 15,
-			},
-			{
-				header: "Verkauf",
-				width: 10,
-			},
+			...sharedColumns,
 		],
+		summaryRowColumns: sharedColumns,
 		date,
 		body: [
 			{
@@ -121,7 +132,7 @@ export async function getVendorSalesReport(
 		items.push(item);
 
 		const records = (await getArticleRecords(vendorId, articleId, start, end)).records
-			.filter((r) => !r.missing && r.supply > 0)
+			.filter((r) => !r.missing && r.supply > r.remissions)
 			.map((r) => {
 				return {
 					articleId: r.articleId,
@@ -316,6 +327,7 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 			name,
 			rows: [],
 		};
+		items.push(item);
 
 		const existingRecords = (
 			await poolExecute<Record>(
@@ -397,6 +409,8 @@ export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport>
 }
 
 export function itemsToPages(items: ReportItemDoc[], invoice: boolean): Page[] {
+	if (items.length === 0) return [];
+
 	const maxRowsPerPage = 40;
 
 	const maxRowsFirstPage = maxRowsPerPage - (invoice ? 10 : 2);
@@ -436,6 +450,21 @@ export function itemsToPages(items: ReportItemDoc[], invoice: boolean): Page[] {
 }
 
 export async function createWeeklyBillReport(report: WeeklyBillReport, date: Date): Promise<Report> {
+	const sharedColumns = [
+		{
+			header: "Betrag (Netto)",
+			width: 20,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+		{
+			header: "Betrag (Brutto)",
+			width: 20,
+			style: { numFmt: '#,##0.00 "€"' },
+			styler: twoDecimalFormat.format,
+		},
+	];
+
 	return {
 		date,
 		invoiceSystem: 1,
@@ -455,19 +484,9 @@ export async function createWeeklyBillReport(report: WeeklyBillReport, date: Dat
 				header: "Händler",
 				width: 15,
 			},
-			{
-				header: "Betrag (Netto)",
-				width: 20,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
-			{
-				header: "Betrag (Brutto)",
-				width: 20,
-				style: { numFmt: '#,##0.00 "€"' },
-				styler: twoDecimalFormat.format,
-			},
+			...sharedColumns,
 		],
+		summaryRowColumns: sharedColumns,
 		summary: [report.totalNetto.toNumber(), report.totalBrutto.toNumber()],
 	};
 }
@@ -513,9 +532,31 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	};
 }
 
-export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workbook> {
+export async function createSinglePageExcelReport(doc: ReportDoc): Promise<ExcelJS.Workbook> {
 	const workbook = new ExcelJS.Workbook();
-	const mainSheet = workbook.addWorksheet("Bericht", dinA4ExcelLandscape);
+	const mainSheet = workbook.addWorksheet(doc.header.itemSpecifier, dinA4ExcelLandscape);
+
+	mainSheet.columns = doc.columns;
+
+	if (doc.body !== undefined)
+		doc.body![0].items.forEach((item) => {
+			item.rows.forEach((row, i) => {
+				mainSheet.insertRow(2 + i, row);
+			});
+		});
+
+	const summaryRow = 1 + (doc.body ? doc.body![0].items[0].rows.length : 0) + 1;
+	mainSheet.insertRow(summaryRow, ["Zusammenfassung", ...doc.summary]);
+
+	boldRow(1, doc, mainSheet);
+	boldRow(summaryRow, doc, mainSheet);
+
+	return workbook;
+}
+
+export async function createMultiPageExcelReport(doc: ReportDoc): Promise<ExcelJS.Workbook> {
+	const workbook = new ExcelJS.Workbook();
+	const mainSheet = workbook.addWorksheet("Zusammenfassung", dinA4ExcelLandscape);
 
 	const hasMainSummary = doc.summaryColumns !== undefined;
 
@@ -532,59 +573,42 @@ export async function createExcelReport(doc: ReportDoc): Promise<ExcelJS.Workboo
 		};
 	});
 
-	const boldRow = (row: number, sheet: ExcelJS.Worksheet) => {
-		for (let column = 1; column <= doc.columns.length; column++) {
-			const cell = sheet.getCell(row, column);
-			cell.style = {
-				...cell.style,
-				font: {
-					...cell.style.font,
-					bold: true,
-				},
-			};
-		}
-	};
-
 	mainSheet.mergeCells("A3:C3");
 
 	const mainSummaryHeaderRow = 5;
 
-	doc.body
-		?.map((r) => r.items)
-		.reduce((a, b) => a.concat(b), [])
-		.forEach((item, i) => {
-			const itemSheet = workbook.addWorksheet(item.name, dinA4ExcelLandscape);
-			itemSheet.columns = doc.columns;
+	const items = doc.body?.map((r) => r.items).reduce((a, b) => a.concat(b), []);
+	items?.forEach((item, i) => {
+		const itemSheet = workbook.addWorksheet(item.name, dinA4ExcelLandscape);
+		itemSheet.columns = doc.columns;
 
-			item.rows.forEach((row, i) => {
-				itemSheet.insertRow(2 + i, row);
-			});
-
-			const summaryRow = 2 + item.rows.length;
-			itemSheet.insertRow(summaryRow, ["Zusammenfassung", ...item.summary]);
-
-			if (hasMainSummary) mainSheet.insertRow(mainSummaryHeaderRow + i + 1, [item.name, ...item.summary]);
-
-			for (const rowNum of [1, summaryRow]) {
-				boldRow(rowNum, itemSheet);
-			}
+		item.rows.forEach((row, i) => {
+			itemSheet.insertRow(2 + i, row);
 		});
 
-	const summaryRow = mainSummaryHeaderRow + (doc.body?.length || 0) + 1;
+		const summaryRow = 2 + item.rows.length;
+		itemSheet.insertRow(summaryRow, ["Zusammenfassung", ...item.summary]);
+
+		if (hasMainSummary) mainSheet.insertRow(mainSummaryHeaderRow + i + 1, [item.name, ...item.summary]);
+
+		for (const rowNum of [1, summaryRow]) {
+			boldRow(rowNum, doc, itemSheet);
+		}
+	});
+
+	const summaryRow = mainSummaryHeaderRow + (items?.length || 0) + 1;
 	const summary = ["Zusammenfassung", ...doc.summary];
 
 	if (hasMainSummary) mainSheet.insertRow(summaryRow, summary);
 
-	boldRow(mainSummaryHeaderRow, mainSheet);
-	boldRow(summaryRow, mainSheet);
+	boldRow(mainSummaryHeaderRow, doc, mainSheet);
+	boldRow(summaryRow, doc, mainSheet);
 
 	return workbook;
 }
 
 export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 	const template = (await fs.readFile("./templates/report.html")).toString();
-
-	console.log(doc);
 
 	const html = populateTemplateHtml(template, {
 		title: "Bericht",

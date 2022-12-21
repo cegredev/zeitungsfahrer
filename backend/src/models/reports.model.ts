@@ -83,3 +83,22 @@ export interface ReportItem {
 	name: string;
 	rows: DefiniteRecord[];
 }
+
+export interface GenericItem<D> {
+	identifier: number;
+	records: D[];
+}
+
+/**
+ * D: Data type
+ */
+export interface GenericReport<D, S = D> {
+	identifier: number;
+	items: GenericItem<D>[];
+	summary: S;
+}
+
+export interface NewVendorSalesReport
+	extends GenericReport<DefiniteRecord, { totalSellNetto: Big; totalSellBrutto: Big }> {
+	nettoByMwst: Map<number, Big>;
+}
