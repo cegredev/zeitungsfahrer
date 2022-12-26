@@ -7,9 +7,10 @@ import { authTokenAtom } from "../stores/utility.store";
 interface Props {
 	path: string;
 	name: string;
+	format: string;
 }
 
-function DownloadLink({ path, name }: Props) {
+function DownloadLink({ path, name, format }: Props) {
 	const [token] = useAtom(authTokenAtom);
 
 	return (
@@ -21,7 +22,7 @@ function DownloadLink({ path, name }: Props) {
 				console.log(response.data);
 
 				const fileUrl = URL.createObjectURL(response.data);
-				openAndDownloadFile(name, ".pdf", fileUrl);
+				openAndDownloadFile(name, "." + format, fileUrl);
 			}}
 		>
 			{name}

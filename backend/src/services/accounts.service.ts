@@ -50,7 +50,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 			home = "/accounts";
 			break;
 		case "vendor":
-			home = "/invoices/" + data.id;
+			home = "/documents/" + data.id;
 			break;
 		default:
 			home = "/badrole";

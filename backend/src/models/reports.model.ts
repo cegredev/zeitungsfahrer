@@ -44,6 +44,7 @@ export interface Page {
 }
 
 export interface Report {
+	id?: number;
 	invoiceSystem: number;
 	date: Date;
 	itemSpecifier?: string;
@@ -55,6 +56,7 @@ export interface Report {
 }
 
 export interface ReportDoc {
+	vendorId?: number;
 	header: {
 		top: string;
 		sub: string;
@@ -69,6 +71,7 @@ export interface ReportDoc {
 }
 
 export interface ArticleListingReport {
+	id?: number;
 	owner: string;
 	items: ReportItem[];
 	totalSellNetto: Big;

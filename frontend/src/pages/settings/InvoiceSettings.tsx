@@ -13,7 +13,7 @@ function InvoiceSettings() {
 
 	React.useEffect(() => {
 		async function fetchSettings() {
-			const res = await GET<CustomInvoiceText>("/auth/main/invoices/modify", token!);
+			const res = await GET<CustomInvoiceText>("/auth/main/documents/templates/invoices", token!);
 			setCustomText(res.data);
 		}
 
@@ -74,7 +74,7 @@ function InvoiceSettings() {
 						<button
 							style={{ marginTop: 20 }}
 							onClick={async () => {
-								await PUT("/auth/main/invoices/modify", customText, token!);
+								await PUT("/auth/main/documents/templates/invoices", customText, token!);
 							}}
 						>
 							Speichern

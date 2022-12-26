@@ -11,12 +11,13 @@ import pool, { RouteReport } from "../database.js";
 import { mulWithMwst, poolExecute } from "../util.js";
 import { getDateRange } from "./records.service.js";
 import Big from "big.js";
+import { createDocument, deleteDocument, getDocument, storeDocument } from "./documents.service.js";
 
 export async function getInvoices(vendorId: number, date: Date, system: number): Promise<InvoiceLink[]> {
 	const dateRange = getDateRange(date, system);
 
 	const data = await poolExecute<InvoiceLink>(
-		"SELECT id, date, description FROM invoices WHERE vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, id DESC",
+		"SELECT id, date, description FROM documents WHERE doc_type='invoice' AND vendor_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, id DESC",
 		[vendorId, ...dateRange]
 	);
 
@@ -24,12 +25,16 @@ export async function getInvoices(vendorId: number, date: Date, system: number):
 }
 
 export async function getInvoice(id: number): Promise<Buffer> {
-	const response = await poolExecute<{ pdf: Buffer }>("SELECT pdf FROM invoices WHERE id=?", [id]);
-	return response[0].pdf;
+	return await (
+		await getDocument(id, "invoice")
+	).data;
 }
 
 export async function getInvoiceMeta(id: number): Promise<InvoiceMeta> {
-	const response = await poolExecute<InvoiceMeta>("SELECT id, vendor_id as vendorId FROM invoices WHERE id=?", [id]);
+	const response = await poolExecute<InvoiceMeta>(
+		"SELECT id, vendor_id as vendorId FROM documents WHERE doc_type='invoice' AND id=?",
+		[id]
+	);
 	return response[0];
 }
 
@@ -47,14 +52,8 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 			description += "-" + getKW(date);
 			break;
 	}
-	const result = await pool.execute("INSERT INTO invoices (vendor_id, date, description) VALUES (?, ?, ?)", [
-		vendorId,
-		dayjs(today).format("YYYY-MM-DD"),
-		description,
-	]);
 
-	// @ts-ignore
-	const id: number = result[0].insertId;
+	const id = await createDocument("invoice", vendorId, today, "pdf", description);
 
 	const newItems = report.items.map((item) => {
 		let totalNetto = Big(0),
@@ -171,13 +170,9 @@ export async function createInvoicePDF(vendorId: number, date: Date, system: num
 
 	const pdf = await generatePDF(html);
 
-	await storeInvoice(invoice.nr.counter, pdf);
+	await storeDocument(invoice.nr.counter, pdf, "invoice");
 
 	return pdf;
-}
-
-export async function storeInvoice(id: number, blob: Buffer): Promise<void> {
-	await poolExecute("UPDATE invoices SET  pdf=? WHERE id=?", [blob, id]);
 }
 
 export async function getCustomText(): Promise<CustomInvoiceText> {
@@ -201,7 +196,7 @@ export async function modifyText({ contact, byeText, payment }: CustomInvoiceTex
 }
 
 export async function deleteInvoice(id: number): Promise<RouteReport> {
-	await poolExecute("DELETE FROM invoices WHERE id=?", [id]);
+	await deleteDocument(id, "invoice");
 
 	return { code: 200 };
 }

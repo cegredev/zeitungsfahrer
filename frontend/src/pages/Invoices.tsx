@@ -1,7 +1,7 @@
 import React from "react";
-import { InvoiceLink } from "backend/src/models/invoices.model";
+import { DocMeta } from "backend/src/models/documents.model";
 import { useAtom } from "jotai";
-import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
+import { userInfoAtom } from "../stores/utility.store";
 import { DELETE, GET, GET_BLOB } from "../api";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import { useParams } from "react-router-dom";
@@ -18,45 +18,45 @@ import dayjs from "dayjs";
 const today = new Date();
 
 function Invoices() {
-	const id = parseInt(useParams().id || "0");
+	const vendorId = parseInt(useParams().id || "0");
 
 	const [date, setDate] = React.useState(today);
 	const [userInfo] = useAtom(userInfoAtom);
 
-	const [invoices, setInvoices] = useImmer<InvoiceLink[][]>([]);
+	const [docs, setDocs] = useImmer<DocMeta[][]>([]);
 	const [vendor, setVendor] = React.useState<SimpleVendor | undefined>();
 
 	const currentMonth = date.getMonth();
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const invoicesRes = await GET<InvoiceLink[]>(
-				`/auth/${userInfo!.role}/invoices/${id}?date=${dayjs(date).format("YYYY-MM-DD")}&system=3`,
+			const docRes = await GET<DocMeta[]>(
+				`/auth/${userInfo!.role}/documents/${vendorId}?date=${dayjs(date).format("YYYY-MM-DD")}&system=3`,
 				userInfo!.token
 			);
 
-			const invoicesByMonth: InvoiceLink[][] = Array(currentMonth + 1)
+			const docsByMonth: DocMeta[][] = Array(currentMonth + 1)
 				.fill(null)
 				.map(() => []);
 
-			for (const invoice of invoicesRes.data.map((invoice) => ({
-				...invoice,
-				date: new Date(invoice.date),
+			for (const doc of docRes.data.map((doc) => ({
+				...doc,
+				date: new Date(doc.date),
 			}))) {
-				invoicesByMonth[currentMonth - invoice.date.getMonth()].push(invoice);
+				docsByMonth[currentMonth - doc.date.getMonth()].push(doc);
 			}
 
-			setInvoices(invoicesByMonth);
+			setDocs(docsByMonth);
 
 			const vendorRes = await GET<SimpleVendor>(
-				`/auth/${userInfo!.role}/vendors/${id}?mode=simple`,
+				`/auth/${userInfo!.role}/vendors/${vendorId}?mode=simple`,
 				userInfo!.token
 			);
 			setVendor(vendorRes.data);
 		}
 
 		fetchData();
-	}, [id, setInvoices, setVendor, currentMonth, date, userInfo]);
+	}, [vendorId, setDocs, setVendor, currentMonth, date, userInfo]);
 
 	return (
 		<div className="page" style={{ padding: 10 }}>
@@ -80,16 +80,15 @@ function Invoices() {
 							textAlign: "center",
 						}}
 					>
-						{invoices.map((arr, monthDesc) => (
+						{docs.map((arr, monthDesc) => (
 							<div key={monthDesc}>
 								<h3 style={{ margin: 5 }}>{months[currentMonth - monthDesc]}</h3>
-								{arr.map((invoice) => {
-									const invoiceName =
-										invoice.date.getFullYear() + "-" + getKW(invoice.date) + "-" + invoice.id;
+								{arr.map((doc) => {
+									const docName = doc.id + "-" + doc.description;
 
 									return (
 										<div
-											key={invoice.id}
+											key={docName}
 											style={{
 												display: "flex",
 												flexDirection: "row",
@@ -97,8 +96,11 @@ function Invoices() {
 											}}
 										>
 											<DownloadLink
-												path={`/auth/${userInfo!.role}/invoices/download/${invoice.id}`}
-												name={invoiceName}
+												path={`/auth/${userInfo!.role}/documents/download/${doc.type}/${
+													doc.id
+												}`}
+												name={docName}
+												format={doc.format}
 											/>
 											<div>
 												{userInfo!.role === "main" && (
@@ -108,14 +110,14 @@ function Invoices() {
 														trigger={<button>Löschen</button>}
 														onYes={async () => {
 															await DELETE(
-																"/auth/main/invoices/" + invoice.id,
+																`/auth/main/documents?type=${doc.type}&id=${doc.id}`,
 																userInfo!.token!
 															);
 
-															setInvoices((draft) => {
+															setDocs((draft) => {
 																const month = draft[monthDesc];
 																month.splice(
-																	month.findIndex((inv) => inv.id === invoice.id),
+																	month.findIndex((inv) => inv.id === doc.id),
 																	1
 																);
 															});
@@ -125,12 +127,14 @@ function Invoices() {
 												<button
 													onClick={async () => {
 														const response = await GET_BLOB(
-															`/auth/${userInfo!.role}/invoices/download/` + invoice.id,
+															`/auth/${userInfo!.role}/documents/download/${doc.type}/${
+																doc.id
+															}`,
 															userInfo!.token
 														);
 
 														const url = URL.createObjectURL(response.data);
-														downloadUrl(url, invoiceName + ".pdf");
+														downloadUrl(url, docName + "." + doc.format);
 													}}
 												>
 													Herunterladen

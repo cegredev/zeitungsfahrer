@@ -28,8 +28,8 @@ function VendorItem({ vendor }: { vendor: Vendor }) {
 					Einstellungen
 				</Link>
 
-				<Link style={{ float: "right" }} to={"/invoices/" + vendor.id}>
-					Rechnungen
+				<Link style={{ float: "right" }} to={"/documents/" + vendor.id}>
+					Dokumente
 				</Link>
 			</div>
 		</div>

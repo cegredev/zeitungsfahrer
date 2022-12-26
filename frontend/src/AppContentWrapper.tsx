@@ -80,7 +80,7 @@ function AppContentWrapper() {
 								{ name: "Bezirke", url: "/districts" },
 							],
 							[],
-							[{ name: "Rechnungen", url: "/invoices/" + userInfo.vendorId }]
+							[{ name: "Rechnungen", url: "/documents/" + userInfo.vendorId }]
 						)}
 					/>
 				)}
@@ -99,7 +99,7 @@ function AppContentWrapper() {
 								<>
 									<Route path="/dashboard" element={<Dashboard />} />
 									<Route path="/records/:id" element={<Records />} />
-									<Route path="/invoices/:id" element={<Invoices />} />
+									<Route path="/documents/:id" element={<Invoices />} />
 									<Route
 										path="/articles"
 										element={
@@ -150,7 +150,7 @@ function AppContentWrapper() {
 									<Route path="/ADMIN STUFF HELp" element={<div />} />
 								</>,
 								<>
-									<Route path={"/invoices/:id"} element={<Invoices />} />
+									<Route path={"/documents/:id"} element={<Invoices />} />
 								</>
 							)}
 						</React.Fragment>

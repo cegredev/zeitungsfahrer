@@ -23,10 +23,12 @@ export const twoDecimalFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
 	currency: "EUR",
 	maximumFractionDigits: 2,
+	minimumFractionDigits: 2,
 });
 
 export const twoDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {
 	maximumFractionDigits: 2,
+	minimumFractionDigits: 2,
 });
 
 export const fourDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {

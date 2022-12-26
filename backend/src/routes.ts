@@ -1,4 +1,4 @@
-import { Express, IRoute, RequestHandler } from "express";
+import { Express } from "express";
 import { allRoles } from "./consts.js";
 import { getAccountsController, loginController } from "./controllers/accounts.controller.js";
 import {
@@ -9,11 +9,13 @@ import {
 	getArticleInfoController,
 } from "./controllers/articles.controller.js";
 import {
+	deleteDocumentController,
+	getDocumentController,
+	getDocumentsController,
+} from "./controllers/documents.controller.js";
+import {
 	createInvoiceController,
-	deleteInvoiceController,
 	getCustomInvoiceTextController,
-	getInvoiceController,
-	getInvoicesController,
 	modifyTextController,
 } from "./controllers/invoices.controller.js";
 import {
@@ -141,6 +143,15 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "main", "reports/all").get(getAllSalesReportController);
 	singleGuardedRoute(app, "main", "reports/weeklyBill").get(getWeeklyBillReportController);
 
+	singleGuardedRoute(app, "main", "invoices/:id").post(createInvoiceController);
+
+	guardedRoute(app, ["main", "vendor"], "documents/:id").get(getDocumentsController);
+	guardedRoute(app, ["main", "vendor"], "documents/download/:type/:id").get(getDocumentController);
+	singleGuardedRoute(app, "main", "documents").delete(deleteDocumentController);
+	singleGuardedRoute(app, "main", "documents/templates/invoices")
+		.get(getCustomInvoiceTextController)
+		.put(modifyTextController);
+
 	// Plan
 	singleGuardedRoute(app, "plan", "calendar/view")
 		.get(getCalendarViewController)
@@ -162,12 +173,6 @@ function routes(app: Express) {
 
 	// Accounts
 	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
-
-	// Invoices
-	singleGuardedRoute(app, "main", "invoices/:id").delete(deleteInvoiceController).post(createInvoiceController);
-	singleGuardedRoute(app, "main", "invoices/modify").get(getCustomInvoiceTextController).put(modifyTextController);
-	guardedRoute(app, ["main", "vendor"], "invoices/:id").get(getInvoicesController);
-	guardedRoute(app, ["main", "vendor"], "invoices/download/:id").get(getInvoiceController);
 
 	// Settings
 	unguardedRoute(app, "settings").get(getSettingsController);

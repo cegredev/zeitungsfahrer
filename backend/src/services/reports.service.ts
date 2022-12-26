@@ -23,6 +23,7 @@ import { getArticleInfo, getArticleInfos } from "./articles.service.js";
 import fs from "fs/promises";
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
 import { boldRow } from "../excel.js";
+import { createDocument, storeDocument } from "./documents.service.js";
 
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
@@ -75,6 +76,7 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 	];
 
 	return {
+		id: articleId,
 		invoiceSystem,
 		itemSpecifier: (await getArticleInfo(articleId)).name,
 		columns: [
@@ -161,6 +163,7 @@ export async function getVendorSalesReport(
 	const vendor = await getVendorSimple(vendorId);
 
 	return {
+		id: vendor.id,
 		owner: `${vendor.name} (Kundennr.: ${vendor.customId})`,
 		items,
 		nettoByMwst,
@@ -169,7 +172,7 @@ export async function getVendorSalesReport(
 }
 
 export async function createArticleListingReport(
-	{ items, owner }: ArticleListingReport,
+	{ items, owner, id }: ArticleListingReport,
 	date: Date,
 	invoiceSystem: number
 ): Promise<Report> {
@@ -218,6 +221,7 @@ export async function createArticleListingReport(
 	];
 
 	return {
+		id,
 		invoiceSystem,
 		itemSpecifier: owner,
 		columns: [
@@ -518,6 +522,7 @@ export async function createReportDoc(report: Report): Promise<ReportDoc> {
 	const pages = itemsToPages(report.body, false);
 
 	return {
+		vendorId: report.id,
 		header: {
 			top,
 			sub,
@@ -550,6 +555,9 @@ export async function createSinglePageExcelReport(doc: ReportDoc): Promise<Excel
 
 	boldRow(1, doc, mainSheet);
 	boldRow(summaryRow, doc, mainSheet);
+
+	if (doc.vendorId !== undefined)
+		await createDocument("report", doc.vendorId, new Date(), "xlsx", doc.header.sub, workbook);
 
 	return workbook;
 }
@@ -604,6 +612,16 @@ export async function createMultiPageExcelReport(doc: ReportDoc): Promise<ExcelJ
 	boldRow(mainSummaryHeaderRow, doc, mainSheet);
 	boldRow(summaryRow, doc, mainSheet);
 
+	if (doc.vendorId !== undefined)
+		await createDocument(
+			"report",
+			doc.vendorId,
+			new Date(),
+			"xlsx",
+			doc.header.sub,
+			await workbook.xlsx.writeBuffer()
+		);
+
 	return workbook;
 }
 
@@ -629,5 +647,10 @@ export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 		summary: doc.summaryColumns !== undefined && applyStyler(doc.summary, doc.summaryColumns),
 	});
 
-	return await generatePDF(html);
+	const pdf = await generatePDF(html);
+
+	if (doc.vendorId !== undefined)
+		await createDocument("report", doc.vendorId, new Date(), "pdf", doc.header.sub, pdf);
+
+	return pdf;
 }
