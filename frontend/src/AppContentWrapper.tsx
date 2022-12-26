@@ -21,7 +21,7 @@ import { Settings as SettingsInterface } from "backend/src/models/settings.model
 import Login from "./pages/Login";
 import DistrictCalendar from "./pages/settings/DistrictCalendar";
 import { chooseBasedOnRole } from "./consts";
-import Invoices from "./pages/Invoices";
+import Documents from "./pages/Documents";
 import InvoiceSettings from "./pages/settings/InvoiceSettings";
 
 function AppContentWrapper() {
@@ -80,7 +80,7 @@ function AppContentWrapper() {
 								{ name: "Bezirke", url: "/districts" },
 							],
 							[],
-							[{ name: "Rechnungen", url: "/documents/" + userInfo.vendorId }]
+							[{ name: "Dokumente", url: "/documents/" + userInfo.vendorId }]
 						)}
 					/>
 				)}
@@ -99,7 +99,7 @@ function AppContentWrapper() {
 								<>
 									<Route path="/dashboard" element={<Dashboard />} />
 									<Route path="/records/:id" element={<Records />} />
-									<Route path="/documents/:id" element={<Invoices />} />
+									<Route path="/documents/:id" element={<Documents />} />
 									<Route
 										path="/articles"
 										element={
@@ -150,7 +150,7 @@ function AppContentWrapper() {
 									<Route path="/ADMIN STUFF HELp" element={<div />} />
 								</>,
 								<>
-									<Route path={"/documents/:id"} element={<Invoices />} />
+									<Route path={"/documents/:id"} element={<Documents />} />
 								</>
 							)}
 						</React.Fragment>

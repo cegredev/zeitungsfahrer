@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import { Link, useNavigate } from "react-router-dom";
-import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
+import { userInfoAtom } from "../stores/utility.store";
 import YesNoPrompt from "./util/YesNoPrompt";
 
 interface Props {

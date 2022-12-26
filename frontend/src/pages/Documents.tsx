@@ -2,21 +2,18 @@ import React from "react";
 import { DocMeta } from "backend/src/models/documents.model";
 import { useAtom } from "jotai";
 import { userInfoAtom } from "../stores/utility.store";
-import { DELETE, GET, GET_BLOB } from "../api";
+import { GET } from "../api";
 import { SimpleVendor } from "backend/src/models/vendors.model";
 import { useParams } from "react-router-dom";
 import YearSelection from "../components/time/YearSelection";
-import { months } from "../consts";
-import DownloadLink from "../components/DownloadLink";
 import { useImmer } from "use-immer";
-import YesNoPrompt from "../components/util/YesNoPrompt";
-import { downloadUrl } from "../files";
 import LoadingPlaceholder from "../components/util/LoadingPlaceholder";
 import dayjs from "dayjs";
+import DocumentsMonth from "../components/DocumentsMonth";
 
 const today = new Date();
 
-function Invoices() {
+function Documents() {
 	const vendorId = parseInt(useParams().id || "0");
 
 	const [date, setDate] = React.useState(today);
@@ -75,74 +72,25 @@ function Invoices() {
 							margin: 10,
 							display: "flex",
 							flexDirection: "column",
-							width: "30vw",
 							textAlign: "center",
 						}}
 					>
-						{docs.map((arr, monthDesc) => (
-							<div key={monthDesc}>
-								<h3 style={{ margin: 5 }}>{months[currentMonth - monthDesc]}</h3>
-								{arr.map((doc) => {
-									const docName = doc.id + "-" + doc.description;
+						{docs.map((docs, i) => (
+							<DocumentsMonth
+								key={i}
+								documents={docs}
+								month={currentMonth - i}
+								removeDoc={(id) => {
+									setDocs((draft) => {
+										const month = draft[i];
 
-									return (
-										<div
-											key={docName}
-											style={{
-												display: "flex",
-												flexDirection: "row",
-												justifyContent: "space-between",
-											}}
-										>
-											<DownloadLink
-												path={`/auth/${userInfo!.role}/documents/download/${doc.type}/${
-													doc.id
-												}`}
-												name={docName}
-												format={doc.format}
-											/>
-											<div>
-												{userInfo!.role === "main" && (
-													<YesNoPrompt
-														content="Wollen Sie dieses Dokument wirklich löschen?"
-														header="Dokument löschen?"
-														trigger={<button>Löschen</button>}
-														onYes={async () => {
-															await DELETE(
-																`/auth/main/documents?type=${doc.type}&id=${doc.id}`,
-																userInfo!.token!
-															);
-
-															setDocs((draft) => {
-																const month = draft[monthDesc];
-																month.splice(
-																	month.findIndex((inv) => inv.id === doc.id),
-																	1
-																);
-															});
-														}}
-													/>
-												)}
-												<button
-													onClick={async () => {
-														const response = await GET_BLOB(
-															`/auth/${userInfo!.role}/documents/download/${doc.type}/${
-																doc.id
-															}`,
-															userInfo!.token
-														);
-
-														const url = URL.createObjectURL(response.data);
-														downloadUrl(url, docName + "." + doc.format);
-													}}
-												>
-													Herunterladen
-												</button>
-											</div>
-										</div>
-									);
-								})}
-							</div>
+										month.splice(
+											month.findIndex((doc) => doc.id === id),
+											1
+										);
+									});
+								}}
+							/>
 						))}
 					</div>
 				</>
@@ -153,4 +101,4 @@ function Invoices() {
 	);
 }
 
-export default Invoices;
+export default Documents;

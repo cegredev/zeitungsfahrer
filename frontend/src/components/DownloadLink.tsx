@@ -1,16 +1,17 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { GET_BLOB } from "../api";
-import { openAndDownloadFile } from "../consts";
+import { openAndDownloadFile, openFile } from "../consts";
 import { authTokenAtom } from "../stores/utility.store";
 
 interface Props {
 	path: string;
 	name: string;
 	format: string;
+	save: boolean;
 }
 
-function DownloadLink({ path, name, format }: Props) {
+function DownloadLink({ path, name, format, save }: Props) {
 	const [token] = useAtom(authTokenAtom);
 
 	return (
@@ -19,10 +20,13 @@ function DownloadLink({ path, name, format }: Props) {
 			onClick={async () => {
 				const response = await GET_BLOB(path, token!);
 
-				console.log(response.data);
-
 				const fileUrl = URL.createObjectURL(response.data);
-				openAndDownloadFile(name, "." + format, fileUrl);
+
+				if (save) {
+					openAndDownloadFile(name, "." + format, fileUrl);
+				} else {
+					openFile(name, fileUrl);
+				}
 			}}
 		>
 			{name}
