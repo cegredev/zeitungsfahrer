@@ -6,6 +6,6 @@ export async function getAccountsController(req: Request, res: Response) {
 	await handler(getAccounts, res);
 }
 
-export async function loginController(req: Request<any, any, any, { name: string; password: string }>, res: Response) {
-	await handler(async () => await loginRoute(req.query.name, req.query.password), res);
+export async function loginController(req: Request<any, any, { name: string; password: string }>, res: Response) {
+	await handler(async () => await loginRoute(req.body.name, req.body.password), res);
 }

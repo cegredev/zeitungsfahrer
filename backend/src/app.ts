@@ -13,10 +13,10 @@ const app = express();
 app.use(helmet());
 app.use(express.json());
 app.use(cors());
-app.use((req, _res, next) => {
-	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
-	next();
-});
+// app.use((req, _res, next) => {
+// 	logger.info(req.method + " " + req.originalUrl + " " + JSON.stringify(req.body));
+// 	next();
+// });
 
 for (const role of allRoles)
 	app.use("/api/auth/" + role + "/*", async (req, res, next) => await validateTokenHandler(role, req, res, next));

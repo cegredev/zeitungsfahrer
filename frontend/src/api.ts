@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from "axios";
+import { LoginResult } from "backend/src/models/accounts.model";
 
 const API_URL =
 	process.env.NODE_ENV === "production" ? "https://touren-fahrer-api.online/api" : "http://localhost:3001/api";
@@ -29,6 +30,21 @@ export async function POST<T, D = any>(route: string, body: any, token: string):
 			authorization: token,
 		},
 	});
+}
+
+export async function LOGIN(name: string, password: string): Promise<AxiosResponse<LoginResult>> {
+	return await axios.post(
+		API_URL + "/login",
+		{
+			name,
+			password,
+		},
+		{
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}
+	);
 }
 
 export async function POST_BLOB(route: string, token?: string): Promise<AxiosResponse<Blob>> {

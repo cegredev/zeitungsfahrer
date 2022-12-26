@@ -110,7 +110,7 @@ function routes(app: Express) {
 	logger.info("Creating routes!");
 
 	// Login
-	app.route("/api/login").get(loginController);
+	app.route("/api/login").post(loginController);
 
 	// Main
 	singleGuardedRoute(app, "main", "articles")

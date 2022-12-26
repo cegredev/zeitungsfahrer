@@ -1,9 +1,8 @@
 import { useAtom } from "jotai";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { GET } from "../api";
+import { LOGIN } from "../api";
 import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
-import { LoginResult } from "backend/src/models/accounts.model";
 
 function Login() {
 	const [, setToken] = useAtom(authTokenAtom);
@@ -18,7 +17,7 @@ function Login() {
 		setWaiting(true);
 
 		try {
-			const response = await GET<LoginResult>(`/login?name=${username}&password=${password}`);
+			const response = await LOGIN(username, password);
 
 			setUserInfo(response.data);
 
