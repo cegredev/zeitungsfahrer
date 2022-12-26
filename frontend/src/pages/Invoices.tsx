@@ -7,7 +7,6 @@ import { SimpleVendor } from "backend/src/models/vendors.model";
 import { useParams } from "react-router-dom";
 import YearSelection from "../components/time/YearSelection";
 import { months } from "../consts";
-import { getKW } from "../components/time/WeekSelection";
 import DownloadLink from "../components/DownloadLink";
 import { useImmer } from "use-immer";
 import YesNoPrompt from "../components/util/YesNoPrompt";
@@ -64,7 +63,7 @@ function Invoices() {
 				<>
 					<div className="panel" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
 						<h2 style={{ margin: 5 }}>
-							{userInfo!.role === "vendor" ? "Hallo," : "Rechnungen für"} {vendor?.name}
+							{userInfo!.role === "vendor" ? "Hallo," : "Dokumente von"} {vendor?.name}
 						</h2>
 						<div>
 							Jahr: <YearSelection date={date} setDate={setDate} />
@@ -105,8 +104,8 @@ function Invoices() {
 											<div>
 												{userInfo!.role === "main" && (
 													<YesNoPrompt
-														content="Wollen Sie diese Rechnung wirklich löschen?"
-														header="Rechnung löschen?"
+														content="Wollen Sie dieses Dokument wirklich löschen?"
+														header="Dokument löschen?"
 														trigger={<button>Löschen</button>}
 														onYes={async () => {
 															await DELETE(

@@ -1,17 +1,6 @@
 import Big from "big.js";
-import { Page, ReportItemDoc } from "./reports.model";
+import { Page } from "./reports.model";
 import { Vendor } from "./vendors.model";
-
-export interface InvoiceMeta {
-	id: number;
-	vendorId: number;
-}
-
-export interface InvoiceLink {
-	id: number;
-	date: Date;
-	description: string;
-}
 
 export interface InvoiceNr {
 	date: Date;
