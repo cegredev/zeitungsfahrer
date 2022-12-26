@@ -23,6 +23,7 @@ import DistrictCalendar from "./pages/settings/DistrictCalendar";
 import { chooseBasedOnRole } from "./consts";
 import Documents from "./pages/Documents";
 import InvoiceSettings from "./pages/settings/InvoiceSettings";
+import ChangePassword from "./pages/settings/ChangePassword";
 
 function AppContentWrapper() {
 	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
@@ -94,6 +95,7 @@ function AppContentWrapper() {
 								path="/"
 								element={<Navigate to={userInfo?.role === "main" ? "/dashboard" : "/schedule"} />}
 							/>
+							<Route path="/changePassword" element={<ChangePassword />} />
 							{chooseBasedOnRole(
 								userInfo?.role,
 								<>
@@ -148,6 +150,7 @@ function AppContentWrapper() {
 								</>,
 								<>
 									<Route path="/ADMIN STUFF HELp" element={<div />} />
+									<Route path="/changePassword/:username" element={<ChangePassword />} />
 								</>,
 								<>
 									<Route path={"/documents/:id"} element={<Documents />} />

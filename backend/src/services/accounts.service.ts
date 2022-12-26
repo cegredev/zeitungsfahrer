@@ -2,11 +2,13 @@ import { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
-import { LoginResult, Role } from "../models/accounts.model.js";
+import { LoginResult, LoginInfo, Role } from "../models/accounts.model.js";
 import { getIdFromCustomId } from "./vendors.service.js";
 
-function generateAccessToken(name: string, role: Role, vendorId?: number) {
-	return jwt.sign({ username: name, role, vendorId }, getEnvToken(), { expiresIn: "12h" });
+import crypto from "crypto";
+
+function generateAccessToken(payload: LoginInfo) {
+	return jwt.sign(payload, getEnvToken(), { expiresIn: "12h" });
 }
 
 export async function login(name: string, password: string): Promise<LoginResult | undefined> {
@@ -15,7 +17,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 		[name]
 	);
 
-	let data = response[0];
+	let dbData = response[0];
 	if (response.length === 0) {
 		const id = await getIdFromCustomId(name);
 		if (id === undefined) return;
@@ -27,7 +29,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 		]);
 		if (passRes.length === 0) return;
 
-		data = {
+		dbData = {
 			name: parsedName,
 			password: passRes[0].password,
 			role: "vendor",
@@ -36,10 +38,10 @@ export async function login(name: string, password: string): Promise<LoginResult
 	}
 
 	// FIXME
-	if (data.password !== password) return;
+	if (dbData.password !== password) return;
 
 	let home;
-	switch (data.role) {
+	switch (dbData.role) {
 		case "main":
 			home = "/dashboard";
 			break;
@@ -50,7 +52,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 			home = "/accounts";
 			break;
 		case "vendor":
-			home = "/documents/" + data.id;
+			home = "/documents/" + dbData.id;
 			break;
 		default:
 			home = "/badrole";
@@ -58,10 +60,10 @@ export async function login(name: string, password: string): Promise<LoginResult
 	}
 
 	return {
-		token: generateAccessToken(name, data.role, data.id),
+		token: generateAccessToken({ username: name, role: dbData.role, vendorId: dbData.id }),
 		home,
-		role: data.role,
-		vendorId: data.id,
+		role: dbData.role,
+		vendorId: dbData.id,
 	};
 }
 
@@ -86,4 +88,18 @@ export async function getAccounts(): Promise<RouteReport> {
 		code: 200,
 		body: [...response[0]],
 	};
+}
+
+export async function changePassword(username: string, newPass: string): Promise<RouteReport> {
+	// FIXME Passwords!!!!
+
+	if (newPass.length < 8) return { code: 422 };
+
+	poolExecute("UPDATE accounts SET password=? WHERE name=?", [newPass, username]);
+
+	return { code: 200 };
+}
+
+export function generateRandomPassword(): string {
+	return crypto.randomBytes(4).toString("hex");
 }

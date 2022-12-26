@@ -33,6 +33,7 @@ function Settings() {
 				}}
 			>
 				<Link to="/vendors/create">Händler hinzufügen</Link>
+				<Link to="/changePassword">Passwort ändern</Link>
 				<div>
 					Abrechnungen werden standardmäßig pro{" "}
 					<select

@@ -9,10 +9,9 @@ import path from "path";
 import fs from "fs";
 
 import ExcelJS from "exceljs";
-import { LoginResult, Role } from "../models/accounts.model.js";
-import { getIdFromCustomId } from "../services/vendors.service.js";
+import { LoginInfo, Role } from "../models/accounts.model.js";
 
-export function getTokenData(req: Request): LoginResult | undefined {
+export function getTokenData(req: Request): LoginInfo | undefined {
 	// @ts-ignore
 	return req.tokenData;
 }

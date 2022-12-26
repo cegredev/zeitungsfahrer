@@ -5,6 +5,12 @@ export interface Account {
 	role: Role;
 }
 
+export interface LoginInfo {
+	username: string;
+	role: Role;
+	vendorId?: number;
+}
+
 export interface LoginResult {
 	token: string;
 	home: string;

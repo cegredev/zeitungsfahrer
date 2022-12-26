@@ -1,6 +1,11 @@
 import { Express } from "express";
 import { allRoles } from "./consts.js";
-import { getAccountsController, loginController } from "./controllers/accounts.controller.js";
+import {
+	changeOtherPasswordController,
+	changeOwnPasswordController,
+	getAccountsController,
+	loginController,
+} from "./controllers/accounts.controller.js";
 import {
 	getArticlesController,
 	postArticleController,
@@ -173,6 +178,8 @@ function routes(app: Express) {
 
 	// Accounts
 	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
+	guardedRoute(app, ["main", "accountAdmin"], "accounts/passwords/other").post(changeOtherPasswordController);
+	unguardedRoute(app, "accounts/passwords/self").post(changeOwnPasswordController);
 
 	// Settings
 	unguardedRoute(app, "settings").get(getSettingsController);
