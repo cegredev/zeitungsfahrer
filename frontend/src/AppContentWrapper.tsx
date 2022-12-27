@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Popup from "reactjs-popup";
-import { authTokenAtom, errorMessageAtom, userInfoAtom } from "./stores/utility.store";
+import { authTokenAtom, popupMessageAtom, userInfoAtom } from "./stores/utility.store";
 import { settingsAtom } from "./stores/settings.store";
 
 import Navbar from "./components/Navbar";
@@ -26,13 +26,13 @@ import InvoiceSettings from "./pages/settings/InvoiceSettings";
 import ChangePassword from "./pages/settings/ChangePassword";
 
 function AppContentWrapper() {
-	const [errorMessage, setErrorMessage] = useAtom(errorMessageAtom);
+	const [popupMessage, setPopupMessage] = useAtom(popupMessageAtom);
 	const [, setSettings] = useAtom(settingsAtom);
 	const [userInfo] = useAtom(userInfoAtom);
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	const clearErrorMessage = React.useCallback(() => setErrorMessage(""), [setErrorMessage]);
+	const clearErrorMessage = React.useCallback(() => setPopupMessage(undefined), [setPopupMessage]);
 
 	React.useEffect(() => {
 		if (location.pathname === "/login") return;
@@ -54,12 +54,22 @@ function AppContentWrapper() {
 
 	return (
 		<React.Fragment>
-			<Popup open={errorMessage.length > 0} closeOnDocumentClick onClose={clearErrorMessage}>
+			<Popup open={popupMessage !== undefined} closeOnDocumentClick onClose={clearErrorMessage}>
 				<div className="modal">
-					<div className="header" style={{ color: "red" }}>
-						Fehler
+					{popupMessage?.type === "error" ? (
+						<div className="header" style={{ color: "red" }}>
+							Fehler
+						</div>
+					) : popupMessage?.type === "success" ? (
+						<div className="header" style={{ color: "green" }}>
+							Erfolg
+						</div>
+					) : (
+						<div className="header">Information</div>
+					)}
+					<div className="content" style={{ whiteSpace: "pre-line", textAlign: "center" }}>
+						{popupMessage?.content}
 					</div>
-					<div className="content">{errorMessage}</div>
 					<div className="actions">
 						<button onClick={clearErrorMessage}>Okay</button>
 					</div>
@@ -80,7 +90,7 @@ function AppContentWrapper() {
 								{ name: "Kalender", url: "/calendar" },
 								{ name: "Bezirke", url: "/districts" },
 							],
-							[],
+							[{ name: "Accounts", url: "/accounts" }],
 							[{ name: "Dokumente", url: "/documents/" + userInfo.vendorId }]
 						)}
 					/>

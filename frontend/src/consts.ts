@@ -129,3 +129,25 @@ export function chooseBasedOnRole<T>(role: Role | undefined, main: T, plan: T, a
 			return vendor;
 	}
 }
+
+export function generatePassword(length: number): string {
+	function generateRandomByte() {
+		const result = new Uint8Array(1);
+		window.crypto.getRandomValues(result);
+		return result[0];
+	}
+
+	const pattern = /[a-zA-Z0-9_\-\+\.]/;
+
+	return Array(length)
+		.fill(null)
+		.map(() => {
+			while (true) {
+				const result = String.fromCharCode(generateRandomByte());
+				if (pattern.test(result)) {
+					return result;
+				}
+			}
+		})
+		.join("");
+}

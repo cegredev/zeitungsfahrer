@@ -12,7 +12,7 @@ import YesNoPrompt from "./util/YesNoPrompt";
 
 import { weekdays } from "../consts";
 import dayjs from "dayjs";
-import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
+import { authTokenAtom, popupMessageAtom } from "../stores/utility.store";
 import NumberInput from "./util/NumberInput";
 import Big from "big.js";
 
@@ -45,7 +45,7 @@ function ArticleSettingsItem({ articleInfo }: { articleInfo: Article }) {
 	const [, removeArticle] = useAtom(removeArticleAtom);
 	const [, finishArticle] = useAtom(finishArticleAtom);
 	const [, cancelDraft] = useAtom(cancelArticleDraftAtom);
-	const [, setErrorMessage] = useAtom(errorMessageAtom);
+	const [, setErrorMessage] = useAtom(popupMessageAtom);
 	const [token] = useAtom(authTokenAtom);
 
 	const isDraft = article.id == null;

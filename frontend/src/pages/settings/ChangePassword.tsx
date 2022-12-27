@@ -4,7 +4,7 @@ import YesNoPrompt from "../../components/util/YesNoPrompt";
 import BetterInput from "../../components/util/BetterInput";
 import { POST } from "../../api";
 import { useAtom } from "jotai";
-import { userInfoAtom, errorMessageAtom } from "../../stores/utility.store";
+import { userInfoAtom, popupMessageAtom } from "../../stores/utility.store";
 
 function ChangePassword() {
 	const navigate = useNavigate();
@@ -15,7 +15,7 @@ function ChangePassword() {
 	const [userInfo] = useAtom(userInfoAtom);
 	const [[oldPass, setOldPass], [newPass, setNewPass]] = [React.useState(""), React.useState("")];
 
-	const [, setMessage] = useAtom(errorMessageAtom);
+	const [, setMessage] = useAtom(popupMessageAtom);
 
 	return (
 		<div className="page">
@@ -49,7 +49,10 @@ function ChangePassword() {
 					content={"Wollen Sie das Passwort wirklich ändern?"}
 					onYes={async () => {
 						if (newPass.length < 8) {
-							return setMessage("Das neue Passwort muss mindestens 8 Zeichen enthalten.");
+							return setMessage({
+								type: "error",
+								content: "Das neue Passwort muss mindestens 8 Zeichen enthalten.",
+							});
 						}
 
 						try {
@@ -71,9 +74,11 @@ function ChangePassword() {
 							return;
 						} catch {}
 
-						setMessage(
-							"Das hat leider nicht funktioniert. Bitte überprüfen Sie Ihre Eingaben und versuchen es erneut."
-						);
+						setMessage({
+							type: "error",
+							content:
+								"Das hat leider nicht funktioniert. Bitte überprüfen Sie Ihre Eingaben und versuchen es erneut.",
+						});
 					}}
 				/>
 			</div>

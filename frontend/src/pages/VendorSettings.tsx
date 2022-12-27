@@ -6,9 +6,10 @@ import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor, VendorCatalog } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
-import { authTokenAtom, errorMessageAtom } from "../stores/utility.store";
+import { authTokenAtom, popupMessageAtom, userInfoAtom } from "../stores/utility.store";
 import NumberInput from "../components/util/NumberInput";
 import axios from "axios";
+import { generatePassword } from "../consts";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -28,9 +29,9 @@ function VendorSettings() {
 
 	const [vendor, setVendor] = React.useState<Vendor | null>(null);
 
-	const [, setErrorMessage] = useAtom(errorMessageAtom);
+	const [, setPopupMessage] = useAtom(popupMessageAtom);
 
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -51,10 +52,13 @@ function VendorSettings() {
 					active: true,
 				};
 
-				const response = await GET<VendorCatalog>("/auth/main/vendors/" + id + "?mode=catalog", token!);
+				const response = await GET<VendorCatalog>(
+					"/auth/main/vendors/" + id + "?mode=catalog",
+					userInfo!.token
+				);
 				data = { ...template, catalog: response.data };
 			} else {
-				const response = await GET<Vendor>("/auth/main/vendors/" + id + "?mode=full", token!);
+				const response = await GET<Vendor>("/auth/main/vendors/" + id + "?mode=full", userInfo!.token);
 				data = response.data;
 			}
 
@@ -62,7 +66,7 @@ function VendorSettings() {
 		}
 
 		fetchData();
-	}, [setVendor, isDraft, id, token]);
+	}, [setVendor, isDraft, id, userInfo]);
 
 	return (
 		<div className="page vendor-settings" style={{ padding: 20 }}>
@@ -180,6 +184,43 @@ function VendorSettings() {
 								},
 							}}
 						/>
+
+						{!isDraft && (
+							<>
+								{" "}
+								<label>Passwort:</label>
+								<YesNoPrompt
+									content="Wollen Sie das Passwort wirklich zurücksetzen?"
+									header="Passwort zurücksetzen"
+									trigger={<label className="download-link">Zurücksetzen</label>}
+									onYes={async () => {
+										const password = generatePassword(8);
+
+										try {
+											await POST(
+												`/auth/${userInfo?.role}/accounts/passwords/other`,
+												{
+													username: "vendor:" + vendor.id!,
+													password,
+												},
+												userInfo!.token
+											);
+
+											setPopupMessage({
+												type: "success",
+												content: `Das neue Passwort ist: ${password}
+												Bitte geben Sie es and den Händler weiter und leiten Sie ihn an es für sich zu ändern.`,
+											});
+										} catch {
+											setPopupMessage({
+												type: "error",
+												content: "Da hat etwas leider nicht funktioniert.",
+											});
+										}
+									}}
+								/>
+							</>
+						)}
 					</div>
 
 					<YesNoPrompt
@@ -192,22 +233,29 @@ function VendorSettings() {
 									.map((val) => String(val).length)
 									.some((length) => length === 0)
 							) {
-								setErrorMessage("Bitte füllen Sie alle Felder aus.");
+								setPopupMessage({
+									type: "error",
+									content: "Bitte füllen Sie alle Felder aus.",
+								});
 								return;
 							}
 							try {
 								if (isDraft) {
-									const response = await POST<{ id: number }>("/auth/main/vendors", vendor, token!);
+									const response = await POST<{ id: number }>(
+										"/auth/main/vendors",
+										vendor,
+										userInfo!.token
+									);
 									const data = response.data;
 									setId(String(data.id));
 									setVendor({ ...vendor, id: data.id });
 									navigate(`/vendors/${data.id}`);
 								} else {
-									await PUT("/auth/main/vendors", vendor, token!);
+									await PUT("/auth/main/vendors", vendor, userInfo!.token);
 								}
 							} catch (e) {
 								if (axios.isAxiosError(e)) {
-									setErrorMessage(e.response?.data.userMessage);
+									setPopupMessage(e.response?.data.userMessage);
 								}
 							}
 						}}
@@ -230,7 +278,7 @@ function VendorSettings() {
 										vendor.firstName + " " + vendor.lastName
 									}" wirklich löschen? Alternativ können Sie ihn auch nur auf inaktiv setzen!`}
 									onYes={async () => {
-										await DELETE("/auth/main/vendors/" + vendor.id!, token!);
+										await DELETE("/auth/main/vendors/" + vendor.id!, userInfo!.token);
 										navigate("/vendors");
 									}}
 								/>
