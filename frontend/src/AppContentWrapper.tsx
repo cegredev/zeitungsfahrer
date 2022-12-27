@@ -89,9 +89,16 @@ function AppContentWrapper() {
 								{ name: "Einsatzplan", url: "/schedule" },
 								{ name: "Kalender", url: "/calendar" },
 								{ name: "Bezirke", url: "/districts" },
+								{ name: "Einstellungen", url: "/changePassword" },
 							],
-							[{ name: "Accounts", url: "/accounts" }],
-							[{ name: "Dokumente", url: "/documents/" + userInfo.vendorId }]
+							[
+								{ name: "Accounts", url: "/accounts" },
+								{ name: "Einstellungen", url: "/changePassword" },
+							],
+							[
+								{ name: "Dokumente", url: "/documents/" + userInfo.vendorId },
+								{ name: "Einstellungen", url: "/changePassword" },
+							]
 						)}
 					/>
 				)}
@@ -105,7 +112,14 @@ function AppContentWrapper() {
 								path="/"
 								element={<Navigate to={userInfo?.role === "main" ? "/dashboard" : "/schedule"} />}
 							/>
-							<Route path="/changePassword" element={<ChangePassword />} />
+							<Route
+								path="/changePassword"
+								element={
+									<SettingsPage route="/changePassword">
+										<ChangePassword />
+									</SettingsPage>
+								}
+							/>
 							{chooseBasedOnRole(
 								userInfo?.role,
 								<>

@@ -60,7 +60,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 	}
 
 	return {
-		token: generateAccessToken({ username: name, role: dbData.role, vendorId: dbData.id }),
+		token: generateAccessToken({ username: dbData.name, role: dbData.role, vendorId: dbData.id }),
 		home,
 		role: dbData.role,
 		vendorId: dbData.id,

@@ -1,23 +1,40 @@
 import { useAtom } from "jotai";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import AuthorizedPage from "../pages/AuthorizedPage";
 import SettingsLogin from "../pages/SettingsLogin";
-import { settingsLoggedInAtom } from "../stores/utility.store";
+import { settingsLoggedInAtom, userInfoAtom } from "../stores/utility.store";
 
 interface Props {
 	route: string;
 	children: JSX.Element;
 }
 
-const links = [
-	["/settings", "Allgemein"],
-	["/articles", "Artikel"],
-	["/vendors", "Händler"],
-	["/invoiceSettings", "Rechnungen"],
-];
-
 function SettingsNav({ route: activeRoute, children }: Props) {
 	const leftNavWidth = 135;
+
+	const [userInfo] = useAtom(userInfoAtom);
+
+	const [links, setLinks] = React.useState<[string, string][]>([]);
+
+	React.useEffect(() => {
+		let links: [string, string][] = [];
+
+		switch (userInfo?.role) {
+			case "main":
+				links = [
+					["/settings", "Allgemein"],
+					["/articles", "Artikel"],
+					["/vendors", "Händler"],
+					["/invoiceSettings", "Rechnungen"],
+				];
+				break;
+		}
+
+		links.push(["/changePassword", "Account"]);
+
+		setLinks(links);
+	}, [userInfo]);
 
 	const navigate = useNavigate();
 	const [settingsLoggedIn] = useAtom(settingsLoggedInAtom);
