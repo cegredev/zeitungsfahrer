@@ -58,6 +58,7 @@ function Records() {
 				`/auth/main/vendors/${vendorId}/includedArticles`,
 				token!
 			);
+
 			setInfo(response.data);
 		}
 
@@ -140,7 +141,6 @@ function Records() {
 								vendorId={vendorId}
 								articleId={id}
 								date={date}
-								recordsMap={recordsMap}
 								setRecords={setRecordsMap}
 								addChangedRecord={addChangedRecord}
 							/>

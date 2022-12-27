@@ -27,7 +27,6 @@ interface Props {
 	vendorId: number;
 	articleId: number;
 	date: Date;
-	recordsMap: Map<number, GUIArticleRecords>;
 	setRecords: Updater<Map<number, GUIArticleRecords>>;
 	addChangedRecord: (r: ChangedRecord) => void;
 }
@@ -44,10 +43,10 @@ function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
 	return <span style={{ color: "green" }}>Vollständig</span>;
 }
 
-function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords, addChangedRecord }: Props) {
+function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedRecord }: Props) {
 	const [token] = useAtom(authTokenAtom);
 
-	const records = recordsMap.get(articleId);
+	const [records, setOwnRecords] = React.useState<GUIArticleRecords | undefined>();
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -90,6 +89,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 			};
 
 			setRecords((draft) => draft.set(articleId, articleRecords));
+			setOwnRecords(articleRecords);
 		}
 
 		fetchData();
@@ -109,7 +109,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 	);
 
 	const startDate = records?.start;
-	const weekdayOffset = startDate ? (6 + startDate.getUTCDay()) % 7 : 0; // Sunday is 0 instead of Monday
+	const weekdayOffset = startDate ? (6 + startDate.getDay()) % 7 : 0; // Sunday is 0 instead of Monday
 	const totalValueBrutto = calculateTotalValueBrutto(records?.records || []);
 	return (
 		<React.Fragment>
@@ -140,9 +140,10 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 								const weekday = (recordIndex + weekdayOffset) % 7;
 								const date = dayjs(startDate).add(recordIndex, "day").format("DD.MM.YYYY");
 								const soldAmount = record.supply - record.remissions;
+
 								return (
 									<tr
-										key={"sales-" + records.id + "-" + recordIndex}
+										key={"sales-" + records.start.getTime() + "-" + records.id + "-" + recordIndex}
 										style={{
 											backgroundColor: record.edited
 												? "#8bcc81"

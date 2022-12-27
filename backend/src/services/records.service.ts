@@ -82,6 +82,7 @@ export async function getArticleRecords(
 
 	const records = await getExistingRecords(vendorId, articleId, start, end),
 		startMillis = start.getTime();
+
 	for (const record of records) {
 		articleRecords.records[Math.round((record.date.getTime() - startMillis) / MILlIS_IN_DAY)] = record;
 	}
