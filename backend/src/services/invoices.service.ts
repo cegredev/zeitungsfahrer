@@ -157,6 +157,8 @@ export async function getCustomText(): Promise<CustomInvoiceText> {
 }
 
 export async function modifyText({ contact, byeText, payment }: CustomInvoiceText) {
+	console.log("updating:", contact, byeText, payment);
+
 	await poolExecute("UPDATE invoice_profiles SET contact=?, bye_text=?, payment=? WHERE id=1", [
 		contact,
 		byeText,

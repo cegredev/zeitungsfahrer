@@ -4,10 +4,14 @@ import React from "react";
 import { useImmer } from "use-immer";
 import { GET, PUT } from "../../api";
 import LoadingPlaceholder from "../../components/util/LoadingPlaceholder";
+import YesNoPrompt from "../../components/util/YesNoPrompt";
+import { invoiceSystems } from "../../consts";
+import { settingsAtom } from "../../stores/settings.store";
 import { authTokenAtom } from "../../stores/utility.store";
 
 function InvoiceSettings() {
 	const [token] = useAtom(authTokenAtom);
+	const [settings, setSettings] = useAtom(settingsAtom);
 
 	const [customText, setCustomText] = useImmer<CustomInvoiceText | undefined>(undefined);
 
@@ -22,18 +26,39 @@ function InvoiceSettings() {
 
 	return (
 		<div className="page">
-			<h1>Rechnungstext</h1>
+			<div
+				className="panel"
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+				}}
+			>
+				<h4>Abrechnungsweise</h4>
+				<div>
+					Abrechnungen werden standardmäßig pro{" "}
+					<select
+						name="invoiceSystem"
+						value={settings?.invoiceSystem}
+						onChange={async (evt) => {
+							const newSettings = { ...settings!, invoiceSystem: parseInt(evt.target.value) };
 
-			{customText ? (
-				<React.Fragment>
-					<div
-						className="panel"
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "center",
+							await PUT("/auth/main/settings", newSettings, token!);
+
+							setSettings(newSettings);
 						}}
 					>
+						{invoiceSystems.map((system, i) => (
+							<option key={"invoice-option-" + i} value={i}>
+								{system}
+							</option>
+						))}
+					</select>{" "}
+					generiert.
+				</div>
+
+				{customText && (
+					<React.Fragment>
 						<h4>Kontakt:</h4>
 						<textarea
 							cols={80}
@@ -44,13 +69,11 @@ function InvoiceSettings() {
 									draft!.contact = evt.target.value;
 								})
 							}
-							style={{ textAlign: "right" }}
 						/>
-
 						<h4>Gruß:</h4>
 						<textarea
 							cols={80}
-							rows={10}
+							rows={5}
 							value={customText?.byeText}
 							onChange={(evt) =>
 								setCustomText((draft) => {
@@ -58,7 +81,6 @@ function InvoiceSettings() {
 								})
 							}
 						/>
-
 						<h4>Zahlungsinformationen:</h4>
 						<textarea
 							cols={80}
@@ -70,20 +92,17 @@ function InvoiceSettings() {
 								})
 							}
 						/>
-
-						<button
-							style={{ marginTop: 20 }}
-							onClick={async () => {
+						<YesNoPrompt
+							content="Wollen Sie die Rechnungseinstellungen wirklich ändern?"
+							header="Rechnungseinstellungen"
+							trigger={<button style={{ marginTop: 20 }}>Rechnungstext speichern</button>}
+							onYes={async () => {
 								await PUT("/auth/main/documents/templates/invoices", customText, token!);
 							}}
-						>
-							Speichern
-						</button>
-					</div>
-				</React.Fragment>
-			) : (
-				<LoadingPlaceholder />
-			)}
+						/>
+					</React.Fragment>
+				)}
+			</div>
 		</div>
 	);
 }

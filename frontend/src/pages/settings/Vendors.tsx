@@ -6,6 +6,7 @@ import Footer from "../../components/Footer";
 import { authTokenAtom } from "../../stores/utility.store";
 import LoadingPlaceholder from "../../components/util/LoadingPlaceholder";
 import VendorItem from "../../components/VendorItem";
+import { Link } from "react-router-dom";
 
 function Vendors() {
 	const [vendors, setVendors] = React.useState<Vendor[] | undefined>();
@@ -30,7 +31,14 @@ function Vendors() {
 			{vendors === undefined ? (
 				<LoadingPlaceholder />
 			) : (
-				vendors.map((vendor) => <VendorItem key={"vendor-" + vendor.id} vendor={vendor} />)
+				<>
+					{/* <div className="panel" style={{ textAlign: "center" }}>
+						<Link to="/vendors/create">Händler hinzufügen</Link>
+					</div> */}
+					{vendors.map((vendor) => (
+						<VendorItem key={"vendor-" + vendor.id} vendor={vendor} />
+					))}
+				</>
 			)}
 			<Footer />
 		</div>
