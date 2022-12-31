@@ -90,6 +90,19 @@ export async function getAccounts(): Promise<RouteReport> {
 	};
 }
 
+export async function createAccount(username: string, password: string, role: Role): Promise<RouteReport> {
+	// FIXME AHHHH PASSWORDS
+
+	await poolExecute("INSERT INTO accounts (name, password, role) VALUES (?, ?, ?)", [username, password, role]);
+
+	return {
+		code: 200,
+		body: {
+			password,
+		},
+	};
+}
+
 export async function changePassword(username: string, newPass: string): Promise<RouteReport> {
 	// FIXME Passwords!!!!
 

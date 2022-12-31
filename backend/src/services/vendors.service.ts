@@ -1,10 +1,11 @@
 import { DashboardVendor, SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
-import { poolExecute } from "../util.js";
+import { generatePassword, poolExecute } from "../util.js";
 import { ArticleInfo } from "../models/articles.model.js";
 import { DATE_FORMAT } from "../consts.js";
 import dayjs from "dayjs";
+import { createAccount } from "./accounts.service.js";
 
 export async function getIdFromCustomId(cid: string): Promise<number | undefined> {
 	const res = await poolExecute<{ id: number }>("SELECT id FROM vendors WHERE custom_id=?", [cid]);
@@ -133,9 +134,13 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 	// @ts-ignore
 	const id: number = response[0].insertId;
 
+	const password = generatePassword(8);
+
+	await createAccount("vendor:" + id, password, "vendor");
+
 	return {
 		code: 200,
-		body: { id },
+		body: { id, password },
 	};
 }
 

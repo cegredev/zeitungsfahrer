@@ -1,5 +1,6 @@
 import Big from "big.js";
 import dayjs from "dayjs";
+import crypto from "crypto";
 import pool from "./database.js";
 
 const proto = dayjs.prototype;
@@ -32,4 +33,24 @@ export function getEnvToken(): string {
 
 export function mulWithMwst(value: Big, mwst: number): Big {
 	return value.mul(1 + mwst / 100.0);
+}
+
+export function generatePassword(length: number): string {
+	function generateRandomByte() {
+		return crypto.randomBytes(1).at(0)!;
+	}
+
+	const pattern = /[a-zA-Z0-9_\-\+\.]/;
+
+	return Array(length)
+		.fill(null)
+		.map(() => {
+			while (true) {
+				const result = String.fromCharCode(generateRandomByte());
+				if (pattern.test(result)) {
+					return result;
+				}
+			}
+		})
+		.join("");
 }

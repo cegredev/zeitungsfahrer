@@ -48,7 +48,6 @@ function VendorSettings() {
 					phone: "",
 					taxId: "",
 					customId: 100,
-					lastRecordEntry: new Date("1970-01-01"),
 					active: true,
 				};
 
@@ -239,17 +238,30 @@ function VendorSettings() {
 								});
 								return;
 							}
+
+							console.log("saving");
+
 							try {
 								if (isDraft) {
-									const response = await POST<{ id: number }>(
+									const response = await POST<{ id: number; password: string }>(
 										"/auth/main/vendors",
 										vendor,
 										userInfo!.token
 									);
+
+									console.log("saved!");
+
 									const data = response.data;
 									setId(String(data.id));
 									setVendor({ ...vendor, id: data.id });
 									navigate(`/vendors/${data.id}`);
+
+									console.log(data);
+
+									setPopupMessage({
+										type: "info",
+										content: "Das Passwort für diesen Händler ist: " + data.password,
+									});
 								} else {
 									await PUT("/auth/main/vendors", vendor, userInfo!.token);
 								}

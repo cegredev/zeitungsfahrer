@@ -18,7 +18,6 @@ export interface Vendor {
 	taxId: string;
 	active: boolean;
 	customId: number;
-	lastRecordEntry: Date;
 	catalog?: VendorCatalog;
 }
 
