@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import { normalizeDate, twoDecimalsFormat } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../../stores/utility.store";
 import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
@@ -18,15 +18,15 @@ function AllSalesView() {
 	const [loading, setLoading] = React.useState(false);
 	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			setLoading(true);
 
 			const response = await GET<number[]>(
-				"/auth/main/dashboard/allSales?date=" + dayjs(date).format("YYYY-MM-DD"),
-				token!
+				`/auth/${userInfo?.role}/dashboard/allSales?date=${dayjs(date).format("YYYY-MM-DD")}`,
+				userInfo!.token
 			);
 			setAllSales(response.data);
 
@@ -34,7 +34,7 @@ function AllSalesView() {
 		}
 
 		fetchData();
-	}, [token, date]);
+	}, [userInfo, date]);
 
 	return (
 		<table

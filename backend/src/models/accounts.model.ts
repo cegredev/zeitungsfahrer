@@ -1,4 +1,4 @@
-export type Role = "main" | "plan" | "accountAdmin" | "vendor";
+export type Role = "main" | "dataEntry" | "plan" | "accountAdmin" | "vendor";
 
 export interface Account {
 	name: string;

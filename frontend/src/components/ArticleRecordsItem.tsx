@@ -6,7 +6,7 @@ import { Updater } from "use-immer";
 import { GET } from "../api";
 import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat, weekdays } from "../consts";
 import { ChangedRecord } from "backend/src/models/records.model";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
 import LoadingPlaceholder from "./util/LoadingPlaceholder";
 import NumberInput from "./util/NumberInput";
 import Big from "big.js";
@@ -44,20 +44,17 @@ function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
 }
 
 function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedRecord }: Props) {
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	const [records, setOwnRecords] = React.useState<GUIArticleRecords | undefined>();
 
 	React.useEffect(() => {
 		async function fetchData() {
 			const response = await GET<ArticleRecords>(
-				"/auth/main/records/" +
-					vendorId +
-					"?articleId=" +
-					articleId +
-					"&end=" +
-					dayjs(date).format("YYYY-MM-DD"),
-				token!
+				`/auth/${userInfo!.role}/records/${vendorId}?articleId=${articleId}&end=${dayjs(date).format(
+					"YYYY-MM-DD"
+				)}`,
+				userInfo!.token
 			);
 			const data = response.data;
 
@@ -93,7 +90,7 @@ function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedR
 		}
 
 		fetchData();
-	}, [setRecords, date, articleId, vendorId, token, addChangedRecord]);
+	}, [setRecords, date, articleId, vendorId, userInfo, addChangedRecord]);
 
 	const updateField = React.useCallback(
 		(recordIndex: number, update: (r: GUIRecord) => void) => {

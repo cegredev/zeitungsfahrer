@@ -7,7 +7,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import { twoDecimalsFormat } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../../stores/utility.store";
 import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
@@ -24,19 +24,19 @@ function VendorSalesView() {
 	const [loading, setLoading] = React.useState(false);
 	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			setLoading(true);
-			const info = await GET<SimpleVendor[]>("/auth/main/vendors?simple=true", token!);
+			const info = await GET<SimpleVendor[]>(`/auth/${userInfo?.role}/vendors?simple=true`, userInfo?.token);
 			const newVendors = info.data;
 
 			const newVendorId = vendorId === -1 ? (newVendors.length > 0 ? newVendors[0].id : -1) : vendorId;
 
 			const response = await GET<VendorSales>(
-				"/auth/main/vendors/" + newVendorId + "/sales?date=" + dayjs(date).format("YYYY-MM-DD"),
-				token!
+				`/auth/${userInfo?.role}/vendors/${newVendorId}/sales?date=${dayjs(date).format("YYYY-MM-DD")}`,
+				userInfo?.token
 			);
 
 			const data = response.data;
@@ -51,7 +51,7 @@ function VendorSalesView() {
 		}
 
 		fetchData();
-	}, [token, vendorId, date]);
+	}, [userInfo, vendorId, date]);
 
 	return (
 		<table

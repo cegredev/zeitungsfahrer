@@ -6,7 +6,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { GET } from "../../api";
 import { twoDecimalsFormat } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../../stores/utility.store";
 
 function SalesOverview() {
 	const navigate = useNavigate();
@@ -15,22 +15,25 @@ function SalesOverview() {
 	const [vendors, setVendors] = React.useState<DashboardVendor[]>([]);
 	const [articles, setArticles] = React.useState<DashboardRecords>({ articles: [], totalValueBrutto: 0 });
 
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
-			const res = await GET<DashboardVendor[]>("/auth/main/dashboard/vendors", token!);
+			const res = await GET<DashboardVendor[]>(`/auth/${userInfo?.role}/dashboard/vendors`, userInfo?.token);
 			const vendors = res.data;
 			setVendors(vendors);
 
 			if (vendors.length > 0) {
-				const articleRes = await GET<DashboardRecords>(`/auth/main/records/${vendors[0].id}/today`, token!);
+				const articleRes = await GET<DashboardRecords>(
+					`/auth/${userInfo?.role}/records/${vendors[0].id}/today`,
+					userInfo?.token
+				);
 				setArticles(articleRes.data);
 			}
 		}
 
 		fetchData();
-	}, [setVendors, token]);
+	}, [setVendors, userInfo]);
 
 	return (
 		<>
@@ -71,8 +74,8 @@ function SalesOverview() {
 											totalValueBrutto: 0,
 										});
 										const articles = await GET<DashboardRecords>(
-											`/auth/main/records/${vendors[i].id}/today`,
-											token!
+											`/auth/${userInfo?.role}/records/${vendors[i].id}/today`,
+											userInfo?.token
 										);
 										setArticles(articles.data);
 									}}

@@ -44,4 +44,4 @@ export const dinA4ExcelLandscape: Partial<AddWorksheetOptions> = {
 	},
 };
 
-export const allRoles: Role[] = ["main", "plan", "accountAdmin", "vendor"];
+export const allRoles: Role[] = ["main", "dataEntry", "plan", "accountAdmin", "vendor"];

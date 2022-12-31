@@ -6,7 +6,7 @@ import { useAtom } from "jotai";
 import React from "react";
 import { GET } from "../../api";
 import { invoiceSystems } from "../../consts";
-import { authTokenAtom } from "../../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../../stores/utility.store";
 import DateSelection from "../time/DateSelection";
 import MonthSelection from "../time/MonthSelection";
 import WeekSelection from "../time/WeekSelection";
@@ -23,18 +23,18 @@ function ArticleSalesView() {
 	const [loading, setLoading] = React.useState(false);
 	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	React.useEffect(() => {
 		async function fetchData() {
 			setLoading(true);
 
 			const response = await GET<ArticleSales>(
-				"/auth/main/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD"),
-				token!
+				`/auth/${userInfo?.role}/articles/sales?id=" + articleId + "&end=" + dayjs(date).format("YYYY-MM-DD")`,
+				userInfo?.token
 			);
 
-			const info = await GET<ArticleInfo[]>("/auth/main/articles/info", token!);
+			const info = await GET<ArticleInfo[]>(`/auth/${userInfo?.role}/articles/info`, userInfo!.token);
 			setArticleSales(response.data);
 
 			setArticleInfo(info.data);
@@ -43,7 +43,7 @@ function ArticleSalesView() {
 		}
 
 		fetchData();
-	}, [token, articleId, date]);
+	}, [userInfo, articleId, date]);
 
 	const dateSelections = [
 		<YearSelection date={date} setDate={setDate} />,

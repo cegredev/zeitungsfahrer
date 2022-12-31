@@ -123,25 +123,26 @@ function routes(app: Express) {
 		.post(postArticleController)
 		.put(putArticleController);
 	singleGuardedRoute(app, "main", "articles/:id").delete(deleteArticleController);
-	singleGuardedRoute(app, "main", "articles/sales").get(getArticleSalesController);
-	singleGuardedRoute(app, "main", "articles/info").get(getArticleInfoController);
+	guardedRoute(app, ["main", "dataEntry"], "articles/sales").get(getArticleSalesController);
+	guardedRoute(app, ["main", "dataEntry"], "articles/info").get(getArticleInfoController);
 
-	guardedRoute(app, ["main", "vendor"], "vendors")
-		.get(getVendorsController)
-		.post(postVendorController)
-		.put(putVendorController);
-	guardedRoute(app, ["main", "vendor"], "vendors/:id")
-		.get(getVendorFullController)
-		.post(createOrUpdateVendorController)
-		.delete(deleteVendorController);
-	guardedRoute(app, ["main", "vendor"], "vendors/:id/sales").get(getVendorSalesController);
-	guardedRoute(app, ["main", "vendor"], "vendors/:id/includedArticles").get(getIncludedArticlesController);
+	guardedRoute(app, ["main", "dataEntry", "vendor"], "vendors").get(getVendorsController);
+	singleGuardedRoute(app, "main", "vendors").post(postVendorController).put(putVendorController);
 
-	singleGuardedRoute(app, "main", "records/:id").get(getArticleRecordsController).post(postArticleRecordsController);
-	singleGuardedRoute(app, "main", "records/:vendorId/today").get(getTodaysRecordsController);
+	guardedRoute(app, ["main", "dataEntry", "vendor"], "vendors/:id").get(getVendorFullController);
+	singleGuardedRoute(app, "main", "vendors/:id").post(createOrUpdateVendorController).delete(deleteVendorController);
+	guardedRoute(app, ["main", "dataEntry", "vendor"], "vendors/:id/sales").get(getVendorSalesController);
+	guardedRoute(app, ["main", "dataEntry", "vendor"], "vendors/:id/includedArticles").get(
+		getIncludedArticlesController
+	);
 
-	singleGuardedRoute(app, "main", "dashboard/allSales").get(getAllSalesController);
-	singleGuardedRoute(app, "main", "dashboard/vendors").get(getDashboardVendorsController);
+	guardedRoute(app, ["main", "dataEntry"], "records/:id")
+		.get(getArticleRecordsController)
+		.post(postArticleRecordsController);
+	guardedRoute(app, ["main", "dataEntry"], "records/:vendorId/today").get(getTodaysRecordsController);
+
+	guardedRoute(app, ["main", "dataEntry"], "dashboard/allSales").get(getAllSalesController);
+	guardedRoute(app, ["main", "dataEntry"], "dashboard/vendors").get(getDashboardVendorsController);
 
 	singleGuardedRoute(app, "main", "reports/article/:id").get(getArticleSalesReportController);
 	singleGuardedRoute(app, "main", "reports/vendor/:id").get(getVendorSalesReportController);

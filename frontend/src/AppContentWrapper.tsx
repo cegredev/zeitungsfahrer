@@ -86,6 +86,10 @@ function AppContentWrapper() {
 								{ name: "Einstellungen", url: "/settings" },
 							],
 							[
+								{ name: "Dashboard", url: "/" },
+								{ name: "Einstellungen", url: "/changePassword" },
+							],
+							[
 								{ name: "Einsatzplan", url: "/schedule" },
 								{ name: "Kalender", url: "/calendar" },
 								{ name: "Bezirke", url: "/districts" },
@@ -110,7 +114,15 @@ function AppContentWrapper() {
 						<React.Fragment>
 							<Route
 								path="/"
-								element={<Navigate to={userInfo?.role === "main" ? "/dashboard" : "/schedule"} />}
+								element={
+									<Navigate
+										to={
+											userInfo?.role === "main" || userInfo.role === "dataEntry"
+												? "/dashboard"
+												: "/schedule"
+										}
+									/>
+								}
 							/>
 							<Route
 								path="/changePassword"
@@ -166,6 +178,10 @@ function AppContentWrapper() {
 											</SettingsPage>
 										}
 									/>
+								</>,
+								<>
+									<Route path="/dashboard" element={<Dashboard />} />
+									<Route path="/records/:id" element={<Records />} />
 								</>,
 								<>
 									<Route path="/calendar" element={<Calendar />} />

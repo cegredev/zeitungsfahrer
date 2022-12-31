@@ -116,11 +116,20 @@ export function openAndDownloadFile(name: string, extension: string, url: string
 	setTimeout(() => downloadUrl(url, name + extension), 1000);
 }
 
-export function chooseBasedOnRole<T>(role: Role | undefined, main: T, plan: T, accountAdmin: T, vendor: T): T {
+export function chooseBasedOnRole<T>(
+	role: Role | undefined,
+	main: T,
+	dataEntry: T,
+	plan: T,
+	accountAdmin: T,
+	vendor: T
+): T {
 	switch (role) {
 		case undefined:
 		case "main":
 			return main;
+		case "dataEntry":
+			return dataEntry;
 		case "plan":
 			return plan;
 		case "accountAdmin":

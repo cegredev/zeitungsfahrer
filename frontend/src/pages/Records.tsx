@@ -6,7 +6,7 @@ import { GET, POST } from "../api";
 import TimeframeSelection from "../components/time/TimeframeSelection";
 import { useAtom } from "jotai";
 import ArticleRecordsItem, { GUIArticleRecords } from "../components/ArticleRecordsItem";
-import { authTokenAtom } from "../stores/utility.store";
+import { authTokenAtom, userInfoAtom } from "../stores/utility.store";
 import AuthorizedPage from "./AuthorizedPage";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import { calculateTotalValueBrutto, normalizeDate, twoDecimalsFormat } from "../consts";
@@ -27,7 +27,7 @@ function Records() {
 	const [reportType, setReportType] = React.useState<ReportType>("pdf");
 
 	const [info, setInfo] = React.useState<VendorIncludedArticles | undefined>();
-	const [token] = useAtom(authTokenAtom);
+	const [userInfo] = useAtom(userInfoAtom);
 
 	const [changedRecords, setChangedRecords] = useImmer<ChangedRecord[]>([]);
 	const [recordsMap, setRecordsMap] = useImmer(new Map<number, GUIArticleRecords>());
@@ -55,15 +55,15 @@ function Records() {
 	React.useEffect(() => {
 		async function fetchData() {
 			const response = await GET<VendorIncludedArticles>(
-				`/auth/main/vendors/${vendorId}/includedArticles`,
-				token!
+				`/auth/${userInfo?.role}/vendors/${vendorId}/includedArticles`,
+				userInfo?.token
 			);
 
 			setInfo(response.data);
 		}
 
 		fetchData();
-	}, [vendorId, setInfo, token]);
+	}, [vendorId, setInfo, userInfo]);
 
 	return (
 		<AuthorizedPage>
@@ -108,7 +108,11 @@ function Records() {
 									header="Speichern"
 									content={`Wollen Sie das gewählte Element wirklich speichern?`}
 									onYes={async () => {
-										await POST(`/auth/main/records/${vendorId}`, changedRecords, token!);
+										await POST(
+											`/auth/${userInfo?.role}/records/${vendorId}`,
+											changedRecords,
+											userInfo!.token
+										);
 										setChangedRecords([]);
 										setRecordsMap((draft) => {
 											draft!.forEach(

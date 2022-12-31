@@ -43,6 +43,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 	let home;
 	switch (dbData.role) {
 		case "main":
+		case "dataEntry":
 			home = "/dashboard";
 			break;
 		case "plan":
