@@ -138,8 +138,6 @@ function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords,
 								const date = dayjs(startDate).add(recordIndex, "day").format("DD.MM.YYYY");
 								const soldAmount = record.supply - record.remissions;
 
-								if (record.edited) console.log(record);
-
 								return (
 									<tr
 										key={"sales-" + records.start.getTime() + "-" + records.id + "-" + recordIndex}
