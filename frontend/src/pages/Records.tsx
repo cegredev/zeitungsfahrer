@@ -145,6 +145,7 @@ function Records() {
 								vendorId={vendorId}
 								articleId={id}
 								date={date}
+								recordsMap={recordsMap}
 								setRecords={setRecordsMap}
 								addChangedRecord={addChangedRecord}
 							/>

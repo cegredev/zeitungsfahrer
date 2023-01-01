@@ -27,6 +27,7 @@ interface Props {
 	vendorId: number;
 	articleId: number;
 	date: Date;
+	recordsMap: Map<number, GUIArticleRecords>;
 	setRecords: Updater<Map<number, GUIArticleRecords>>;
 	addChangedRecord: (r: ChangedRecord) => void;
 }
@@ -43,10 +44,10 @@ function StateDisplay({ record }: { record: GUIRecord }): JSX.Element {
 	return <span style={{ color: "green" }}>Vollständig</span>;
 }
 
-function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedRecord }: Props) {
+function ArticleRecordsItem({ vendorId, articleId, date, recordsMap, setRecords, addChangedRecord }: Props) {
 	const [userInfo] = useAtom(userInfoAtom);
 
-	const [records, setOwnRecords] = React.useState<GUIArticleRecords | undefined>();
+	const records = recordsMap.get(articleId);
 
 	React.useEffect(() => {
 		async function fetchData() {
@@ -86,7 +87,6 @@ function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedR
 			};
 
 			setRecords((draft) => draft.set(articleId, articleRecords));
-			setOwnRecords(articleRecords);
 		}
 
 		fetchData();
@@ -137,6 +137,8 @@ function ArticleRecordsItem({ vendorId, articleId, date, setRecords, addChangedR
 								const weekday = (recordIndex + weekdayOffset) % 7;
 								const date = dayjs(startDate).add(recordIndex, "day").format("DD.MM.YYYY");
 								const soldAmount = record.supply - record.remissions;
+
+								if (record.edited) console.log(record);
 
 								return (
 									<tr
