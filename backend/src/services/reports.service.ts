@@ -338,7 +338,7 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 
 		const existingRecords = (
 			await poolExecute<Record>(
-				`SELECT date, article_id as articleId, SUM(supply) AS supply, SUM(remissions) AS remissions FROM records
+				`SELECT date, SUM(supply) AS supply, SUM(remissions) AS remissions FROM records
 			 WHERE article_id=? AND date BETWEEN ? AND ?
 			 GROUP BY date`,
 				[id, dayjs(start).format(DATE_FORMAT), dayjs(end).format(DATE_FORMAT)]
@@ -351,6 +351,7 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 
 				return {
 					...r,
+					articleId: id,
 					supply,
 					remissions,
 					sales: supply - remissions,
