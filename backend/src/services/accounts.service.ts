@@ -114,6 +114,6 @@ export async function changePassword(username: string, newPass: string): Promise
 	return { code: 200 };
 }
 
-export function generateRandomPassword(): string {
-	return crypto.randomBytes(4).toString("hex");
+export async function deleteAccount(username: string): Promise<void> {
+	await poolExecute("DELETE FROM accounts WHERE name=?", [username]);
 }

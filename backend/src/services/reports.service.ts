@@ -391,7 +391,7 @@ export async function getAllSalesReport(date: Date, invoiceSystem: number): Prom
 }
 
 export async function getWeeklyBillReport(date: Date): Promise<WeeklyBillReport> {
-	const vendors = await getVendorsSimple();
+	const vendors = (await getVendorsSimple()).filter((vendor) => vendor.active);
 
 	let totalNetto = Big(0),
 		totalBrutto = Big(0);

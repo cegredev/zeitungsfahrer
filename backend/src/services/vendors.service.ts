@@ -5,7 +5,7 @@ import { generatePassword, poolExecute } from "../util.js";
 import { ArticleInfo } from "../models/articles.model.js";
 import { DATE_FORMAT } from "../consts.js";
 import dayjs from "dayjs";
-import { createAccount } from "./accounts.service.js";
+import { createAccount, deleteAccount } from "./accounts.service.js";
 
 export async function getIdFromCustomId(cid: string): Promise<number | undefined> {
 	const res = await poolExecute<{ id: number }>("SELECT id FROM vendors WHERE custom_id=?", [cid]);
@@ -136,7 +136,7 @@ export async function createVendor(vendor: Vendor): Promise<RouteReport> {
 
 	const password = generatePassword(8);
 
-	await createAccount("vendor:" + id, password, "vendor");
+	await createAccount(vendorAccountName(id), password, "vendor");
 
 	return {
 		code: 200,
@@ -180,9 +180,15 @@ export async function updateVendor(vendor: Vendor): Promise<RouteReport> {
 export async function deleteVendor(id: number): Promise<RouteReport> {
 	await pool.execute("DELETE FROM vendors WHERE id=?", [id]);
 
+	await deleteAccount(vendorAccountName(id));
+
 	return {
 		code: 200,
 	};
+}
+
+export function vendorAccountName(id: number): string {
+	return `vendor:${id}`;
 }
 
 export async function getVendorCatalog(vendorId: number, articleId?: number): Promise<VendorCatalog> {
