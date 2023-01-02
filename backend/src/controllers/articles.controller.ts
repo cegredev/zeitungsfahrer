@@ -1,3 +1,4 @@
+import Big from "big.js";
 import { Request, Response } from "express";
 import { Article } from "../models/articles.model.js";
 import {
@@ -18,7 +19,14 @@ export async function getArticleInfoController(req: Request, res: Response) {
 }
 
 export async function postArticleController(req: Request<any, any, Article>, res: Response) {
-	const { name, prices } = req.body;
+	let { name, prices } = req.body;
+
+	prices = prices.map((price) => ({
+		...price,
+		marketSell: Big(price.marketSell),
+		purchase: Big(price.purchase),
+		sell: Big(price.sell),
+	}));
 
 	await handler(async () => await createArticle(name, prices), res);
 }
