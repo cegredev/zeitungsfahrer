@@ -104,10 +104,10 @@ function generateTotalSellOfItems(items: ReportItem[]) {
 
 	for (const item of items) {
 		for (const record of item.rows) {
-			const netto = record.price.sell.mul(record.sales);
+			const netto = record.price.sell.mul(record.sales).round(2);
 
 			totalSellNetto = totalSellNetto.add(netto);
-			totalSellBrutto = totalSellBrutto.add(mulWithMwst(netto, record.price.mwst));
+			totalSellBrutto = totalSellBrutto.add(mulWithMwst(netto, record.price.mwst).round(2));
 		}
 	}
 
@@ -156,9 +156,11 @@ export async function getVendorSalesReport(
 
 			item.rows.push(record);
 
-			nettoByMwst.set(record.price.mwst, nettoPrice.add(record.price.sell.mul(record.sales)));
+			nettoByMwst.set(record.price.mwst, nettoPrice.add(record.price.sell.mul(record.sales).round(2)));
 		}
 	}
+
+	console.log(JSON.stringify([...nettoByMwst.entries()]));
 
 	const vendor = await getVendorSimple(vendorId);
 
@@ -256,10 +258,11 @@ export async function createArticleListingReport(
 			let [sellBrutto, marketBrutto] = [Big(0), Big(0)];
 
 			const rows = item.rows.map((record) => {
-				const sellValue = record.sales > 0 ? Big(record.sales).mul(record.price!.sell) : Big(0);
-				const marketValue = record.sales > 0 ? Big(record.sales).mul(record.price!.marketSell) : Big(0);
-				const sellValueBrutto = mulWithMwst(sellValue, record.price.mwst);
-				const marketValueBrutto = mulWithMwst(marketValue, record.price.mwst);
+				const sellValue = record.sales > 0 ? Big(record.sales).mul(record.price!.sell).round(2) : Big(0);
+				const marketValue =
+					record.sales > 0 ? Big(record.sales).mul(record.price!.marketSell).round(2) : Big(0);
+				const sellValueBrutto = mulWithMwst(sellValue, record.price.mwst).round(2);
+				const marketValueBrutto = mulWithMwst(marketValue, record.price.mwst).round(2);
 
 				supply += record.supply;
 				remissions += record.remissions;
@@ -276,9 +279,9 @@ export async function createArticleListingReport(
 					record.sales,
 					record.price.mwst,
 					sellValue.toNumber(),
-					sellValue.eq(0) ? 0 : mulWithMwst(sellValue, record.price.mwst).toNumber(),
+					sellValue.eq(0) ? 0 : mulWithMwst(sellValue, record.price.mwst).round(2).toNumber(),
 					record.price.marketSell,
-					mulWithMwst(Big(record.price.marketSell), record.price.mwst).toNumber(),
+					mulWithMwst(Big(record.price.marketSell), record.price.mwst).round(2).toNumber(),
 				];
 			});
 

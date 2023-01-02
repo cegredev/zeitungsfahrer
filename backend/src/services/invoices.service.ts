@@ -36,8 +36,8 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 		return {
 			name: item.name,
 			rows: item.rows.map((row) => {
-				const netto = row.price.sell.mul(row.sales);
-				const brutto = mulWithMwst(netto, row.price.mwst);
+				const netto = row.price.sell.mul(row.sales).round(2);
+				const brutto = mulWithMwst(netto, row.price.mwst).round(2);
 
 				totalSales += row.sales;
 				totalNetto = totalNetto.add(netto);
@@ -60,7 +60,7 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 	let entireBrutto = Big(0);
 
 	const mwstSummaries: SingleMwstSummary[] = [...report.nettoByMwst.entries()].map(([mwst, nettoTotal]) => {
-		const bruttoTotal = mulWithMwst(nettoTotal, mwst);
+		const bruttoTotal = mulWithMwst(nettoTotal, mwst).round(2);
 		entireBrutto = entireBrutto.add(bruttoTotal);
 
 		return {
