@@ -1,5 +1,11 @@
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
-import { getVendorSalesReport, itemsToPages } from "./reports.service.js";
+import {
+	createArticleListingReport,
+	createPDFReport,
+	createReportDoc,
+	getVendorSalesReport,
+	itemsToPages,
+} from "./reports.service.js";
 import { getVendor } from "./vendors.service.js";
 import fs from "fs/promises";
 import dayjs from "dayjs";
@@ -11,9 +17,17 @@ import { mulWithMwst, poolExecute } from "../util.js";
 import Big from "big.js";
 import { createDocument, storeDocument } from "./documents.service.js";
 
-export async function getInvoiceData(vendorId: number, date: Date, system: number): Promise<Invoice> {
+export async function getInvoiceData(
+	vendorId: number,
+	date: Date,
+	system: number,
+	createReport: boolean
+): Promise<Invoice> {
 	const vendor = await getVendor(vendorId);
 	const report = await getVendorSalesReport(vendorId, date, system);
+
+	if (createReport)
+		await createPDFReport(await createReportDoc(await createArticleListingReport(report, date, system)));
 
 	const today = new Date();
 	let description = "" + date.getFullYear();
@@ -92,7 +106,7 @@ export async function getInvoiceData(vendorId: number, date: Date, system: numbe
 }
 
 export async function createInvoicePDF(vendorId: number, date: Date, system: number): Promise<Buffer> {
-	const invoice = await getInvoiceData(vendorId, date, system);
+	const invoice = await getInvoiceData(vendorId, date, system, true);
 
 	const customText = await getCustomText();
 	const template = (await fs.readFile("./templates/invoice.html")).toString();

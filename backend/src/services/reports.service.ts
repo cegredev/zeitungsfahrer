@@ -76,7 +76,6 @@ export async function createArticleSalesReport(articleId: number, date: Date, in
 	];
 
 	return {
-		id: articleId,
 		invoiceSystem,
 		itemSpecifier: (await getArticleInfo(articleId)).name,
 		columns: [
@@ -652,6 +651,8 @@ export async function createPDFReport(doc: ReportDoc): Promise<Buffer> {
 	});
 
 	const pdf = await generatePDF(html);
+
+	console.log(doc.vendorId);
 
 	if (doc.vendorId !== undefined)
 		await createDocument("report", doc.vendorId, new Date(), "pdf", doc.header.sub, pdf);
