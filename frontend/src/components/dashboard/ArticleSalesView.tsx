@@ -16,7 +16,7 @@ import ReportTypeSelection from "./ReportTypeSelection";
 
 function ArticleSalesView() {
 	const [articleSales, setArticleSales] = React.useState<ArticleSales | undefined>(undefined);
-	const [articleId, setArticleId] = React.useState(1);
+	const [articleId, setArticleId] = React.useState(-1);
 	const [articleInfo, setArticleInfo] = React.useState<ArticleInfo[]>([]);
 	const [articleIndex, setArticleIndex] = React.useState(0);
 	const [date, setDate] = React.useState(new Date());
@@ -38,7 +38,7 @@ function ArticleSalesView() {
 			setArticleSales(response.data);
 
 			setArticleInfo(info.data);
-			setArticleId(info.data[0].id);
+			if (info.data.length > 0) setArticleId(info.data[0].id);
 
 			setLoading(false);
 		}
