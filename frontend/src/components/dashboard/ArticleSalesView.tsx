@@ -30,7 +30,7 @@ function ArticleSalesView() {
 			setLoading(true);
 
 			const response = await GET<ArticleSales>(
-				`/auth/${userInfo?.role}/articles/sales?id=${articleId}&end=${dayjs(date).format("YYYY-MM-DD")}`,
+				`/auth/${userInfo?.role}/articles/sales?id=${articleId}&end=${dayjs(date).format("YYYY-MM-DD")}n`,
 				userInfo?.token
 			);
 
@@ -38,6 +38,7 @@ function ArticleSalesView() {
 			setArticleSales(response.data);
 
 			setArticleInfo(info.data);
+			setArticleId(info.data[0].id);
 
 			setLoading(false);
 		}
@@ -109,7 +110,9 @@ function ArticleSalesView() {
 								<td>
 									<ReportButton
 										date={date}
-										filePrefix={articleInfo.find((article) => article.id === articleId)!.name}
+										filePrefix={
+											articleInfo.find((article) => article.id === articleId)?.name || "unbekannt"
+										}
 										reportsPath={"article/" + articleId}
 										invoiceSystem={3 - index}
 										type={reportType}
