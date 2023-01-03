@@ -239,8 +239,6 @@ function VendorSettings() {
 								return;
 							}
 
-							console.log("saving");
-
 							try {
 								if (isDraft) {
 									const response = await POST<{ id: number; password: string }>(
@@ -249,14 +247,10 @@ function VendorSettings() {
 										userInfo!.token
 									);
 
-									console.log("saved!");
-
 									const data = response.data;
 									setId(String(data.id));
 									setVendor({ ...vendor, id: data.id });
 									navigate(`/vendors/${data.id}`);
-
-									console.log(data);
 
 									setPopupMessage({
 										type: "info",

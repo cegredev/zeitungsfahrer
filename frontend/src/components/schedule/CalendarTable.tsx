@@ -279,8 +279,6 @@ function CalendarTable({ date, setDate, schedule, setSchedule, changedEntries, s
 													...newCell,
 												};
 
-												console.log(newEntry.date);
-
 												const index = changedEntries.findIndex(
 													(entry) =>
 														entry.driverId === driver.id &&

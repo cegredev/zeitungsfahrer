@@ -38,7 +38,7 @@ function ArticleSalesView() {
 			setArticleSales(response.data);
 
 			setArticleInfo(info.data);
-			if (info.data.length > 0) setArticleId(info.data[0].id);
+			if (info.data.length > 0 && articleId === -1) setArticleId(info.data[0].id);
 
 			setLoading(false);
 		}
@@ -99,7 +99,7 @@ function ArticleSalesView() {
 				) : (
 					articleSales?.sales.map((sales, index) => {
 						return (
-							<tr key={"article-sales-db-" + index}>
+							<tr key={"article-sales-" + articleId + "-db-" + index}>
 								<td style={{ fontWeight: "bold" }}>
 									{invoiceSystems[invoiceSystems.length - index - 1]}
 								</td>
