@@ -34,7 +34,8 @@ function BetterInput(props: BetterInputProps) {
 			type={props.type || "text"}
 			onChange={(evt) => {
 				const value = evt.target.value;
-				setText(filter(value, text) || value);
+				const newValue = filter(value, text);
+				setText(newValue === undefined || newValue === null ? value : newValue);
 			}}
 		/>
 	);

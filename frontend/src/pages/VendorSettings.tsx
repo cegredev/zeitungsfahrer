@@ -10,6 +10,7 @@ import { authTokenAtom, popupMessageAtom, userInfoAtom } from "../stores/utility
 import NumberInput from "../components/util/NumberInput";
 import axios from "axios";
 import { generatePassword } from "../consts";
+import BetterInput from "../components/util/BetterInput";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -150,12 +151,17 @@ function VendorSettings() {
 						<h3 style={headerCSS}>Sonstiges</h3>
 
 						<label htmlFor="taxId">Steuernr.:</label>
-						<input
-							type="string"
+						<BetterInput
 							name="taxId"
-							value={vendor.taxId}
-							onChange={(evt) => {
-								setVendor({ ...vendor, taxId: evt.target.value });
+							customProps={{
+								filter(input, previous) {
+									if (input.match(/[^0-9/]/)) {
+										return previous;
+									}
+
+									setVendor({ ...vendor, taxId: input });
+								},
+								startValue: vendor.taxId,
 							}}
 						/>
 
@@ -228,7 +234,7 @@ function VendorSettings() {
 						content={`Wollen Sie die Änderungen wirklich speichern?`}
 						onYes={async () => {
 							if (
-								Object.values(vendor)
+								[vendor.firstName, vendor.lastName, vendor.address, vendor.zipCode, vendor.city]
 									.map((val) => String(val).length)
 									.some((length) => length === 0)
 							) {
