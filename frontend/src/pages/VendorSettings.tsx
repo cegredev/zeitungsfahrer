@@ -43,12 +43,12 @@ function VendorSettings() {
 					firstName: "",
 					lastName: "",
 					address: "",
-					zipCode: 0,
+					zipCode: 5000,
 					city: "",
 					email: "",
 					phone: "",
 					taxId: "",
-					customId: 100,
+					customId: 123 + Math.floor(Math.random() * 100000),
 					active: true,
 				};
 
@@ -234,7 +234,14 @@ function VendorSettings() {
 						content={`Wollen Sie die Änderungen wirklich speichern?`}
 						onYes={async () => {
 							if (
-								[vendor.firstName, vendor.lastName, vendor.address, vendor.zipCode, vendor.city]
+								[
+									vendor.firstName,
+									vendor.lastName,
+									vendor.address,
+									vendor.zipCode,
+									vendor.city,
+									vendor.customId,
+								]
 									.map((val) => String(val).length)
 									.some((length) => length === 0)
 							) {
