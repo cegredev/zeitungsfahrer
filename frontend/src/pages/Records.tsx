@@ -65,6 +65,8 @@ function Records() {
 		fetchData();
 	}, [vendorId, setInfo, userInfo]);
 
+	const hasReportRights = userInfo?.role === "main";
+
 	return (
 		<AuthorizedPage>
 			<div className="page">
@@ -92,14 +94,14 @@ function Records() {
 								onChange={(date) => setDate(date)}
 								startDate={initialEndDate}
 								vendor={{ id: vendorId, name: info.name }}
-								reportType={reportType}
+								reportType={hasReportRights ? reportType : undefined}
 							/>
 							<div
 								style={{
 									display: "flex",
 									flexDirection: "column",
 									gap: 5,
-									height: "60%",
+									height: hasReportRights ? "60%" : "auto",
 									justifyContent: "space-between",
 								}}
 							>
@@ -127,7 +129,9 @@ function Records() {
 										});
 									}}
 								/>
-								<ReportTypeSelection reportType={reportType} setReportType={setReportType} />
+								{hasReportRights && (
+									<ReportTypeSelection reportType={reportType} setReportType={setReportType} />
+								)}
 							</div>
 						</div>
 						<h3 style={{ padding: 5, backgroundColor: "lightgray", borderRadius: 5 }}>
