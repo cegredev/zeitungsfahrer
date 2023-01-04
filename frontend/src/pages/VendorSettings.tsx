@@ -6,10 +6,9 @@ import VendorCatalogSettings from "../components/VendorCatalogSettings";
 import { Vendor, VendorCatalog } from "backend/src/models/vendors.model";
 import YesNoPrompt from "../components/util/YesNoPrompt";
 import LabeledCheckbox from "../components/util/LabeledCheckbox";
-import { authTokenAtom, popupMessageAtom, userInfoAtom } from "../stores/utility.store";
+import { popupMessageAtom, userInfoAtom } from "../stores/utility.store";
 import NumberInput from "../components/util/NumberInput";
 import axios from "axios";
-import { generatePassword } from "../consts";
 import BetterInput from "../components/util/BetterInput";
 import ResetPasswordPopup from "../components/ResetPasswordPopup";
 

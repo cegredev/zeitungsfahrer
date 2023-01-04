@@ -16,6 +16,7 @@ export interface LoginInfo {
 export interface LoginResult {
 	token: string;
 	home: string;
+	username: string;
 	role: Role;
 	/**
 	 * Only present if role === "vendor"

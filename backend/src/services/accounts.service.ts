@@ -3,7 +3,7 @@ import { RouteReport } from "../database.js";
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
 import { LoginResult, LoginInfo, Role, Account } from "../models/accounts.model.js";
-import { getIdFromCustomId, getVendorSimple } from "./vendors.service.js";
+import { getIdFromCustomId, getVendorSimple, vendorAccountName } from "./vendors.service.js";
 
 import { VENDOR_USERNAME_PREFIX } from "../models/vendors.model.js";
 
@@ -22,7 +22,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 		const id = await getIdFromCustomId(name);
 		if (id === undefined) return;
 
-		const parsedName = "vendor:" + id;
+		const parsedName = vendorAccountName(id);
 
 		const passRes = await poolExecute<{ password: string }>("SELECT password FROM accounts WHERE name=?", [
 			parsedName,
@@ -63,6 +63,7 @@ export async function login(name: string, password: string): Promise<LoginResult
 	return {
 		token: generateAccessToken({ username: dbData.name, role: dbData.role, vendorId: dbData.id }),
 		home,
+		username: dbData.name,
 		role: dbData.role,
 		vendorId: dbData.id,
 	};

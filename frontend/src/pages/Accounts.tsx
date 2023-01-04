@@ -1,6 +1,7 @@
 import { Account, Role } from "backend/src/models/accounts.model";
 import { useAtom } from "jotai";
 import React from "react";
+import { Link } from "react-router-dom";
 import { useImmer } from "use-immer";
 import { DELETE, GET, POST } from "../api";
 import ResetPasswordPopup from "../components/ResetPasswordPopup";
@@ -40,34 +41,44 @@ function Accounts() {
 						</tr>
 					</thead>
 					<tbody>
-						{accounts.map((account) => (
-							<tr key={account.name}>
-								<td>{account.prettyName || account.name}</td>
-								<td>{rolePrettyNames.get(account.role)}</td>
-								<td>
-									<ResetPasswordPopup username={account.name} />
-								</td>
-								<td>
-									{account.role !== "vendor" && (
-										<YesNoPrompt
-											content="Wollen Sie diesen Account wirklich löschen?"
-											header="Account löschen"
-											trigger={<button>Löschen</button>}
-											onYes={async () => {
-												await DELETE(
-													`/auth/${userInfo?.role}/accounts?name=${account.name}`,
-													userInfo!.token
-												);
+						{accounts.map((account) => {
+							const accountName = account.prettyName || account.name;
 
-												setAccounts((accounts) =>
-													accounts.filter((acc) => acc.name !== account.name)
-												);
-											}}
-										/>
-									)}
-								</td>
-							</tr>
-						))}
+							return (
+								<tr key={account.name}>
+									<td>{accountName}</td>
+									<td>{rolePrettyNames.get(account.role)}</td>
+									<td>
+										{userInfo!.username === account.name ? (
+											<Link className="download-link" to={"/changePassword"}>
+												Ändern
+											</Link>
+										) : (
+											<ResetPasswordPopup username={account.name} />
+										)}
+									</td>
+									<td>
+										{account.role !== "vendor" && (
+											<YesNoPrompt
+												content={`Wollen Sie den Account "${accountName}" wirklich löschen?`}
+												header="Account löschen"
+												trigger={<button>Löschen</button>}
+												onYes={async () => {
+													await DELETE(
+														`/auth/${userInfo?.role}/accounts?name=${account.name}`,
+														userInfo!.token
+													);
+
+													setAccounts((accounts) =>
+														accounts.filter((acc) => acc.name !== account.name)
+													);
+												}}
+											/>
+										)}
+									</td>
+								</tr>
+							);
+						})}
 					</tbody>
 					<tfoot>
 						<tr>

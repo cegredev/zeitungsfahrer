@@ -145,6 +145,10 @@ a:visited {
 	width: 100%;
 }
 
+.download-link {
+	text-decoration: none;
+}
+
 .download-link:hover {
 	cursor: pointer;
 	text-decoration: underline;
