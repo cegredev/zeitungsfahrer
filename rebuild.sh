@@ -1,3 +1,4 @@
+git reset --hard
 git pull
 cd frontend
 bash build.sh
