@@ -1,7 +1,7 @@
 git pull
-cd ../frontend
+cd frontend
 bash build.sh
-cd backend
+cd ../backend
 npm install
 npm run build
 pm2 restart touren-fahrer-api
