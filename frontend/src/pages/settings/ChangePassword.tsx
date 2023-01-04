@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import YesNoPrompt from "../../components/util/YesNoPrompt";
-import BetterInput from "../../components/util/BetterInput";
 import { POST } from "../../api";
 import { useAtom } from "jotai";
 import { userInfoAtom, popupMessageAtom } from "../../stores/utility.store";

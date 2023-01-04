@@ -2,10 +2,10 @@ import { RouteReport } from "../database.js";
 
 import jwt from "jsonwebtoken";
 import { getEnvToken, poolExecute } from "../util.js";
-import { LoginResult, LoginInfo, Role } from "../models/accounts.model.js";
-import { getIdFromCustomId } from "./vendors.service.js";
+import { LoginResult, LoginInfo, Role, Account } from "../models/accounts.model.js";
+import { getIdFromCustomId, getVendorSimple } from "./vendors.service.js";
 
-import crypto from "crypto";
+import { VENDOR_USERNAME_PREFIX } from "../models/vendors.model.js";
 
 function generateAccessToken(payload: LoginInfo) {
 	return jwt.sign(payload, getEnvToken(), { expiresIn: "12h" });
@@ -83,11 +83,25 @@ export async function loginRoute(name: string, password: string): Promise<RouteR
 }
 
 export async function getAccounts(): Promise<RouteReport> {
-	const response = await poolExecute("SELECT name, role FROM accounts");
+	const response = await poolExecute<Account>("SELECT name, role FROM accounts ORDER BY role, name");
+
+	const accounts = response.map(async (acc) => {
+		if (acc.name.startsWith(VENDOR_USERNAME_PREFIX)) {
+			const id = parseInt(acc.name.substring(VENDOR_USERNAME_PREFIX.length));
+			const vendor = await getVendorSimple(id);
+
+			acc = {
+				...acc,
+				prettyName: `${vendor.name} (${vendor.customId})`,
+			};
+		}
+
+		return acc;
+	});
 
 	return {
 		code: 200,
-		body: [...response[0]],
+		body: await Promise.all(accounts),
 	};
 }
 

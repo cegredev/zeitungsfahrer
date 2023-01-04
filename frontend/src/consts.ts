@@ -25,6 +25,14 @@ export const weekdays = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freita
 
 export const weekdaysShort = ["Mon", "Die", "Mitt", "Don", "Frei", "Sam", "Son"];
 
+export const rolePrettyNames = new Map<Role, string>([
+	["accountAdmin", "Admin"],
+	["main", "Hauptaccount"],
+	["dataEntry", "Dateneintrag"],
+	["plan", "Kalender"],
+	["vendor", "Händler"],
+]);
+
 export const twoDecimalsFormat = new Intl.NumberFormat("de-DE", {
 	style: "currency",
 	currency: "EUR",

@@ -3,6 +3,8 @@ export type Role = "main" | "dataEntry" | "plan" | "accountAdmin" | "vendor";
 export interface Account {
 	name: string;
 	role: Role;
+	prettyName?: string;
+	password?: string;
 }
 
 export interface LoginInfo {

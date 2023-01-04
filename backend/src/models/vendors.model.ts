@@ -1,3 +1,5 @@
+export const VENDOR_USERNAME_PREFIX = "vendor:";
+
 export interface SimpleVendor {
 	id: number;
 	name: string;

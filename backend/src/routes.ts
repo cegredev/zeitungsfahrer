@@ -3,6 +3,8 @@ import { allRoles } from "./consts.js";
 import {
 	changeOtherPasswordController,
 	changeOwnPasswordController,
+	createAccountController,
+	deleteAccountController,
 	getAccountsController,
 	loginController,
 } from "./controllers/accounts.controller.js";
@@ -178,7 +180,10 @@ function routes(app: Express) {
 	singleGuardedRoute(app, "plan", "calendar/districts/:id").put(updateDistrictController);
 
 	// Accounts
-	singleGuardedRoute(app, "accountAdmin", "accounts").get(getAccountsController);
+	singleGuardedRoute(app, "accountAdmin", "accounts")
+		.get(getAccountsController)
+		.post(createAccountController)
+		.delete(deleteAccountController);
 	guardedRoute(app, ["main", "accountAdmin"], "accounts/passwords/other").post(changeOtherPasswordController);
 	unguardedRoute(app, "accounts/passwords/self").post(changeOwnPasswordController);
 

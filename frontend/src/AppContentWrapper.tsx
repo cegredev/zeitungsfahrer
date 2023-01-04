@@ -24,6 +24,7 @@ import { chooseBasedOnRole } from "./consts";
 import Documents from "./pages/Documents";
 import InvoiceSettings from "./pages/settings/InvoiceSettings";
 import ChangePassword from "./pages/settings/ChangePassword";
+import Accounts from "./pages/Accounts";
 
 function AppContentWrapper() {
 	const [popupMessage, setPopupMessage] = useAtom(popupMessageAtom);
@@ -189,7 +190,7 @@ function AppContentWrapper() {
 									<Route path="/districts" element={<DistrictCalendar />} />
 								</>,
 								<>
-									<Route path="/ADMIN STUFF HELp" element={<div />} />
+									<Route path="/accounts" element={<Accounts />} />
 									<Route path="/changePassword/:username" element={<ChangePassword />} />
 								</>,
 								<>

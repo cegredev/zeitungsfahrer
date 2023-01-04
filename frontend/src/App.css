@@ -360,3 +360,13 @@ div.react-datepicker-wrapper input {
 	border-radius: 18px;
 	border: 1px solid #cfcece;
 }
+
+table.table-with-border {
+	border-spacing: 0;
+	border-collapse: collapse;
+}
+
+table.table-with-border td,
+table.table-with-border th {
+	border: 1px solid black;
+}

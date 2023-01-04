@@ -11,6 +11,7 @@ import NumberInput from "../components/util/NumberInput";
 import axios from "axios";
 import { generatePassword } from "../consts";
 import BetterInput from "../components/util/BetterInput";
+import ResetPasswordPopup from "../components/ResetPasswordPopup";
 
 const spanWhole: React.CSSProperties = {
 	gridColumn: "span 4",
@@ -194,36 +195,7 @@ function VendorSettings() {
 							<>
 								{" "}
 								<label>Passwort:</label>
-								<YesNoPrompt
-									content="Wollen Sie das Passwort wirklich zurücksetzen?"
-									header="Passwort zurücksetzen"
-									trigger={<label className="download-link">Zurücksetzen</label>}
-									onYes={async () => {
-										const password = generatePassword(8);
-
-										try {
-											await POST(
-												`/auth/${userInfo?.role}/accounts/passwords/other`,
-												{
-													username: "vendor:" + vendor.id!,
-													password,
-												},
-												userInfo!.token
-											);
-
-											setPopupMessage({
-												type: "success",
-												content: `Das neue Passwort ist: ${password}
-												Bitte geben Sie es and den Händler weiter und leiten Sie ihn an es für sich zu ändern.`,
-											});
-										} catch {
-											setPopupMessage({
-												type: "error",
-												content: "Da hat etwas leider nicht funktioniert.",
-											});
-										}
-									}}
-								/>
+								<ResetPasswordPopup username={"vendor:" + vendor.id!} />
 							</>
 						)}
 					</div>

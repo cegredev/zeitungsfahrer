@@ -1,4 +1,10 @@
-import { DashboardVendor, SimpleVendor, Vendor, VendorIncludedArticles } from "../models/vendors.model.js";
+import {
+	DashboardVendor,
+	SimpleVendor,
+	Vendor,
+	VendorIncludedArticles,
+	VENDOR_USERNAME_PREFIX,
+} from "../models/vendors.model.js";
 import pool, { RouteReport } from "../database.js";
 import { VendorCatalog, VendorCatalogEntry } from "../models/vendors.model.js";
 import { generatePassword, poolExecute } from "../util.js";
@@ -188,7 +194,7 @@ export async function deleteVendor(id: number): Promise<RouteReport> {
 }
 
 export function vendorAccountName(id: number): string {
-	return `vendor:${id}`;
+	return VENDOR_USERNAME_PREFIX + id;
 }
 
 export async function getVendorCatalog(vendorId: number, articleId?: number): Promise<VendorCatalog> {

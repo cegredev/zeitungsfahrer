@@ -1,9 +1,28 @@
 import { Request, Response } from "express";
-import { changePassword, getAccounts, loginRoute, login } from "../services/accounts.service.js";
+import { Account } from "../models/accounts.model.js";
+import {
+	changePassword,
+	getAccounts,
+	loginRoute,
+	login,
+	createAccount,
+	deleteAccount,
+} from "../services/accounts.service.js";
 import { getTokenData, handler } from "./controllers.js";
 
 export async function getAccountsController(req: Request, res: Response) {
 	await handler(getAccounts, res);
+}
+
+export async function createAccountController(req: Request<any, any, Account>, res: Response) {
+	const account = req.body;
+	handler(
+		async () => ({
+			code: 200,
+			body: await createAccount(account.name, account.password!, account.role),
+		}),
+		res
+	);
 }
 
 export async function loginController(req: Request<any, any, { name: string; password: string }>, res: Response) {
@@ -29,4 +48,8 @@ export async function changeOtherPasswordController(
 	res: Response
 ) {
 	handler(async () => await changePassword(req.body.username, req.body.password), res);
+}
+
+export async function deleteAccountController(req: Request<any, any, any, { name: string }>, res: Response) {
+	handler(async () => ({ code: 200, body: await deleteAccount(req.query.name) }), res);
 }
