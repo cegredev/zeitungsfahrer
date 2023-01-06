@@ -2,6 +2,7 @@ import Big from "big.js";
 import dayjs from "dayjs";
 import crypto from "crypto";
 import pool from "./database.js";
+import { MAX_DIGITS } from "./services/new_reports.js";
 
 const proto = dayjs.prototype;
 proto.dayOfYear = function (input: Date) {
@@ -31,8 +32,11 @@ export function getEnvToken(): string {
 	return token;
 }
 
-export function mulWithMwst(value: Big, mwst: number): Big {
-	return value.mul(1 + mwst / 100.0);
+/**
+ * Multiplies value with vat and rounds it to MAX_DIGITS.
+ */
+export function withVAT(value: Big, mwst: number): Big {
+	return value.mul(1 + mwst / 100.0).round(MAX_DIGITS);
 }
 
 export function generatePassword(length: number): string {

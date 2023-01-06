@@ -5,7 +5,7 @@ import { DATE_FORMAT, MILlIS_IN_DAY } from "../consts.js";
 import { getIncludedArticles, getVendorCatalog } from "./vendors.service.js";
 import { daysBetween, normalizeDate } from "../time.js";
 import { getPrices } from "./articles.service.js";
-import { getConvertedWeekday, mulWithMwst, poolExecute } from "../util.js";
+import { getConvertedWeekday, withVAT, poolExecute } from "../util.js";
 import settings from "./settings.service.js";
 import { ArticleInfo } from "../models/articles.model.js";
 import Big from "big.js";
@@ -57,7 +57,7 @@ export function calculateSalesValues(records: Record[]): { totalValueNetto: Big;
 	return {
 		totalValueNetto: values.map(([price, _mwst]) => price).reduce((prev, current) => prev.add(current), Big(0)),
 		totalValueBrutto: values
-			.map(([price, mwst]) => mulWithMwst(price, mwst))
+			.map(([price, mwst]) => withVAT(price, mwst))
 			.reduce((prev, current) => prev.add(current), Big(0)),
 	};
 }
@@ -136,7 +136,7 @@ export async function getAllSales(date: Date): Promise<Big[]> {
 				// @ts-ignore
 				const sales = r.sales;
 
-				return mulWithMwst(r.price!.sell.mul(sales), r.price!.mwst);
+				return withVAT(r.price!.sell.mul(sales), r.price!.mwst);
 			})
 			.reduce((a, b) => a.add(b), Big(0));
 	}

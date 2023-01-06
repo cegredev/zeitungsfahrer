@@ -13,7 +13,7 @@ import { twoDecimalFormatNoCurrency, fourDecimalFormatNoCurrency } from "../cons
 import { getKW } from "../time.js";
 import { Column } from "../models/reports.model.js";
 import { CustomInvoiceText, Invoice, SingleMwstSummary } from "../models/invoices.model.js";
-import { mulWithMwst, poolExecute } from "../util.js";
+import { withVAT, poolExecute } from "../util.js";
 import Big from "big.js";
 import { createDocument, storeDocument } from "./documents.service.js";
 
@@ -51,7 +51,7 @@ export async function getInvoiceData(
 			name: item.name,
 			rows: item.rows.map((row) => {
 				const netto = row.price.sell.mul(row.sales).round(2);
-				const brutto = mulWithMwst(netto, row.price.mwst).round(2);
+				const brutto = withVAT(netto, row.price.mwst).round(2);
 
 				totalSales += row.sales;
 				totalNetto = totalNetto.add(netto);
@@ -60,7 +60,7 @@ export async function getInvoiceData(
 				return [
 					row.date,
 					row.price.sell.toNumber(),
-					mulWithMwst(row.price.sell, row.price.mwst).toNumber(),
+					withVAT(row.price.sell, row.price.mwst).toNumber(),
 					row.sales,
 					row.price.mwst,
 					netto.toNumber(),
@@ -74,7 +74,7 @@ export async function getInvoiceData(
 	let entireBrutto = Big(0);
 
 	const mwstSummaries: SingleMwstSummary[] = [...report.nettoByMwst.entries()].map(([mwst, nettoTotal]) => {
-		const bruttoTotal = mulWithMwst(nettoTotal, mwst).round(2);
+		const bruttoTotal = withVAT(nettoTotal, mwst).round(2);
 		entireBrutto = entireBrutto.add(bruttoTotal);
 
 		return {

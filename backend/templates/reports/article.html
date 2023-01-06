@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Bericht</title>
+
+		<link rel="stylesheet" href="../shared_styles.css" />
+
+		<style>
+			.doc-top {
+				margin-bottom: 2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="doc-top">
+			<h1>{{head.timeframe}}</h1>
+			<h3>{{head.time}} - {{head.owner}}</h3>
+		</div>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Datum</th>
+					<th>Lieferung</th>
+					<th>Remission</th>
+					<th>Verkauf</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each records}}
+				<tr>
+					{{#each this}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+				{{/each}}
+			</tbody>
+			<tfoot>
+				<tr>
+					{{#each summary}}
+					<td>{{this}}</td>
+					{{/each}}
+				</tr>
+			</tfoot>
+		</table>
+	</body>
+</html>

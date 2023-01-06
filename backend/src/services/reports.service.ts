@@ -14,7 +14,7 @@ import {
 	VendorSalesReport,
 	WeeklyBillReport,
 } from "../models/reports.model.js";
-import { mulWithMwst, poolExecute } from "../util.js";
+import { withVAT, poolExecute } from "../util.js";
 import dayjs from "dayjs";
 import { DATE_FORMAT, dinA4ExcelLandscape, MILlIS_IN_DAY, months, twoDecimalFormat } from "../consts.js";
 import { daysBetween, getKW } from "../time.js";
@@ -106,7 +106,7 @@ function generateTotalSellOfItems(items: ReportItem[]) {
 			const netto = record.price.sell.mul(record.sales).round(2);
 
 			totalSellNetto = totalSellNetto.add(netto);
-			totalSellBrutto = totalSellBrutto.add(mulWithMwst(netto, record.price.mwst).round(2));
+			totalSellBrutto = totalSellBrutto.add(withVAT(netto, record.price.mwst).round(2));
 		}
 	}
 
@@ -260,8 +260,8 @@ export async function createArticleListingReport(
 				const sellValue = record.sales > 0 ? Big(record.sales).mul(record.price!.sell).round(2) : Big(0);
 				const marketValue =
 					record.sales > 0 ? Big(record.sales).mul(record.price!.marketSell).round(2) : Big(0);
-				const sellValueBrutto = mulWithMwst(sellValue, record.price.mwst).round(2);
-				const marketValueBrutto = mulWithMwst(marketValue, record.price.mwst).round(2);
+				const sellValueBrutto = withVAT(sellValue, record.price.mwst).round(2);
+				const marketValueBrutto = withVAT(marketValue, record.price.mwst).round(2);
 
 				supply += record.supply;
 				remissions += record.remissions;
@@ -278,9 +278,9 @@ export async function createArticleListingReport(
 					record.sales,
 					record.price.mwst,
 					sellValue.toNumber(),
-					sellValue.eq(0) ? 0 : mulWithMwst(sellValue, record.price.mwst).round(2).toNumber(),
+					sellValue.eq(0) ? 0 : withVAT(sellValue, record.price.mwst).round(2).toNumber(),
 					record.price.marketSell,
-					mulWithMwst(Big(record.price.marketSell), record.price.mwst).round(2).toNumber(),
+					withVAT(Big(record.price.marketSell), record.price.mwst).round(2).toNumber(),
 				];
 			});
 

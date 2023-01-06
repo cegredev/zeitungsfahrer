@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Report, ReportType } from "../models/reports.model.js";
+import { getArticleSalesReportNew } from "../services/new_reports.js";
+import { getDateRange } from "../services/records.service.js";
 import {
 	createArticleSalesReport,
 	createReportDoc,
@@ -36,6 +38,13 @@ export async function getArticleSalesReportController(
 	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string; type: ReportType }>,
 	res: Response
 ) {
+	console.log(
+		await getArticleSalesReportNew(
+			parseInt(req.params.id),
+			...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
+		)
+	);
+
 	await downloadReportHandler(
 		async () =>
 			await createArticleSalesReport(
