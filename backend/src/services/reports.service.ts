@@ -24,6 +24,7 @@ import fs from "fs/promises";
 import { applyStyler, generatePDF, populateTemplateHtml } from "../pdf.js";
 import { boldRow } from "../excel.js";
 import { createDocument, storeDocument } from "./documents.service.js";
+import { Amount } from "../models/new_reports.model.js";
 
 export async function getArticleSalesReport(articleId: number, date: Date, invoiceSystem: number) {
 	const [start, end] = getDateRange(date, invoiceSystem);
@@ -123,7 +124,7 @@ export async function getVendorSalesReport(
 	const [start, end] = getDateRange(date, invoiceSystem);
 
 	const items: ReportItem[] = [];
-	const nettoByMwst: Map<number, Big> = new Map();
+	const amountByMwst: Map<number, Amount> = new Map();
 
 	for (const { articleId, articleName } of articles) {
 		const item: ReportItem = {
@@ -146,20 +147,24 @@ export async function getVendorSalesReport(
 			});
 
 		for (const record of records) {
-			let nettoPrice = nettoByMwst.get(record.price.mwst);
+			let nettoPrice = amountByMwst.get(record.price.mwst);
 			if (nettoPrice === undefined) {
-				nettoPrice = Big(0);
+				nettoPrice = { netto: Big(0), brutto: Big(0) };
 
-				nettoByMwst.set(record.price.mwst, nettoPrice);
+				amountByMwst.set(record.price.mwst, nettoPrice);
 			}
 
 			item.rows.push(record);
 
-			nettoByMwst.set(record.price.mwst, nettoPrice.add(record.price.sell.mul(record.sales).round(2)));
+			const value = record.price.sell.mul(record.sales);
+			amountByMwst.set(record.price.mwst, {
+				netto: nettoPrice.netto.add(value.round(2)),
+				brutto: nettoPrice.brutto.add(withVAT(value, record.price.mwst).round(2)),
+			});
 		}
 	}
 
-	console.log(JSON.stringify([...nettoByMwst.entries()]));
+	console.log(JSON.stringify([...amountByMwst.entries()]));
 
 	const vendor = await getVendorSimple(vendorId);
 
@@ -167,7 +172,7 @@ export async function getVendorSalesReport(
 		id: vendor.id,
 		owner: `${vendor.name} (Kundennr.: ${vendor.customId})`,
 		items,
-		nettoByMwst,
+		nettoByMwst: amountByMwst,
 		...generateTotalSellOfItems(items),
 	};
 }

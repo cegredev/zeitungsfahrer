@@ -50,8 +50,9 @@ export async function getInvoiceData(
 		return {
 			name: item.name,
 			rows: item.rows.map((row) => {
-				const netto = row.price.sell.mul(row.sales).round(2);
+				let netto = row.price.sell.mul(row.sales);
 				const brutto = withVAT(netto, row.price.mwst).round(2);
+				netto = netto.round(2);
 
 				totalSales += row.sales;
 				totalNetto = totalNetto.add(netto);
@@ -73,14 +74,14 @@ export async function getInvoiceData(
 
 	let entireBrutto = Big(0);
 
-	const mwstSummaries: SingleMwstSummary[] = [...report.nettoByMwst.entries()].map(([mwst, nettoTotal]) => {
-		const bruttoTotal = withVAT(nettoTotal, mwst).round(2);
+	const mwstSummaries: SingleMwstSummary[] = [...report.nettoByMwst.entries()].map(([mwst, { netto, brutto }]) => {
+		const bruttoTotal = brutto.round(2);
 		entireBrutto = entireBrutto.add(bruttoTotal);
 
 		return {
 			mwst,
-			nettoTotal,
-			mwstCut: bruttoTotal.sub(nettoTotal),
+			nettoTotal: netto,
+			mwstCut: bruttoTotal.sub(netto),
 			bruttoTotal,
 		};
 	});

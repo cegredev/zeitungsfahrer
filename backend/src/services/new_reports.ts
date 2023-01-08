@@ -315,9 +315,9 @@ const STYLES = {
 	},
 } as const;
 
-function renderArticleReportPDF(report: MultiArticleReport) {
-	const prepared = prepareArticleReport();
-}
+// function renderArticleReportPDF(report: MultiArticleReport) {
+// 	const prepared = prepareArticleReport();
+// }
 
 export async function renderAnyReport(templateFile: string, data: any) {
 	const template = (await fs.readFile("./templates/" + templateFile)).toString();

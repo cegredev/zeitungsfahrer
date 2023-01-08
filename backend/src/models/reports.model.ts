@@ -1,4 +1,5 @@
 import Big from "big.js";
+import { Amount } from "./new_reports.model";
 import { DefiniteRecord } from "./records.model";
 import { SimpleVendor } from "./vendors.model";
 
@@ -79,7 +80,7 @@ export interface ArticleListingReport {
 }
 
 export interface VendorSalesReport extends ArticleListingReport {
-	nettoByMwst: Map<number, Big>;
+	nettoByMwst: Map<number, Amount>;
 }
 
 export interface ReportItem {
