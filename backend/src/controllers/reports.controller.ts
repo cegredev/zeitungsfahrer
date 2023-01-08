@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import { Report, ReportType } from "../models/reports.model.js";
-import { getArticleSalesReportNew } from "../services/new_reports.js";
+import {
+	getAllArticlesReport,
+	getAllVendorsReport,
+	getAnyReport,
+	getArticleReport,
+	getVendorReport,
+} from "../services/new_reports.js";
 import { getDateRange } from "../services/records.service.js";
 import {
 	createArticleSalesReport,
@@ -39,7 +45,7 @@ export async function getArticleSalesReportController(
 	res: Response
 ) {
 	console.log(
-		await getArticleSalesReportNew(
+		await getArticleReport(
 			parseInt(req.params.id),
 			...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
 		)
@@ -65,6 +71,13 @@ export async function getVendorSalesReportController(
 	const date = new Date(req.query.date);
 	const invoiceSystem = parseInt(req.query.invoiceSystem);
 
+	console.log(
+		await getVendorReport(
+			parseInt(req.params.id),
+			...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
+		)
+	);
+
 	await downloadReportHandler(
 		async () =>
 			await createArticleListingReport(
@@ -84,6 +97,10 @@ export async function getAllSalesReportController(
 	const date = new Date(req.query.date);
 	const invoiceSystem = parseInt(req.query.invoiceSystem);
 
+	console.log(
+		await getAllArticlesReport(...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem)))
+	);
+
 	await downloadReportHandler(
 		async () => await createArticleListingReport(await getAllSalesReport(date, invoiceSystem), date, invoiceSystem),
 		req.query.type,
@@ -96,6 +113,8 @@ export async function getWeeklyBillReportController(
 	res: Response
 ) {
 	const date = new Date(req.query.date);
+
+	console.log(await getAllVendorsReport(...getDateRange(new Date(req.query.date), 1)));
 
 	await downloadReportHandler(
 		async () => await createWeeklyBillReport(await getWeeklyBillReport(date), date),

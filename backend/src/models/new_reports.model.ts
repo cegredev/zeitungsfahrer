@@ -1,5 +1,15 @@
 import Big from "big.js";
+import dayjs from "dayjs";
 import { Price } from "../models/articles.model";
+
+export type Cell = string | number | Date;
+export type RowGenerator = (record: ReportRecord) => Cell[];
+export type SummaryGenerator = (summary: ReportSummary) => Cell[];
+
+export interface Style {
+	pdfStyle: (cell: Cell) => string;
+	excelStyle: { numFmt: string };
+}
 
 export interface ReportData {
 	supply: number;
@@ -7,8 +17,11 @@ export interface ReportData {
 	sales: number;
 }
 
-export interface ReportRecord extends ReportData {
+export interface DBRecord extends ReportData {
 	date: Date;
+}
+
+export interface ReportRecord extends DBRecord {
 	price: Price;
 }
 
@@ -24,24 +37,45 @@ export interface ReportSummary {
 	marketSell?: Amount;
 }
 
+export interface Report {
+	reports: Map<number, ArticleReport>;
+	summary: ReportSummary;
+}
+
 export interface ArticleReport {
 	articleId: number;
-	vendorId?: number;
 	records: ReportRecord[];
 	summary: ReportSummary;
 }
 
-export interface TotalReport {
+export interface MultiArticleReport {
 	articles: ArticleReport[];
 	summary: ReportSummary;
 }
 
-export interface VendorReport extends TotalReport {
+export interface VendorReport extends MultiArticleReport {
 	vendorId: number;
-	summary: ReportSummary;
 }
 
 export interface AllVendorsReport {
 	vendors: VendorReport[];
 	summary: ReportSummary;
+}
+
+export interface SinglePrintableReport {
+	rows: Cell[][];
+	summary: Cell[];
+}
+
+export interface PrintableReport {
+	articles: SinglePrintableReport[];
+	summary: SinglePrintableReport;
+}
+
+export interface PrintableReportDoc extends PrintableReport {
+	head: {
+		headline: string;
+		time: string;
+		entity: string;
+	};
 }
