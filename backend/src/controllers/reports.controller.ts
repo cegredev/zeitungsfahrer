@@ -6,6 +6,9 @@ import {
 	getAnyReport,
 	getArticleReport,
 	getVendorReport,
+	renderAllArticlesReportPDF,
+	renderArticleReportPDF,
+	renderVendorReportPDF,
 } from "../services/new_reports.js";
 import { getDateRange } from "../services/records.service.js";
 import {
@@ -44,24 +47,27 @@ export async function getArticleSalesReportController(
 	req: Request<{ id: string }, any, any, { date: string; invoiceSystem: string; type: ReportType }>,
 	res: Response
 ) {
-	console.log(
-		await getArticleReport(
-			parseInt(req.params.id),
-			...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
-		)
+	await downloadPDFHandler(
+		await renderArticleReportPDF(
+			await getArticleReport(
+				parseInt(req.params.id),
+				...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
+			)
+		),
+		res
 	);
 
-	await downloadReportHandler(
-		async () =>
-			await createArticleSalesReport(
-				parseInt(req.params.id),
-				new Date(req.query.date),
-				parseInt(req.query.invoiceSystem)
-			),
-		req.query.type,
-		res,
-		true
-	);
+	// await downloadReportHandler(
+	// 	async () =>
+	// 		await createArticleSalesReport(
+	// 			parseInt(req.params.id),
+	// 			new Date(req.query.date),
+	// 			parseInt(req.query.invoiceSystem)
+	// 		),
+	// 	req.query.type,
+	// 	res,
+	// 	true
+	// );
 }
 
 export async function getVendorSalesReportController(
@@ -71,23 +77,26 @@ export async function getVendorSalesReportController(
 	const date = new Date(req.query.date);
 	const invoiceSystem = parseInt(req.query.invoiceSystem);
 
-	console.log(
-		await getVendorReport(
-			parseInt(req.params.id),
-			...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
-		)
-	);
-
-	await downloadReportHandler(
-		async () =>
-			await createArticleListingReport(
-				await getVendorSalesReport(parseInt(req.params.id), date, invoiceSystem),
-				date,
-				invoiceSystem
-			),
-		req.query.type,
+	await downloadPDFHandler(
+		await renderVendorReportPDF(
+			await getVendorReport(
+				parseInt(req.params.id),
+				...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem))
+			)
+		),
 		res
 	);
+
+	// await downloadReportHandler(
+	// 	async () =>
+	// 		await createArticleListingReport(
+	// 			await getVendorSalesReport(parseInt(req.params.id), date, invoiceSystem),
+	// 			date,
+	// 			invoiceSystem
+	// 		),
+	// 	req.query.type,
+	// 	res
+	// );
 }
 
 export async function getAllSalesReportController(
@@ -101,11 +110,18 @@ export async function getAllSalesReportController(
 		await getAllArticlesReport(...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem)))
 	);
 
-	await downloadReportHandler(
-		async () => await createArticleListingReport(await getAllSalesReport(date, invoiceSystem), date, invoiceSystem),
-		req.query.type,
+	await downloadPDFHandler(
+		await renderAllArticlesReportPDF(
+			await getAllArticlesReport(...getDateRange(new Date(req.query.date), parseInt(req.query.invoiceSystem)))
+		),
 		res
 	);
+
+	// await downloadReportHandler(
+	// 	async () => await createArticleListingReport(await getAllSalesReport(date, invoiceSystem), date, invoiceSystem),
+	// 	req.query.type,
+	// 	res
+	// );
 }
 
 export async function getWeeklyBillReportController(

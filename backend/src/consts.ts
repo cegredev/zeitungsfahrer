@@ -31,6 +31,13 @@ export const twoDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {
 	minimumFractionDigits: 2,
 });
 
+export const fourDecimalFormat = new Intl.NumberFormat("de-DE", {
+	style: "currency",
+	currency: "EUR",
+	maximumFractionDigits: 4,
+	minimumFractionDigits: 4,
+});
+
 export const fourDecimalFormatNoCurrency = new Intl.NumberFormat("de-DE", {
 	maximumFractionDigits: 4,
 	minimumFractionDigits: 4,

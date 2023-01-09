@@ -1,9 +1,10 @@
 import Big from "big.js";
 import dayjs from "dayjs";
 import { Price } from "../models/articles.model";
+import { ReportType } from "./reports.model";
 
 export type Cell = string | number | Date;
-export type RowGenerator = (record: ReportRecord) => Cell[];
+export type RowGenerator<T> = (value: T) => Cell[];
 export type SummaryGenerator = (summary: ReportSummary) => Cell[];
 
 export interface Style {
@@ -63,6 +64,7 @@ export interface AllVendorsReport {
 }
 
 export interface SinglePrintableReport {
+	identifier?: string;
 	rows: Cell[][];
 	summary: Cell[];
 }
@@ -78,4 +80,8 @@ export interface PrintableReportDoc extends PrintableReport {
 		time: string;
 		entity: string;
 	};
+}
+
+export interface ReportPrintConfig {
+	type: ReportType;
 }

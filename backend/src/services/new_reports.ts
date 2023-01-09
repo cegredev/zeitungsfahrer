@@ -2,6 +2,7 @@ import Big from "big.js";
 import dayjs from "dayjs";
 import {
 	DATE_FORMAT,
+	fourDecimalFormat,
 	fourDecimalFormatNoCurrency,
 	months,
 	twoDecimalFormat,
@@ -23,14 +24,16 @@ import {
 	PrintableReport,
 	Style,
 	PrintableReportDoc,
+	SinglePrintableReport,
 } from "../models/new_reports.model.js";
 import { withVAT, poolExecute } from "../util.js";
 import { applyPrices } from "./records.service.js";
 import fs from "fs/promises";
 import { generatePDF, populateTemplateHtml } from "../pdf.js";
 import { ArticleRecords, Record } from "../models/records.model.js";
-import { getVendorsSimple } from "./vendors.service.js";
+import { getVendorSimple, getVendorsSimple } from "./vendors.service.js";
 import { getKW } from "../time.js";
+import { getArticleInfo } from "./articles.service.js";
 
 export const MAX_DIGITS = 2;
 
@@ -103,6 +106,7 @@ export async function getAnyReport(
 	const totalSummary = createEmptySummary();
 
 	for (const { records, summary } of reports.values()) {
+		// Article summary calculations
 		for (const { supply, remissions, sales, price } of records) {
 			summary.basic!.supply += supply;
 			summary.basic!.remissions += remissions;
@@ -120,6 +124,7 @@ export async function getAnyReport(
 			}
 		}
 
+		// Total summary calculations
 		totalSummary.basic!.supply += summary.basic!.supply;
 		totalSummary.basic!.remissions += summary.basic!.remissions;
 		totalSummary.basic!.sales += summary.basic!.sales;
@@ -238,16 +243,42 @@ export async function getAllVendorsReport(start: Date, end: Date): Promise<AllVe
 	};
 }
 
-function prepareArticleReport(
-	report: MultiArticleReport,
-	rowGen: RowGenerator,
+async function prepareAnyReport<T>(
+	report: {
+		rows: T[];
+		summary: ReportSummary;
+	},
+	rowGen: RowGenerator<T>,
 	summaryGen: SummaryGenerator
-): PrintableReport {
+) {
 	return {
-		articles: report.articles.map((report) => ({
-			rows: report.records.map(rowGen),
-			summary: summaryGen(report.summary),
-		})),
+		...report,
+		rows: report.rows.map(rowGen),
+		summary: summaryGen(report.summary),
+	};
+}
+
+async function prepareArticleReport(
+	report: ArticleReport,
+	rowGen: RowGenerator<ReportRecord>,
+	summaryGen: SummaryGenerator
+): Promise<SinglePrintableReport> {
+	return {
+		identifier: (await getArticleInfo(report.articleId)).name,
+		rows: report.records.map(rowGen),
+		summary: summaryGen(report.summary),
+	};
+}
+
+async function prepareMultiArticleReport(
+	report: MultiArticleReport,
+	rowGen: RowGenerator<ReportRecord>,
+	summaryGen: SummaryGenerator
+): Promise<PrintableReport> {
+	return {
+		articles: await Promise.all(
+			report.articles.map(async (report) => prepareArticleReport(report, rowGen, summaryGen))
+		),
 		summary: {
 			rows: report.articles.map((report) => summaryGen(report.summary)),
 			summary: summaryGen(report.summary),
@@ -255,9 +286,11 @@ function prepareArticleReport(
 	};
 }
 
-function addReportHead(report: PrintableReport, entity: string, date: Date, invoiceSystem: number): PrintableReportDoc {
+function genReportHead(entity: string, date: Date, invoiceSystem: number) {
 	let headline = "Bericht",
 		time = dayjs(date).format("DD.MM.YYYY");
+
+	const year = String(date.getFullYear());
 
 	switch (invoiceSystem) {
 		case 0:
@@ -266,25 +299,22 @@ function addReportHead(report: PrintableReport, entity: string, date: Date, invo
 			break;
 		case 1:
 			headline = "Wochenbericht";
-			time = "KW " + getKW(date);
+			time = "KW " + getKW(date) + " " + year;
 			break;
 		case 2:
 			headline = "Monatsbericht";
-			time = months[date.getMonth()];
+			time = months[date.getMonth()] + " " + year;
 			break;
 		case 3:
 			headline = "Jahresbericht";
-			time = String(date.getFullYear());
+			time = year;
 			break;
 	}
 
 	return {
-		head: {
-			headline,
-			time,
-			entity,
-		},
-		...report,
+		headline,
+		time,
+		entity,
 	};
 }
 
@@ -297,29 +327,229 @@ const STYLES = {
 		pdfStyle: (cell) => dayjs(cell).format("DD.MM.YYYY"),
 		excelStyle: { numFmt: "" },
 	},
+	PERCENTAGE: <Style>{
+		pdfStyle: (cell: number) => cell + " %",
+		excelStyle: { numFmt: '#0 "%"' },
+	},
 	TWO_DECIMAL: <Style>{
-		pdfStyle: (cell: number) => twoDecimalFormatNoCurrency.format(cell),
-		excelStyle: { numFmt: "#,##0.00" },
+		pdfStyle: (cell: number) => twoDecimalFormat.format(cell),
+		excelStyle: { numFmt: '#,##0.00 "€"' },
 	},
 	FOUR_DECIMAL: <Style>{
-		pdfStyle: (cell: number) => fourDecimalFormatNoCurrency.format(cell),
-		excelStyle: { numFmt: "#,####0.0000" },
+		pdfStyle: (cell: number) => fourDecimalFormat.format(cell),
+		excelStyle: { numFmt: '#,####0.0000 "€"' },
 	},
 	TWO_DECIMAL_NO_CURRENCY: <Style>{
 		pdfStyle: (cell: number) => twoDecimalFormatNoCurrency.format(cell),
-		excelStyle: { numFmt: '#,##0.00 "€"' },
+		excelStyle: { numFmt: "#,##0.00" },
 	},
 	FOUR_DECIMAL_NO_CURRENCY: <Style>{
 		pdfStyle: (cell: number) => fourDecimalFormatNoCurrency.format(cell),
-		excelStyle: { numFmt: '#,####0.0000 "€"' },
+		excelStyle: { numFmt: "#,####0.0000" },
 	},
 } as const;
 
-// function renderArticleReportPDF(report: MultiArticleReport) {
-// 	const prepared = prepareArticleReport();
-// }
+function styleRow(row: Cell[], styles: Style[]): string[] {
+	return row.map((cell, i) => styles[i].pdfStyle(cell));
+}
 
-export async function renderAnyReport(templateFile: string, data: any) {
+function pdfStyleAnyReport(rows: Cell[][], summary: Cell[], rowStyles: Style[], summaryStyles: Style[]) {
+	return {
+		rows: rows.map((row) => styleRow(row, rowStyles)),
+		summary: styleRow(summary, summaryStyles),
+	};
+}
+
+function pdfStyleReport(report: PrintableReport, rowStyles: Style[], summaryStyles: Style[]): PrintableReport {
+	const articles = report.articles.map((article) => ({
+		...article,
+		...pdfStyleAnyReport(article.rows, article.summary, rowStyles, summaryStyles);
+	}));
+
+	return {
+		articles,
+		summary: {
+			identifier: "Zusammenfassung",
+			rows: articles.map((article) => article.summary),
+			summary: styleRow(report.summary.summary, summaryStyles),
+		},
+	};
+}
+
+export async function renderArticleReportPDF(report: ArticleReport) {
+	const prepared = await prepareMultiArticleReport(
+		{
+			articles: [report],
+			summary: report.summary,
+		},
+		(record) => [record.date, record.supply, record.remissions, record.sales],
+		(summary) => [summary.basic!.supply, summary.basic!.remissions, summary.basic!.sales]
+	);
+
+	const styled = pdfStyleReport(
+		prepared,
+		[STYLES.DATE, STYLES.PLAIN, STYLES.PLAIN, STYLES.PLAIN],
+		[STYLES.PLAIN, STYLES.PLAIN, STYLES.PLAIN]
+	);
+
+	const head = genReportHead("Entity", new Date(), 2);
+
+	return await renderReport("reports/article.html", { head, ...styled.articles[0] });
+}
+
+export async function renderAllArticlesReportPDF(report: MultiArticleReport) {
+	const prepared = await prepareMultiArticleReport(
+		report,
+		({ date, supply, remissions, sales, price }) => {
+			const nettoPurchase = price.purchase.mul(sales);
+
+			return [
+				date,
+				supply,
+				remissions,
+				sales,
+				price.mwst,
+				nettoPurchase.toNumber(),
+				withVAT(nettoPurchase, price.mwst).toNumber(),
+				price.marketSell.toNumber(),
+				withVAT(price.marketSell, price.mwst).toNumber(),
+			];
+		},
+		({ basic, purchase, marketSell }) => [
+			basic!.supply,
+			basic!.remissions,
+			basic!.sales,
+			"",
+			purchase!.netto.toNumber(),
+			purchase!.brutto.toNumber(),
+			marketSell!.netto.toNumber(),
+			marketSell!.brutto.toNumber(),
+		]
+	);
+
+	const styled = pdfStyleReport(
+		prepared,
+		[
+			STYLES.DATE,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PERCENTAGE,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+		],
+		[
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+		]
+	);
+
+	const head = genReportHead("Entity", new Date(), 2);
+
+	return await renderReport("reports/all_articles.html", { head, ...styled });
+}
+
+export async function renderVendorReportPDF(report: MultiArticleReport) {
+	const prepared = await prepareMultiArticleReport(
+		report,
+		({ date, supply, remissions, sales, price }) => {
+			const nettoPurchase = price.purchase.mul(sales);
+
+			return [
+				date,
+				supply,
+				remissions,
+				sales,
+				price.mwst,
+				nettoPurchase.toNumber(),
+				withVAT(nettoPurchase, price.mwst).toNumber(),
+				price.sell.toNumber(),
+				withVAT(price.sell, price.mwst).toNumber(),
+			];
+		},
+		({ basic, purchase, sell }) => [
+			basic!.supply,
+			basic!.remissions,
+			basic!.sales,
+			"",
+			purchase!.netto.toNumber(),
+			purchase!.brutto.toNumber(),
+			sell!.netto.toNumber(),
+			sell!.brutto.toNumber(),
+		]
+	);
+
+	const styled = pdfStyleReport(
+		prepared,
+		[
+			STYLES.DATE,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PERCENTAGE,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+		],
+		[
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.PLAIN,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+			STYLES.TWO_DECIMAL,
+		]
+	);
+
+	const head = genReportHead("Entity", new Date(), 2);
+
+	return await renderReport("reports/vendor.html", { head, ...styled });
+}
+
+export async function renderAllVendorsReportPDF(report: AllVendorsReport) {
+	const modifiedReport = {
+		rows: await Promise.all(
+			report.vendors.map(async (vendor) => ({
+				name: (await getVendorSimple(vendor.vendorId)).name,
+				summary: report.summary,
+			}))
+		),
+		summary: report.summary,
+	};
+
+	const prepared = await prepareAnyReport(
+		modifiedReport,
+		({ name, summary }) => {
+			return [name, summary.sell!.netto.toNumber(), summary.sell!.brutto.toNumber()];
+		},
+		({ sell }) => [sell!.netto.toNumber(), sell!.brutto.toNumber()]
+	);
+
+	const styled = pdfStyleAnyReport(
+		prepared.rows, prepared.summary,
+		[STYLES.PLAIN, STYLES.TWO_DECIMAL, STYLES.TWO_DECIMAL],
+		[STYLES.TWO_DECIMAL, STYLES.TWO_DECIMAL]
+	);
+
+	const head = genReportHead("Alle Händler", new Date(), 2);
+
+	return await renderReport("reports/vendor.html", { head, ...styled });
+}
+
+export async function renderReport(templateFile: string, data: any): Promise<Buffer> {
 	const template = (await fs.readFile("./templates/" + templateFile)).toString();
 
 	const html = populateTemplateHtml(template, data);

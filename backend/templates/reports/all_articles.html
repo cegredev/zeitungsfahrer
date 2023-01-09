@@ -50,6 +50,8 @@
 			<h3>{{head.time}} - {{head.entity}}</h3>
 		</div>
 
+		{{#each articles}}
+		<h3>{{this.identifier}}</h3>
 		<table>
 			<thead>
 				<tr>
@@ -57,6 +59,11 @@
 					<th>Lieferung</th>
 					<th>Remission</th>
 					<th>Verkauf</th>
+					<th>MwSt</th>
+					<th>Einkauf (Netto)</th>
+					<th>Einkauf (Brutto)</th>
+					<th>Marktwert (Netto)</th>
+					<th>Marktwert (Brutto)</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -77,5 +84,6 @@
 				</tr>
 			</tfoot>
 		</table>
+		{{/each}}
 	</body>
 </html>
